@@ -15,7 +15,7 @@ def main(args):
     print(args)
 
 
-if __name__ == "__main__":
+def scan():
     """ This is executed when run from the command line """
     parser = argparse.ArgumentParser()
 
@@ -44,3 +44,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     main(args)
+
+
+if __name__ == "__main__":
+    scan()

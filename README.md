@@ -22,3 +22,15 @@ Run `python3 main.py <args>`
 Run `python3 test/tests.py`
 
 
+# Publish the script
+
+Make sure to have the latest version of PyPA with `python3 -m pip install --upgrade build`
+
+Run `python3 -m build` to create the binaries
+
+Run if needed `python3 -python3 -m pip install --upgrade twine` to upgrade to the latest version of twine
+
+Run `python3 -m twine upload --repository testpypi dist/*` 
+
+`--repository testpypi` can be removed to push to the prod PyPI instance.
+Also `dist/*` can be a bit more precise to upload a specific version of the binaries

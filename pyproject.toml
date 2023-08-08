@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "py-sonar-scanner_DAVID_K"
+dynamic = ["version"]
+authors = [
+  { name="Guillaume Dequenne", email="guillaume.dequenne@sonarsource.com" },
+  { name="Maksim Grebeniuk", email="maksim.grebeniuk@sonarsource.com" },
+  { name="David Kunzmann", email="david.kunzmann@sonarsource.com" },
+]
+description = "Sonar Scanner for the Python Ecosystem"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+
+[project.urls]
+"Homepage" = "https://github.com/joke1196/py-sonar-scanner"
+"Bug Tracker" = "https://github.com/joke1196/py-sonar-scanner/issues"
+
+[project.scripts]
+"py-sonar-scanner" = "py_sonar_scanner_DAVID_K.main:scan"
+
+
+[tool.hatch.version]
+path = "src/py_sonar_scanner_DAVID_K/__init__.py"
