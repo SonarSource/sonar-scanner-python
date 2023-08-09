@@ -1,4 +1,5 @@
 import argparse
+import sys
 
 from py_sonar_scanner_DAVID_K.context import Context
 
@@ -35,3 +36,9 @@ class ConfigurationPropertiesConfig:
 
         ctx.sonar_scanner_version = '4.6.2.2472'
         ctx.sonar_scanner_path = '.scanner'
+
+        scan_arguments = []
+        for arg in sys.argv:
+            if arg.startswith("-D"):
+                scan_arguments.append(arg)
+        ctx.scan_arguments = scan_arguments

@@ -5,15 +5,13 @@ from py_sonar_scanner_DAVID_K.context import Context
 
 class Scanner:
     def scan(self, ctx: Context):
-        scan_args = []
-        if scan_args is None:
-            scan_args = []
-        cmd = [ctx.sonar_scanner_executable_path] + scan_args
+        cmd = [ctx.sonar_scanner_executable_path] + ctx.scan_arguments
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
 
         def print_output():
             while True:
+                # TODO: print error as well
                 output_line = process.stdout.readline()
                 if not output_line:
                     break
