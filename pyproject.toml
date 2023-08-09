@@ -25,8 +25,13 @@ classifiers = [
 "Bug Tracker" = "https://github.com/joke1196/py-sonar-scanner/issues"
 
 [project.scripts]
-"py-sonar-scanner" = "py_sonar_scanner_DAVID_K.main:scan"
+"py-sonar-scanner" = "cli.main:scan"
 
 
 [tool.hatch.version]
-path = "src/py_sonar_scanner_DAVID_K/__init__.py"
+path = "src/cli/__about__.py"
+
+
+[tool.hatch.build.targets.wheel]
+only-include = ["src/cli"]
+sources = ["src"]

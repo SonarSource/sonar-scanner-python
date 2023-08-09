@@ -4,7 +4,7 @@ import shutil
 import urllib.request
 import zipfile
 
-from py_sonar_scanner_DAVID_K.context import Context
+from cli.context import Context
 
 systems = {
     'Darwin': 'macosx',
