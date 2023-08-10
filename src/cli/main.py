@@ -9,6 +9,7 @@ __version__ = "0.1.0"
 from cli.configuration_properties_config import ConfigurationPropertiesConfig
 from cli.context import Context
 from cli.environment_config import EnvironmentConfig
+from cli.postprocessor import Postprocessor
 from cli.scanner import Scanner
 
 
@@ -18,6 +19,7 @@ def scan():
     ConfigurationPropertiesConfig().setup(ctx)
     EnvironmentConfig().setup(ctx)
     Scanner().scan(ctx)
+    Postprocessor().process(ctx)
 
 
 if __name__ == "__main__":
