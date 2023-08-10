@@ -19,6 +19,10 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
+dependencies = [
+    "toml>=0.10.2"
+]
+
 
 [project.urls]
 "Homepage" = "https://github.com/joke1196/py-sonar-scanner"
