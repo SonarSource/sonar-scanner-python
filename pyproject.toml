@@ -29,13 +29,13 @@ dependencies = [
 "Bug Tracker" = "https://github.com/joke1196/py-sonar-scanner/issues"
 
 [project.scripts]
-"py-sonar-scanner" = "cli.main:scan"
+"py-sonar-scanner" = "py_sonar_scanner.__main__:scan"
 
 
 [tool.hatch.version]
-path = "src/cli/__about__.py"
+path = "src/py_sonar_scanner/__about__.py"
 
 
 [tool.hatch.build.targets.wheel]
-only-include = ["src/cli"]
+only-include = ["src/py_sonar_scanner"]
 sources = ["src"]

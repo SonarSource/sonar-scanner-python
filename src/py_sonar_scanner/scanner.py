@@ -1,11 +1,17 @@
 import subprocess
 import threading
-from cli.context import Context
+
+from py_sonar_scanner.configuration import Configuration
 
 
 class Scanner:
-    def scan(self, ctx: Context):
-        cmd = [ctx.sonar_scanner_executable_path] + ctx.scan_arguments
+    cfg: Configuration
+
+    def __init__(self, cfg: Configuration):
+        self.cfg = cfg
+
+    def scan(self):
+        cmd = [self.cfg.sonar_scanner_executable_path] + self.cfg.scan_arguments
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
 
