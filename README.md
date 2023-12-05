@@ -2,6 +2,10 @@
 A wrapper around SonarScanner CLI, available on PyPI.
 
 # Installation 
+## Prerequisites
+
+ - Python 3.12
+ - [Hatch](https://hatch.pypa.io/latest/install/)
 
 ## Install virtual env and create a new environment
 
@@ -19,7 +23,7 @@ Run `python3 main.py <args>`
 
 # Run the tests
 
-Run `python3 test/tests.py`
+Run `hatch run test:test`
 
 
 # Publish the script

@@ -13,7 +13,7 @@ authors = [
 description = "Sonar Scanner for the Python Ecosystem"
 readme = "README.md"
 license = {file = "LICENSE"}
-requires-python = ">=3.9"
+requires-python = ">=3.12"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
@@ -23,7 +23,6 @@ dependencies = [
     "toml>=0.10.2"
 ]
 
-
 [project.urls]
 "Homepage" = "https://github.com/joke1196/py-sonar-scanner"
 "Bug Tracker" = "https://github.com/joke1196/py-sonar-scanner/issues"
@@ -31,11 +30,21 @@ dependencies = [
 [project.scripts]
 "py-sonar-scanner" = "py_sonar_scanner.__main__:scan"
 
-
 [tool.hatch.version]
 path = "src/py_sonar_scanner/__about__.py"
-
 
 [tool.hatch.build.targets.wheel]
 only-include = ["src/py_sonar_scanner"]
 sources = ["src"]
+
+[tool.hatch.envs.test]
+dependencies = [
+  "coverage[toml]",
+  "pytest",
+  "pytest-cov",
+  "pytest-mock",
+]
+
+[tool.hatch.envs.test.scripts]
+test = "pytest tests"
+
