@@ -17,8 +17,9 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-import subprocess
 import threading
+from threading import Thread
+from subprocess import Popen, PIPE
 
 from py_sonar_scanner.configuration import Configuration
 
@@ -30,22 +31,30 @@ class Scanner:
         self.cfg = cfg
 
     def scan(self):
-        cmd = [self.cfg.sonar_scanner_executable_path] + self.cfg.scan_arguments
-        process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
+        process = self.execute_command()
+        output_thread = threading.Thread(target=self._print_output, args=(process.stdout,))
+        error_thread = threading.Thread(target=self._print_output, args=(process.stderr,))
+        return self.process_output(output_thread, error_thread, process)
 
-        def print_output(stream):
-            for line in stream:
-                decoded_line = line.decode('utf-8')
-                print(decoded_line, end='', flush=True)
-
-        output_thread = threading.Thread(target=print_output, args=(process.stdout,))
-        error_thread = threading.Thread(target=print_output, args=(process.stderr,))
+    def process_output(self, output_thread: Thread, error_thread: Thread, process: Popen) -> int:
         output_thread.start()
         error_thread.start()
-
         process.wait()
         output_thread.join()
         error_thread.join()
 
         return process.returncode
+
+    def compute_command(self) -> list[str]:
+        if (not self.cfg.sonar_scanner_executable_path):
+            raise ValueError("No executable path provided")
+        return [self.cfg.sonar_scanner_executable_path] + self.cfg.scan_arguments
+
+    def execute_command(self) -> Popen:
+        cmd = self.compute_command()
+        return Popen(cmd, stdout=PIPE, stderr=PIPE)
+
+    def _print_output(self, stream: list[str]):
+        for line in stream:
+            decoded_line = line.decode('utf-8')
+            print(decoded_line, end='', flush=True)
