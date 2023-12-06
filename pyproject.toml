@@ -21,7 +21,6 @@ classifiers = [
 
 dependencies = [
     "toml>=0.10.2",
-    "argparse>=1.4.0",
 ]
 
 [project.urls]
