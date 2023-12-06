@@ -48,3 +48,10 @@ dependencies = [
 [tool.hatch.envs.test.scripts]
 test = "pytest tests"
 
+[tool.hatch.envs.tool]
+dependencies = [
+  "licenseheaders"
+] 
+
+[tool.hatch.envs.tool.scripts]
+license = 'python -m licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2023 -n "Sonar Scanner Python" -E .py' 
