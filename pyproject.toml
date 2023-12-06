@@ -30,6 +30,9 @@ dependencies = [
 [project.scripts]
 "py-sonar-scanner" = "py_sonar_scanner.__main__:scan"
 
+[tool.hatch.envs.default]
+python="3.12"  
+
 [tool.hatch.version]
 path = "src/py_sonar_scanner/__about__.py"
 
@@ -46,7 +49,11 @@ dependencies = [
 ]
 
 [tool.hatch.envs.test.scripts]
-test = "pytest tests"
+test = "pytest tests/"
+cov = 'pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=tests'
+
+[[tool.hatch.envs.test.matrix]]
+python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
 
 [tool.hatch.envs.tool]
 dependencies = [
