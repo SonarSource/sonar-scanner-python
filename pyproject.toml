@@ -57,8 +57,14 @@ python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
 
 [tool.hatch.envs.tool]
 dependencies = [
-  "licenseheaders"
+  "licenseheaders",
+  "black"
 ] 
 
 [tool.hatch.envs.tool.scripts]
 license = 'python -m licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2023 -n "Sonar Scanner Python" -E .py' 
+format = 'python -m black src/ tests/ --check'
+
+[tool.black]
+line-length = 89
+target-version = ["py38", "py39", "py310", "py311", "py312"]
