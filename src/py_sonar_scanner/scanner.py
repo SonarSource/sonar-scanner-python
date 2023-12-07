@@ -62,5 +62,5 @@ class Scanner:
 
     def _log_output(self, stream: list[bytes]):
         for line in stream:
-            decoded_line = line.decode('utf-8')
+            decoded_line = line.decode("utf-8")
             self.log.info(decoded_line)
