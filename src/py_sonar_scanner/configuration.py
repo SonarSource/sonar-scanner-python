@@ -80,7 +80,7 @@ class Configuration:
         return scan_arguments
 
     def _read_toml_args(self) -> list[str]:
-        scan_arguments = []
+        scan_arguments: list[str] = []
         try:
             if os.path.isfile('pyproject.toml'):
                 with open('pyproject.toml', 'r') as file:
