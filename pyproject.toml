@@ -55,14 +55,6 @@ cov = 'pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=tests'
 [[tool.hatch.envs.test.matrix]]
 python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
 
-[tool.pytest.ini_options]
-pythonpath = [
-  "src",
-]
-addopts = [
-  "--import-mode=importlib",
-]
-
 [tool.hatch.envs.tool]
 dependencies = [
   "licenseheaders",
@@ -72,6 +64,14 @@ dependencies = [
 [tool.hatch.envs.tool.scripts]
 license = 'python -m licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2023 -n "Sonar Scanner Python" -E .py' 
 format = 'python -m black src/ tests/ --check'
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "src",
+]
+addopts = [
+  "--import-mode=importlib",
+]
 
 [tool.black]
 line-length = 89

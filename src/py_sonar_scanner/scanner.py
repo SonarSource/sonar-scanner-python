@@ -46,7 +46,7 @@ class Scanner:
         return process.returncode
 
     def compute_command(self) -> list[str]:
-        if (not self.cfg.sonar_scanner_executable_path):
+        if not self.cfg.sonar_scanner_executable_path:
             raise ValueError("No executable path provided")
         return [self.cfg.sonar_scanner_executable_path] + self.cfg.scan_arguments
 
