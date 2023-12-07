@@ -58,12 +58,14 @@ python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
 [tool.hatch.envs.tool]
 dependencies = [
   "licenseheaders",
-  "black"
+  "black",
+  "mypy"
 ] 
 
 [tool.hatch.envs.tool.scripts]
 license = 'python -m licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2023 -n "Sonar Scanner Python" -E .py' 
 format = 'python -m black src/ tests/ --check'
+type_check = "python -m mypy src/ tests/ --ignore-missing-imports"
 
 [tool.pytest.ini_options]
 pythonpath = [

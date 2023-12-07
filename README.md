@@ -37,12 +37,22 @@ Run `python3 -m twine upload --repository testpypi dist/*`
 `--repository testpypi` can be removed to push to the prod PyPI instance.
 Also `dist/*` can be a bit more precise to upload a specific version of the binaries
 
-## Before push
+# Tooling 
+## Formatting 
 
-Please check if all files have a license header.
+Run `hatch run tool:format` to run the formatter on all files.
+
+## Type checking
+
+Run `hatch run tool:type_check` to execute the type checking on all files.
+
+## License header
+
+Before pushing, please check if all files have a license header.
 If not all files have a license header please execute: `hatch run tool:license`.
 
-## License
+
+# License
 
 Copyright 2011-2023 SonarSource.
 

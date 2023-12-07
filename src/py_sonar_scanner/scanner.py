@@ -54,7 +54,7 @@ class Scanner:
         cmd = self.compute_command()
         return Popen(cmd, stdout=PIPE, stderr=PIPE)
 
-    def _print_output(self, stream: list[str]):
+    def _print_output(self, stream: list[bytes]):
         for line in stream:
             decoded_line = line.decode('utf-8')
             print(decoded_line, end='', flush=True)
