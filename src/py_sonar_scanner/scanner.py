@@ -18,6 +18,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import logging
+from logging import Logger
 import threading
 from threading import Thread
 from subprocess import Popen, PIPE
@@ -27,14 +28,18 @@ from py_sonar_scanner.configuration import Configuration
 
 class Scanner:
     cfg: Configuration
+    log: Logger
 
     def __init__(self, cfg: Configuration):
         self.cfg = cfg
         self.log = logging.getLogger(__name__)
-        self.log.setLevel(logging.INFO)
+        self._setup_logger(self.log)
+
+    def _setup_logger(self, log: Logger):
+        log.setLevel(logging.INFO)
         handler = logging.StreamHandler()
         handler.terminator = ""
-        self.log.addHandler(handler)
+        log.addHandler(handler)
 
     def scan(self):
         process = self.execute_command()
