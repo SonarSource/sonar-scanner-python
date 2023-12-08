@@ -17,6 +17,8 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+import logging
+from logging import Logger
 import threading
 from threading import Thread
 from subprocess import Popen, PIPE
@@ -26,14 +28,23 @@ from py_sonar_scanner.configuration import Configuration
 
 class Scanner:
     cfg: Configuration
+    log: Logger
 
     def __init__(self, cfg: Configuration):
         self.cfg = cfg
+        self.log = logging.getLogger(__name__)
+        self._setup_logger(self.log)
+
+    def _setup_logger(self, log: Logger):
+        log.setLevel(logging.INFO)
+        handler = logging.StreamHandler()
+        handler.terminator = ""
+        log.addHandler(handler)
 
     def scan(self):
         process = self.execute_command()
-        output_thread = threading.Thread(target=self._print_output, args=(process.stdout,))
-        error_thread = threading.Thread(target=self._print_output, args=(process.stderr,))
+        output_thread = threading.Thread(target=self._log_output, args=(process.stdout,))
+        error_thread = threading.Thread(target=self._log_output, args=(process.stderr,))
         return self.process_output(output_thread, error_thread, process)
 
     def process_output(self, output_thread: Thread, error_thread: Thread, process: Popen) -> int:
@@ -45,16 +56,16 @@ class Scanner:
 
         return process.returncode
 
+    def execute_command(self) -> Popen:
+        cmd = self.compute_command()
+        return Popen(cmd, stdout=PIPE, stderr=PIPE)
+
     def compute_command(self) -> list[str]:
         if not self.cfg.sonar_scanner_executable_path:
             raise ValueError("No executable path provided")
         return [self.cfg.sonar_scanner_executable_path] + self.cfg.scan_arguments
 
-    def execute_command(self) -> Popen:
-        cmd = self.compute_command()
-        return Popen(cmd, stdout=PIPE, stderr=PIPE)
-
-    def _print_output(self, stream: list[bytes]):
+    def _log_output(self, stream: list[bytes]):
         for line in stream:
-            decoded_line = line.decode('utf-8')
-            print(decoded_line, end='', flush=True)
+            decoded_line = line.decode("utf-8")
+            self.log.info(decoded_line)
