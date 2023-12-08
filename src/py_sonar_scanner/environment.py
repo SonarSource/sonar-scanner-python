@@ -20,58 +20,65 @@
 from __future__ import annotations
 import os
 import platform
+import pyfiglet
 import shutil
 import urllib.request
+from urllib.error import HTTPError
 import zipfile
 
+from py_sonar_scanner.logger import ApplicationLogger
 from py_sonar_scanner.configuration import Configuration
 from py_sonar_scanner.scanner import Scanner
 
-systems = {
-    'Darwin': 'macosx',
-    'Windows': 'windows'
-}
+systems = {"Darwin": "macosx", "Windows": "windows"}
 
 
 class Environment:
     cfg: Configuration
 
+    # a full download path for a scanner has the following shape:
+    # https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${version}-${os}.zip
+    scanner_base_url: str = "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli"
+
     def __init__(self, cfg: Configuration):
         self.cfg = cfg
+        self.log = ApplicationLogger.get_logger()
 
     def setup(self):
         self.cleanup()
         if self._is_sonar_scanner_on_path():
-            self.cfg.sonar_scanner_executable_path = 'sonar-scanner'
+            self.cfg.sonar_scanner_executable_path = "sonar-scanner"
         else:
-            system_name = systems.get(platform.uname().system, 'linux')
+            system_name = systems.get(platform.uname().system, "linux")
             self._install_scanner(system_name)
-            sonar_scanner_home = os.path.join(self.cfg.sonar_scanner_path,
-                                              f'sonar-scanner-{self.cfg.sonar_scanner_version}-{system_name}')
-            self.cfg.sonar_scanner_executable_path = os.path.join(sonar_scanner_home, 'bin', 'sonar-scanner')
+            sonar_scanner_home = os.path.join(
+                self.cfg.sonar_scanner_path,
+                f"sonar-scanner-{self.cfg.sonar_scanner_version}-{system_name}",
+            )
+            self.cfg.sonar_scanner_executable_path = os.path.join(sonar_scanner_home, "bin", "sonar-scanner")
 
-        print(self.cfg.sonar_scanner_executable_path)
+        ascii_banner = pyfiglet.figlet_format("Sonar Scanner")
+        self.log.info(ascii_banner)
 
-    def _install_scanner(self, system_name: str):
-        os.mkdir(self.cfg.sonar_scanner_path)
-        # Download the binaries and unzip them
-        # https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${version}-${os}.zip
-        scanner_res = urllib.request.urlopen(
-            f'https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-{self.cfg.sonar_scanner_version}-{system_name}.zip')
-        scanner_zip_path = os.path.join(self.cfg.sonar_scanner_path, 'scanner.zip')
-        with open(scanner_zip_path, 'wb') as output:
-            output.write(scanner_res.read())
-        with zipfile.ZipFile(scanner_zip_path, "r") as zip_ref:
-            zip_ref.extractall(self.cfg.sonar_scanner_path)
-        os.remove(scanner_zip_path)
-        self._change_permissions_recursive(self.cfg.sonar_scanner_path, 0o777)
+    def scanner(self) -> Scanner:
+        return Scanner(self.cfg)
 
     def _is_sonar_scanner_on_path(self) -> bool:
-        return shutil.which('sonar-scanner') is not None
+        return shutil.which("sonar-scanner") is not None
 
     def cleanup(self):
         if os.path.exists(self.cfg.sonar_scanner_path):
             shutil.rmtree(self.cfg.sonar_scanner_path)
+
+    def _install_scanner(self, system_name: str):
+        os.mkdir(self.cfg.sonar_scanner_path)
+        # Download the binaries and unzip them
+        scanner_zip_path = self._download_scanner_binaries(
+            self.cfg.sonar_scanner_path, self.cfg.sonar_scanner_version, system_name
+        )
+        self._unzip_binaries(scanner_zip_path, self.cfg.sonar_scanner_path)
+        os.remove(scanner_zip_path)
+        self._change_permissions_recursive(self.cfg.sonar_scanner_path, 0o777)
 
     def _change_permissions_recursive(self, path, mode):
         for root, dirs, files in os.walk(path, topdown=False):
@@ -80,5 +87,20 @@ class Environment:
             for file in [os.path.join(root, f) for f in files]:
                 os.chmod(file, mode)
 
-    def scanner(self) -> Scanner:
-        return Scanner(self.cfg)
+    def _download_scanner_binaries(self, destination: str, scanner_version: str, system_name: str) -> str:
+        try:
+            scanner_res = urllib.request.urlopen(f"{self.scanner_base_url}-{scanner_version}-{system_name}.zip")
+            scanner_zip_path = os.path.join(destination, "scanner.zip")
+            self._write_binaries(scanner_res, scanner_zip_path)
+            return scanner_zip_path
+        except HTTPError as error:
+            self.log.error(f"ERROR: could not download scanner binaries - {error.code} - {error.msg}")
+            raise error
+
+    def _write_binaries(self, scanner_res: bytes, destination: str):
+        with open(destination, "wb") as output:
+            output.write(scanner_res.read())
+
+    def _unzip_binaries(self, scanner_zip_path: str, destination: str):
+        with zipfile.ZipFile(scanner_zip_path, "r") as zip_ref:
+            zip_ref.extractall(destination)
