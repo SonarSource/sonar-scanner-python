@@ -45,12 +45,11 @@ dependencies = [
   "coverage[toml]",
   "pytest",
   "pytest-cov",
-  "pytest-mock",
 ]
 
 [tool.hatch.envs.test.scripts]
 test = "pytest tests/"
-cov = 'pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=tests'
+cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=src/py_sonar_scanner --cov-branch tests"
 
 [[tool.hatch.envs.test.matrix]]
 python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
