@@ -132,3 +132,15 @@ class TestEnvironment(unittest.TestCase):
 
         mock_os_path.exists.assert_called_once_with(scanner_path)
         assert not mock_shutil.rmtree.called
+
+    @patch("py_sonar_scanner.environment.shutil")
+    def test_is_sonar_scanner_on_path(self, mock_shutil):
+        cfg = Configuration()
+        scanner_path = "path"
+        cfg.sonar_scanner_path = scanner_path
+        environment = Environment(cfg)
+        mock_shutil.which = Mock()
+        
+        environment._is_sonar_scanner_on_path()
+
+        mock_shutil.which.assert_called_once_with("sonar-scanner")
