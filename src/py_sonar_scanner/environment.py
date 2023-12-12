@@ -24,10 +24,10 @@ import pyfiglet
 import shutil
 import urllib.request
 from urllib.error import HTTPError
-import zipfile
 
 from py_sonar_scanner.logger import ApplicationLogger
 from py_sonar_scanner.configuration import Configuration
+from py_sonar_scanner.utils.binaries_utils import write_binaries, unzip_binaries
 from py_sonar_scanner.scanner import Scanner
 
 systems = {"Darwin": "macosx", "Windows": "windows"}
@@ -76,7 +76,7 @@ class Environment:
         scanner_zip_path = self._download_scanner_binaries(
             self.cfg.sonar_scanner_path, self.cfg.sonar_scanner_version, system_name
         )
-        self._unzip_binaries(scanner_zip_path, self.cfg.sonar_scanner_path)
+        unzip_binaries(scanner_zip_path, self.cfg.sonar_scanner_path)
         os.remove(scanner_zip_path)
         self._change_permissions_recursive(self.cfg.sonar_scanner_path, 0o777)
 
@@ -91,16 +91,8 @@ class Environment:
         try:
             scanner_res = urllib.request.urlopen(f"{self.scanner_base_url}-{scanner_version}-{system_name}.zip")
             scanner_zip_path = os.path.join(destination, "scanner.zip")
-            self._write_binaries(scanner_res, scanner_zip_path)
+            write_binaries(scanner_res, scanner_zip_path)
             return scanner_zip_path
         except HTTPError as error:
             self.log.error(f"ERROR: could not download scanner binaries - {error.code} - {error.msg}")
             raise error
-
-    def _write_binaries(self, scanner_res: bytes, destination: str):
-        with open(destination, "wb") as output:
-            output.write(scanner_res.read())
-
-    def _unzip_binaries(self, scanner_zip_path: str, destination: str):
-        with zipfile.ZipFile(scanner_zip_path, "r") as zip_ref:
-            zip_ref.extractall(destination)

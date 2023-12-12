@@ -6,11 +6,12 @@ from py_sonar_scanner.environment import Environment
 
 
 class TestEnvironment(unittest.TestCase):
+
+    @patch("py_sonar_scanner.environment.write_binaries")
     @patch("py_sonar_scanner.environment.urllib.request.urlopen")
-    def test_download_scanner(self, mock_urlopen):
+    def test_download_scanner(self, mock_urlopen, mock_write_binaries):
         cfg = Configuration()
         environment = Environment(cfg)
-        environment._write_binaries = Mock()
         environment.scanner_base_url = "http://scanner.com/download"
         mock_urlopen.return_value = bytes()
 
@@ -18,14 +19,14 @@ class TestEnvironment(unittest.TestCase):
         destination = environment._download_scanner_binaries("destination", "test_version", "os_name")
 
         mock_urlopen.assert_called_once_with("http://scanner.com/download-test_version-os_name.zip")
-        environment._write_binaries.assert_called_once_with(bytes(), expected_destination)
+        mock_write_binaries.assert_called_once_with(bytes(), expected_destination)
         assert destination == expected_destination
 
+    @patch("py_sonar_scanner.environment.write_binaries")
     @patch("py_sonar_scanner.environment.urllib.request.urlopen")
-    def test_download_scanner_http_error(self, mock_urlopen):
+    def test_download_scanner_http_error(self, mock_urlopen, mock_write_binaries):
         cfg = Configuration()
         environment = Environment(cfg)
-        environment._write_binaries = Mock()
         environment.scanner_base_url = "http://scanner.com/download"
         url = "http://scanner.com/download-test_version-os_name.zip"
         mock_urlopen.side_effect = Mock(side_effect=HTTPError(url, 504, "Test", {}, None))
@@ -34,12 +35,13 @@ class TestEnvironment(unittest.TestCase):
             with self.assertRaises(HTTPError):
                 environment._download_scanner_binaries("destination", "test_version", "os_name")
             mock_urlopen.assert_called_once_with(url)
-            assert not environment._write_binaries.called
+            assert not mock_write_binaries.called
             expected_error_message = "ERROR: could not download scanner binaries - 504 - Test"
             assert log.records[0].getMessage() == expected_error_message
 
+    @patch("py_sonar_scanner.environment.unzip_binaries")
     @patch("py_sonar_scanner.environment.os")
-    def test_install_scanner(self, mock_os):
+    def test_install_scanner(self, mock_os, mock_unzip_binaries):
         cfg = Configuration()
         scanner_path = "scanner_path"
         scanner_version = "1"
@@ -52,7 +54,6 @@ class TestEnvironment(unittest.TestCase):
 
         download_destination = "path"
         environment._download_scanner_binaries = Mock(return_value=download_destination)
-        environment._unzip_binaries = Mock()
         environment._change_permissions_recursive = Mock()
 
         system_name = "test"
@@ -62,9 +63,7 @@ class TestEnvironment(unittest.TestCase):
         environment._download_scanner_binaries.assert_called_once_with(
             scanner_path, scanner_version, system_name
         )
-        environment._unzip_binaries.assert_called_once_with(
-           download_destination, scanner_path 
-        )
+        mock_unzip_binaries.assert_called_once_with(download_destination, scanner_path)
 
         mock_os.remove.assert_called_once_with(download_destination)
         environment._change_permissions_recursive.assert_called_once_with(
