@@ -50,7 +50,7 @@ class TestScanner(unittest.TestCase):
         output_thread = threading.Thread()
         error_thread = threading.Thread()
         success_code = 0
-        process = Mock(returncode = success_code)
+        process = Mock(returncode=success_code)
         output_thread.start = Mock()
         error_thread.start = Mock()
         output_thread.join = Mock()
@@ -65,7 +65,7 @@ class TestScanner(unittest.TestCase):
         error_thread.join.assert_called_once()
         process.wait.assert_called_once()
         self.assertEqual(return_code, success_code)
-    
+
     @patch("py_sonar_scanner.scanner.Thread")
     def test_scan(self, mock_thread):
         scanner = Scanner(Configuration())
@@ -85,10 +85,11 @@ class TestScanner(unittest.TestCase):
     @patch("py_sonar_scanner.scanner.Popen")
     def test_execute_command(self, mock_popen):
         from subprocess import PIPE
+
         scanner = Scanner(Configuration())
         command = "test"
         scanner.compute_command = Mock(return_value=command)
-        
+
         scanner.execute_command()
 
         scanner.compute_command.assert_called_once()
@@ -96,15 +97,15 @@ class TestScanner(unittest.TestCase):
 
     def test_log_output(self):
         scanner = Scanner(Configuration())
-        input_lines = [bytes("test\n", encoding="utf-8"), 
-                       bytes("\nother line\n\n", encoding="utf-8"),
-                       bytes("", encoding="utf-8"),
-                       bytes("last \n line", encoding="utf-8")]
+        input_lines = [
+            bytes("test\n", encoding="utf-8"),
+            bytes("\nother line\n\n", encoding="utf-8"),
+            bytes("", encoding="utf-8"),
+            bytes("last \n line", encoding="utf-8"),
+        ]
         with self.assertLogs(scanner.log) as log:
             scanner._log_output(input_lines)
             self.assertEqual(log.records[0].getMessage(), "test")
             self.assertEqual(log.records[1].getMessage(), "\nother line")
             self.assertEqual(log.records[2].getMessage(), "")
             self.assertEqual(log.records[3].getMessage(), "last \n line")
-
-
