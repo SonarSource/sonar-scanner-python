@@ -25,7 +25,6 @@ from py_sonar_scanner.configuration import Configuration
 
 
 class TestScanner(unittest.TestCase):
-
     def test_scanner_compute_command(self):
         cfg = Configuration()
         cfg.sonar_scanner_executable_path = "test"
