@@ -25,7 +25,6 @@ from py_sonar_scanner.environment import Environment
 
 
 class TestEnvironment(unittest.TestCase):
-
     @patch("py_sonar_scanner.environment.write_binaries")
     @patch("py_sonar_scanner.environment.urllib.request.urlopen")
     def test_download_scanner(self, mock_urlopen, mock_write_binaries):
@@ -79,22 +78,18 @@ class TestEnvironment(unittest.TestCase):
         environment._install_scanner(system_name)
 
         mock_os.mkdir.assert_called_once_with(scanner_path)
-        environment._download_scanner_binaries.assert_called_once_with(
-            scanner_path, scanner_version, system_name
-        )
+        environment._download_scanner_binaries.assert_called_once_with(scanner_path, scanner_version, system_name)
         mock_unzip_binaries.assert_called_once_with(download_destination, scanner_path)
 
         mock_os.remove.assert_called_once_with(download_destination)
-        environment._change_permissions_recursive.assert_called_once_with(
-           scanner_path, 0o777 
-        )
+        environment._change_permissions_recursive.assert_called_once_with(scanner_path, 0o777)
 
     def test_setup_when_scanner_is_on_path(self):
         cfg = Configuration()
         environment = Environment(cfg)
         environment.cleanup = Mock()
         environment._is_sonar_scanner_on_path = Mock(return_value=True)
-        
+
         environment.setup()
 
         environment.cleanup.assert_called_once()
@@ -145,7 +140,7 @@ class TestEnvironment(unittest.TestCase):
         environment = Environment(cfg)
         mock_os_path.exists = Mock(return_value=False)
         mock_shutil.rmtree = Mock()
-        
+
         environment.cleanup()
 
         mock_os_path.exists.assert_called_once_with(scanner_path)
@@ -158,7 +153,7 @@ class TestEnvironment(unittest.TestCase):
         cfg.sonar_scanner_path = scanner_path
         environment = Environment(cfg)
         mock_shutil.which = Mock()
-        
+
         environment._is_sonar_scanner_on_path()
 
         mock_shutil.which.assert_called_once_with("sonar-scanner")

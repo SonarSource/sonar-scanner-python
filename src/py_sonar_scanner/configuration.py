@@ -32,13 +32,13 @@ class Configuration:
     scan_arguments: list[str]
 
     def __init__(self):
-        self.sonar_scanner_path = '.scanner'
-        self.sonar_scanner_version = '4.6.2.2472'
-        self.sonar_scanner_executable_path = ''
+        self.sonar_scanner_path = ".scanner"
+        self.sonar_scanner_version = "4.6.2.2472"
+        self.sonar_scanner_executable_path = ""
         self.scan_arguments = []
 
     def setup(self):
-        """ This is executed when run from the command line """
+        """This is executed when run from the command line"""
         parser = argparse.ArgumentParser()
 
         # Required positional argument
@@ -51,12 +51,7 @@ class Configuration:
         parser.add_argument("-n", "--name", action="store", dest="name")
 
         # Optional verbosity counter (eg. -v, -vv, -vvv, etc.)
-        parser.add_argument(
-            "-v",
-            "--verbose",
-            action="count",
-            default=0,
-            help="Verbosity (-v, -vv, etc)")
+        parser.add_argument("-v", "--verbose", action="count", default=0, help="Verbosity (-v, -vv, etc)")
 
         # Specify output of "--version"
         # parser.add_argument(
@@ -82,14 +77,14 @@ class Configuration:
     def _read_toml_args(self) -> list[str]:
         scan_arguments: list[str] = []
         try:
-            if os.path.isfile('pyproject.toml'):
-                with open('pyproject.toml', 'r') as file:
+            if os.path.isfile("pyproject.toml"):
+                with open("pyproject.toml", "r") as file:
                     # TODO: actually search for pyproject.toml
                     toml_data = file.read()
                     parsed_data = toml.loads(toml_data)
                     print(parsed_data)
-                    if 'sonar' in parsed_data:
-                        sonar_properties = parsed_data['sonar']
+                    if "sonar" in parsed_data:
+                        sonar_properties = parsed_data["sonar"]
                         for key, value in sonar_properties.items():
                             self._add_parameter_to_scanner_args(scan_arguments, key, value)
         except BaseException as e:
