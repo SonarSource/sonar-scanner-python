@@ -26,7 +26,7 @@ Run `hatch run test:test`
 # Build the package
 
 Run `hatch build` to create the package. 
-The binaries will be located in the `dist/` folder at the root level of the project.
+The binaries will be located in the `dist` directory at the root level of the project.
 
 # Publish the script
 
