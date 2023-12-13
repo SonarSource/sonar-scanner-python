@@ -5,7 +5,7 @@ A wrapper around SonarScanner CLI, available on PyPI.
 
 Install with pip:
 ```
-pip install sonar-scanner-python
+pip install sonar-scanner-python FIXME -- The actual package name is not yet defined. Refer to PYSCAN-35
 ```
 
 # Usage 
@@ -16,11 +16,11 @@ There are two ways of setting up sonar-scanner-python.
 
 ### with a pyproject.toml file
 
-Inside a `pyproject.toml` setup your Sonar configuration under the `tool.sonar` table.
+Inside a `pyproject.toml` setup your Sonar configuration under the `tool.sonar` table. FIXME -- This is not yet implemented and should be tackled by PYSCAN-31
 
 ```
 # must be unique in a given SonarQube/SonarCloud instance
-[tool.sonar]
+[tool.sonar] FIXME -- This is not yet implemented and should be tackled by PYSCAN-31
 projectKey=my:project
 
 # --- optional properties ---
@@ -68,13 +68,13 @@ sonar.projectKey=my:project
 Once the project is configured, you can run the following command:
 
 ```
-$ sonar-scanner-python
+$ sonar-scanner-python FIXME -- The actual command name is not yet defined. Refer to PYSCAN-35
 ```
 
 It is still possible to pass configuration parameters when running the `sonar-scanner-python` command, for example:
 
 ```
-$ sonar-scanner-python -Dsonar.login=myAuthenticationToken
+$ sonar-scanner-python -Dsonar.login=myAuthenticationToken FIXME -- The actual command name is not yet defined. Refer to PYSCAN-35
 ```
 
 You can use all the argument allowed by __SonarScanner__. 
@@ -84,7 +84,7 @@ You can also use environment variables:
 
 ```
 $ export SONAR_HOST_URL="http://localhost:9000"
-$ sonar-scanner-python
+$ sonar-scanner-python FIXME -- The actual command name is not yet defined. Refer to PYSCAN-35
 ```
 
 # For developers
