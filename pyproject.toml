@@ -13,7 +13,7 @@ authors = [
 description = "Sonar Scanner for the Python Ecosystem"
 readme = "README.md"
 license = {file = "LICENSE"}
-requires-python = ">=3.12"
+requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
@@ -66,6 +66,7 @@ dependencies = [
 [tool.hatch.envs.tool.scripts]
 license = 'python -m licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2023 -n "Sonar Scanner Python" -E .py' 
 format = 'python -m black src/ tests/ --check'
+apply_format = 'python -m black src/ tests/'
 type_check = "python -m mypy src/ tests/ --ignore-missing-imports"
 
 [tool.pytest.ini_options]
