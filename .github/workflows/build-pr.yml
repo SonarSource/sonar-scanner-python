@@ -34,6 +34,9 @@ jobs:
     - name: Check formatting
       run: |
         hatch run tool:format
+    - name: Check licensing
+      run: |
+        hatch run tool:license_check
 #    - name: SonarCloud Scan
 #      uses: SonarSource/sonarcloud-github-action@master
 #      env:
