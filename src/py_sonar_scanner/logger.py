@@ -36,5 +36,4 @@ class ApplicationLogger:
     def _setup_logger(log: Logger):
         log.setLevel(logging.INFO)
         handler = logging.StreamHandler()
-        handler.terminator = ""
         log.addHandler(handler)
