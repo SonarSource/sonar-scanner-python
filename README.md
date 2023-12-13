@@ -23,12 +23,12 @@ Run `python3 main.py <args>`
 
 Run `hatch run test:test`
 
+# Build the package
+
+Run `hatch build` to create the package. 
+The binaries will be located in the `dist` directory at the root level of the project.
 
 # Publish the script
-
-Make sure to have the latest version of PyPA with `python3 -m pip install --upgrade build`
-
-Run `python3 -m build` to create the binaries
 
 Run if needed `python3 -python3 -m pip install --upgrade twine` to upgrade to the latest version of twine
 
