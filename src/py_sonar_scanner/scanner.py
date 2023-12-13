@@ -18,12 +18,11 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 from __future__ import annotations
-import logging
 from logging import Logger
-import threading
 from threading import Thread
 from subprocess import Popen, PIPE
 
+from py_sonar_scanner.logger import ApplicationLogger
 from py_sonar_scanner.configuration import Configuration
 
 
@@ -33,19 +32,12 @@ class Scanner:
 
     def __init__(self, cfg: Configuration):
         self.cfg = cfg
-        self.log = logging.getLogger(__name__)
-        self._setup_logger(self.log)
-
-    def _setup_logger(self, log: Logger):
-        log.setLevel(logging.INFO)
-        handler = logging.StreamHandler()
-        handler.terminator = ""
-        log.addHandler(handler)
+        self.log = ApplicationLogger.get_logger()
 
     def scan(self):
         process = self.execute_command()
-        output_thread = threading.Thread(target=self._log_output, args=(process.stdout,))
-        error_thread = threading.Thread(target=self._log_output, args=(process.stderr,))
+        output_thread = Thread(target=self._log_output, args=(process.stdout,))
+        error_thread = Thread(target=self._log_output, args=(process.stderr,))
         return self.process_output(output_thread, error_thread, process)
 
     def process_output(self, output_thread: Thread, error_thread: Thread, process: Popen) -> int:
@@ -68,5 +60,5 @@ class Scanner:
 
     def _log_output(self, stream: list[bytes]):
         for line in stream:
-            decoded_line = line.decode("utf-8")
+            decoded_line = line.decode("utf-8").rstrip()
             self.log.info(decoded_line)
