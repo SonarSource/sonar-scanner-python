@@ -10,6 +10,10 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write     # required by SonarSource/vault-action-wrapper
+      contents: read      # required by actions/checkout
+      pull-requests: read # required by SonarSource/sonarcloud-github-action
     strategy:
       fail-fast: false
 
@@ -37,7 +41,13 @@ jobs:
     - name: Check licensing
       run: |
         hatch run tool:license_check
-#    - name: SonarCloud Scan
-#      uses: SonarSource/sonarcloud-github-action@master
-#      env:
-#        SONAR_TOKEN: FIXME PYSCAN-33: Enable SonarCloud analysis
+    - id: secrets
+      uses: SonarSource/vault-action-wrapper@v2
+      with:
+        secrets: |
+          development/kv/data/sonarcloud token | sonarcloud_token;
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).sonarcloud_token }}

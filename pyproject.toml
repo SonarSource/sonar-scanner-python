@@ -50,8 +50,8 @@ dependencies = [
 
 [tool.hatch.envs.test.scripts]
 test = "pytest tests/"
-cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=src/py_sonar_scanner --cov-branch tests"
-cov_xml = "pytest --cov-report=xml:coverage.xml --cov-config=pyproject.toml --cov=src/py_sonar_scanner --cov-branch tests"
+cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=src --cov-branch tests"
+cov_xml = "pytest --cov-report=xml:coverage.xml --cov-config=pyproject.toml --cov=src --cov-branch tests"
 
 [[tool.hatch.envs.test.matrix]]
 python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
@@ -82,3 +82,8 @@ addopts = [
 [tool.black]
 line-length = 120
 target-version = ["py38", "py39", "py310", "py311", "py312"]
+
+
+[tool.coverage.run]
+branch = true
+relative_files = true
