@@ -20,7 +20,6 @@
 from __future__ import annotations
 import os
 import sys
-from typing import Union, AnyStr
 import toml
 
 
@@ -38,7 +37,6 @@ class Configuration:
 
     def setup(self) -> None:
         """This is executed when run from the command line"""
-
         scan_arguments = sys.argv[1:]
         scan_arguments.extend(self._read_toml_args())
 
@@ -55,6 +53,7 @@ class Configuration:
                 self._add_parameter_to_scanner_args(scan_arguments, key, value)
         except BaseException as e:
             print(e)
+            raise e
         return scan_arguments
 
     def _add_parameter_to_scanner_args(self, scan_arguments: list[str], key: str, value: Union[str, dict]):
