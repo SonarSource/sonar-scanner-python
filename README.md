@@ -37,6 +37,15 @@ Run `python3 -m twine upload --repository testpypi dist/*`
 `--repository testpypi` can be removed to push to the prod PyPI instance.
 Also `dist/*` can be a bit more precise to upload a specific version of the binaries
 
+# Update the package version
+
+To update the version use the hatch command:
+
+```
+hatch version fix
+```
+For more options on the version update see [the hatch documentation](https://hatch.pypa.io/latest/version/)
+
 # Tooling 
 ## Formatting 
 
