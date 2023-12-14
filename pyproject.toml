@@ -64,7 +64,9 @@ dependencies = [
 ] 
 
 [tool.hatch.envs.tool.scripts]
-license = 'python -m licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2023 -n "Sonar Scanner Python" -E .py' 
+license_script = 'python -m licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2023 -n "Sonar Scanner Python" -E .py' 
+license = ["license_script -d ./src", "license_script -d ./tests"]
+license_check = ["license", "git diff --name-only --exit-code ./src ./tests"]
 format = 'python -m black src/ tests/ --check'
 apply_format = 'python -m black src/ tests/'
 type_check = "python -m mypy src/ tests/ --ignore-missing-imports"
