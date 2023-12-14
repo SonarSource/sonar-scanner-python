@@ -3,10 +3,11 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "py-sonar-scanner_DAVID_K"
+name = "sonar-scanner-python"
 dynamic = ["version"]
 authors = [
   { name="Guillaume Dequenne", email="guillaume.dequenne@sonarsource.com" },
+  { name="Jeremi Do Dinh", email="jeremi.dodinh@sonarsource.com" },
   { name="Maksim Grebeniuk", email="maksim.grebeniuk@sonarsource.com" },
   { name="David Kunzmann", email="david.kunzmann@sonarsource.com" },
 ]
@@ -14,19 +15,33 @@ description = "Sonar Scanner for the Python Ecosystem"
 readme = "README.md"
 license = {file = "LICENSE"}
 requires-python = ">=3.8"
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "Operating System :: OS Independent",
+keywords = [
+  "sonar",
+  "sonarqube",
+  "cleancode"
 ]
-
+classifiers = [
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Quality Assurance",
+]
 dependencies = [
   "toml>=0.10.2",
-  "pyfiglet"  
+  "pyfiglet>=0.8.0"  
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/joke1196/py-sonar-scanner"
-"Bug Tracker" = "https://github.com/joke1196/py-sonar-scanner/issues"
+Homepage = "https://github.com/SonarSource/sonar-scanner-python"
+Repository = "https://github.com/SonarSource/sonar-scanner-python"
 
 [project.scripts]
 "py-sonar-scanner" = "py_sonar_scanner.__main__:scan"
@@ -43,9 +58,9 @@ sources = ["src"]
 
 [tool.hatch.envs.test]
 dependencies = [
-  "coverage[toml]",
-  "pytest",
-  "pytest-cov",
+  "coverage[toml]>=7.3.3",
+  "pytest>=7.4.3",
+  "pytest-cov>=4.1.0",
 ]
 
 [tool.hatch.envs.test.scripts]
@@ -58,9 +73,9 @@ python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
 
 [tool.hatch.envs.tool]
 dependencies = [
-  "licenseheaders",
-  "black",
-  "mypy"
+  "licenseheaders>=0.8.8",
+  "black>=23.12.0",
+  "mypy>=1.7.1"
 ] 
 
 [tool.hatch.envs.tool.scripts]
