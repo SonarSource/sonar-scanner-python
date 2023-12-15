@@ -42,7 +42,7 @@ Also `dist/*` can be a bit more precise to upload a specific version of the bina
 To update the version use the hatch command:
 
 ```
-hatch version fix
+hatch version "X.Y.Z"
 ```
 For more options on the version update see [the hatch documentation](https://hatch.pypa.io/latest/version/)
 
