@@ -28,6 +28,10 @@ class TestConfiguration(unittest.TestCase):
         configuration = Configuration()
         configuration._read_toml_args = Mock(return_value=[])
 
+        mock_sys.argv = ["path/to/scanner/py-sonar-scanner"]
+        configuration.setup()
+        self.assertListEqual(configuration.scan_arguments, [])
+
         mock_sys.argv = ["path/to/scanner/py-sonar-scanner", "-DSomeJVMArg"]
         configuration.setup()
         self.assertListEqual(configuration.scan_arguments, ["-DSomeJVMArg"])
