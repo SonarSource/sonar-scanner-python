@@ -37,42 +37,13 @@ class Configuration:
         self.sonar_scanner_executable_path = ""
         self.scan_arguments = []
 
-    def setup(self):
-        """This is executed when run from the command line"""
-        parser = argparse.ArgumentParser()
+    def setup(self) -> None:
+        """ This is executed when run from the command line """
 
-        # Required positional argument
-        parser.add_argument("arg", help="Required positional argument")
-
-        # Optional argument flag which defaults to False
-        parser.add_argument("-f", "--flag", action="store_true", default=False)
-
-        # Optional argument which requires a parameter (eg. -d test)
-        parser.add_argument("-n", "--name", action="store", dest="name")
-
-        # Optional verbosity counter (eg. -v, -vv, -vvv, etc.)
-        parser.add_argument("-v", "--verbose", action="count", default=0, help="Verbosity (-v, -vv, etc)")
-
-        # Specify output of "--version"
-        # parser.add_argument(
-        #     "--version",
-        #     action="version",
-        #     version="%(prog)s (version {version})".format(version=__version__))
-
-        # args = parser.parse_args()
-
-        scan_arguments = []
-        scan_arguments.extend(self._read_jvm_args())
+        scan_arguments = sys.argv[1:]
         scan_arguments.extend(self._read_toml_args())
 
         self.scan_arguments = scan_arguments
-
-    def _read_jvm_args(self) -> list[str]:
-        scan_arguments = []
-        for arg in sys.argv:
-            if arg.startswith("-D"):
-                scan_arguments.append(arg)
-        return scan_arguments
 
     def _read_toml_args(self) -> list[str]:
         scan_arguments: list[str] = []
