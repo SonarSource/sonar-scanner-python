@@ -37,10 +37,8 @@ class Configuration:
 
     def setup(self) -> None:
         """This is executed when run from the command line"""
-        scan_arguments = sys.argv[1:]
-        scan_arguments.extend(self._read_toml_args())
-
-        self.scan_arguments = scan_arguments
+        self.scan_arguments = sys.argv[1:]
+        self.scan_arguments.extend(self._read_toml_args())
 
     def _read_toml_args(self) -> list[str]:
         scan_arguments: list[str] = []
@@ -64,9 +62,39 @@ class Configuration:
                 self._add_parameter_to_scanner_args(scan_arguments, f"{key}.{k}", v)
 
     def _read_toml_file(self) -> dict:
-        if not os.path.isfile("pyproject.toml"):
+        toml_file_path = self._get_toml_file_path()
+        if not os.path.isfile(toml_file_path):
             return {}
-        with open("pyproject.toml", "r") as file:
+        with open(toml_file_path, "r") as file:
             # TODO: actually search for pyproject.toml
             toml_data = file.read()
             return toml.loads(toml_data)
+
+    def _get_toml_file_path(self) -> str:
+        args = self._get_arguments_dict()
+        if "-Dtoml.path" in args:
+            return args["-Dtoml.path"]
+        elif "-Dproject.home" in args:
+            return os.path.join(args["-Dproject.home"], "pyproject.toml")
+        else:
+            return os.path.join(os.curdir, "pyproject.toml")
+
+    def _get_arguments_dict(self):
+        args = self.scan_arguments
+        arguments_dict = {}
+        i = 0
+        while i < len(args):
+            current_arg = args[i]
+
+            if "=" in current_arg:
+                arg_parts = current_arg.split("=")
+                arguments_dict[arg_parts[0]] = arg_parts[1]
+            else:
+                if i + 1 < len(args) and "=" not in args[i + 1]:
+                    arguments_dict[current_arg] = args[i + 1]
+                    i += 1
+                else:
+                    arguments_dict[current_arg] = None
+
+            i += 1
+        return arguments_dict
