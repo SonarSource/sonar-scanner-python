@@ -39,7 +39,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install hatch
+        pip install hatch build twine
     - name: Check tests and generate coverage
       run: |
         hatch run test:cov_xml
@@ -56,3 +56,12 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).SONARCLOUD_TOKEN }}
+    - name: Build and publish
+      env:
+        ARTIFACTORY_PYPI_DEPLOYER_USER: vault-SonarSource-sonar-scanner-python-qa-deployer
+        ARTIFACTORY_PYPI_DEPLOYER_API_KEY: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_PASSWORD }}
+      run: |
+        hatch version patch
+        hatch version $(hatch version).dev${{ github.run_number }}
+        hatch build
+        twine upload --repository-url https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple/ dist/* --username $ARTIFACTORY_PYPI_DEPLOYER_USER --password $ARTIFACTORY_PYPI_DEPLOYER_API_KEY
