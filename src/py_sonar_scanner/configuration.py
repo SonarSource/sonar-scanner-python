@@ -22,6 +22,8 @@ import os
 import sys
 import toml
 
+from py_sonar_scanner.logger import ApplicationLogger
+
 
 class Configuration:
     sonar_scanner_executable_path: str
@@ -42,17 +44,24 @@ class Configuration:
 
     def _read_toml_args(self) -> list[str]:
         scan_arguments: list[str] = []
+        toml_data: dict = {}
         try:
-            parsed_data = self._read_toml_file()
-            if ("tool" not in parsed_data) or ("sonar" not in parsed_data["tool"]):
-                return scan_arguments
-            sonar_properties = parsed_data["tool"]["sonar"]
-            for key, value in sonar_properties.items():
-                self._add_parameter_to_scanner_args(scan_arguments, key, value)
-        except BaseException as e:
-            print(e)
-            raise e
+            toml_data = self._read_toml_file()
+        except OSError:
+            ApplicationLogger.get_logger().error("Test error while opening file.")
+        sonar_properties = self._extract_sonar_properties(toml_data)
+        for key, value in sonar_properties.items():
+            self._add_parameter_to_scanner_args(scan_arguments, key, value)
         return scan_arguments
+
+    def _extract_sonar_properties(self, toml_properties):
+        if "tool" not in toml_properties.keys():
+            return {}
+        tool_data = toml_properties["tool"]
+        if not isinstance(tool_data, dict) or "sonar" not in tool_data.keys():
+            return {}
+        sonar_properties = tool_data["sonar"]
+        return sonar_properties if isinstance(sonar_properties, dict) else {}
 
     def _add_parameter_to_scanner_args(self, scan_arguments: list[str], key: str, value: Union[str, dict]):
         if isinstance(value, str):
