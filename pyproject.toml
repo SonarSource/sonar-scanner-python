@@ -57,6 +57,8 @@ PIP_EXTRA_INDEX_URL = "https://pypi.org/simple/"
 
 [tool.hatch.version]
 path = "src/py_sonar_scanner/__about__.py"
+scheme = "standard"
+validate-bump = false
 
 [tool.hatch.build.targets.wheel]
 only-include = ["src/py_sonar_scanner"]
