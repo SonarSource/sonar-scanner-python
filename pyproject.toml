@@ -32,7 +32,11 @@ dependencies = [
 "py-sonar-scanner" = "py_sonar_scanner.__main__:scan"
 
 [tool.hatch.envs.default]
-python="3.12"  
+python="3.12"
+
+[tool.hatch.envs.default.env-vars]
+PIP_INDEX_URL = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple/"
+PIP_EXTRA_INDEX_URL = "https://pypi.org/simple/"
 
 [tool.hatch.version]
 path = "src/py_sonar_scanner/__about__.py"
