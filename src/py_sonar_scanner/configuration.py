@@ -20,7 +20,7 @@
 from __future__ import annotations
 import os
 import sys
-from typing import Union
+from typing import Union, AnyStr
 import toml
 
 
@@ -47,16 +47,12 @@ class Configuration:
     def _read_toml_args(self) -> list[str]:
         scan_arguments: list[str] = []
         try:
-            if os.path.isfile("pyproject.toml"):
-                with open("pyproject.toml", "r") as file:
-                    # TODO: actually search for pyproject.toml
-                    toml_data = file.read()
-                    parsed_data = toml.loads(toml_data)
-                    print(parsed_data)
-                    if "sonar" in parsed_data:
-                        sonar_properties = parsed_data["sonar"]
-                        for key, value in sonar_properties.items():
-                            self._add_parameter_to_scanner_args(scan_arguments, key, value)
+            parsed_data = self._read_toml_file()
+            if ("tool" not in parsed_data) or ("sonar" not in parsed_data["tool"]):
+                return scan_arguments
+            sonar_properties = parsed_data["tool"]["sonar"]
+            for key, value in sonar_properties.items():
+                self._add_parameter_to_scanner_args(scan_arguments, key, value)
         except BaseException as e:
             print(e)
         return scan_arguments
@@ -67,3 +63,11 @@ class Configuration:
         if isinstance(value, dict):
             for k, v in value.items():
                 self._add_parameter_to_scanner_args(scan_arguments, f"{key}.{k}", v)
+
+    def _read_toml_file(self) -> dict:
+        if not os.path.isfile("pyproject.toml"):
+            return {}
+        with open("pyproject.toml", "r") as file:
+            # TODO: actually search for pyproject.toml
+            toml_data = file.read()
+            return toml.loads(toml_data)
