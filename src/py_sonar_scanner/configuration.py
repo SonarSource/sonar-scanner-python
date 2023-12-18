@@ -65,11 +65,9 @@ class Configuration:
                 self._add_parameter_to_scanner_args(scan_arguments, f"{key}.{k}", v)
 
     def _read_toml_file(self) -> dict:
-        parsed_data: dict = {}
         if not os.path.isfile("pyproject.toml"):
-            return parsed_data
+            return {}
         with open("pyproject.toml", "r") as file:
             # TODO: actually search for pyproject.toml
             toml_data = file.read()
-            parsed_data = toml.loads(toml_data)
-        return parsed_data
+            return toml.loads(toml_data)
