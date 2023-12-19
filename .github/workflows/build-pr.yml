@@ -18,6 +18,14 @@ jobs:
       fail-fast: false
 
     steps:
+    - name: Get vault secrets
+      id: secrets
+      uses: SonarSource/vault-action-wrapper@v2
+      with:
+        secrets: |
+          development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader access_token | ARTIFACTORY_PASSWORD;
+          development/kv/data/repox url | REPOX_URL;
+          development/kv/data/sonarcloud token | SONARCLOUD_TOKEN;
     - uses: actions/checkout@v3
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -35,19 +43,16 @@ jobs:
     - name: Check tests and generate coverage
       run: |
         hatch run test:cov_xml
+      env:
+        ARTIFACTORY_ACCESS_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_PASSWORD }}
     - name: Check formatting
       run: |
         hatch run tool:format
     - name: Check licensing
       run: |
         hatch run tool:license_check
-    - id: secrets
-      uses: SonarSource/vault-action-wrapper@v2
-      with:
-        secrets: |
-          development/kv/data/sonarcloud token | sonarcloud_token;
     - name: SonarCloud Scan
       uses: SonarSource/sonarcloud-github-action@master
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).sonarcloud_token }}
+        SONAR_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).SONARCLOUD_TOKEN }}
