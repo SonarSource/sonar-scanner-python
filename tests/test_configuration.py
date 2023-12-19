@@ -18,15 +18,14 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 from py_sonar_scanner.configuration import Configuration
 
 
 class TestConfiguration(unittest.TestCase):
     @patch("py_sonar_scanner.configuration.sys")
-    def test_argument_parsing_empty_toml(self, mock_sys):
+    def test_argument_parsing(self, mock_sys):
         configuration = Configuration()
-        configuration._read_toml_args = Mock(return_value=[])
 
         mock_sys.argv = ["path/to/scanner/py-sonar-scanner"]
         configuration.setup()
@@ -47,3 +46,23 @@ class TestConfiguration(unittest.TestCase):
         self.assertListEqual(
             configuration.scan_arguments, ["-DSomeJVMArg", "-DAnotherJVMArg", "-dNotAJVMArg", "-SomeNonsense"]
         )
+
+        mock_sys.argv = ["path/to/scanner/py-sonar-scanner", "-Dtoml.path=tests/resources/pyproject.toml"]
+        configuration.setup()
+        self.assertListEqual(
+            configuration.scan_arguments, ["-Dtoml.path=tests/resources/pyproject.toml", "-Dsonar.a=b", "-Dsonar.c=d"]
+        )
+
+        mock_sys.argv = ["path/to/scanner/py-sonar-scanner", "-Dproject.home=tests/resources/"]
+        configuration.setup()
+        self.assertListEqual(
+            configuration.scan_arguments, ["-Dproject.home=tests/resources/", "-Dsonar.a=b", "-Dsonar.c=d"]
+        )
+
+        mock_sys.argv = ["path/to/scanner/py-sonar-scanner", "-Dproject.home=tests2"]
+        configuration.setup()
+        self.assertListEqual(configuration.scan_arguments, ["-Dproject.home=tests2"])
+
+        mock_sys.argv = ["path/to/scanner/py-sonar-scanner", "-Dproject.home=tests=2"]
+        configuration.setup()
+        self.assertListEqual(configuration.scan_arguments, ["-Dproject.home=tests=2"])
