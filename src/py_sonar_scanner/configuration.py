@@ -87,7 +87,7 @@ class Configuration:
             current_arg = args[i]
 
             if "=" in current_arg:
-                arg_parts = current_arg.split("=")
+                arg_parts = current_arg.split("=", 1)
                 arguments_dict[arg_parts[0]] = arg_parts[1]
             else:
                 if i + 1 < len(args) and "=" not in args[i + 1]:

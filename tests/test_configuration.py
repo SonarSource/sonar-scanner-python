@@ -24,7 +24,7 @@ from py_sonar_scanner.configuration import Configuration
 
 class TestConfiguration(unittest.TestCase):
     @patch("py_sonar_scanner.configuration.sys")
-    def test_argument_parsing_empty_toml(self, mock_sys):
+    def test_argument_parsing(self, mock_sys):
         configuration = Configuration()
 
         mock_sys.argv = ["path/to/scanner/py-sonar-scanner"]
@@ -47,16 +47,22 @@ class TestConfiguration(unittest.TestCase):
             configuration.scan_arguments, ["-DSomeJVMArg", "-DAnotherJVMArg", "-dNotAJVMArg", "-SomeNonsense"]
         )
 
-        mock_sys.argv = ["path/to/scanner/py-sonar-scanner", "-Dtoml.path=tests/pyproject.toml"]
+        mock_sys.argv = ["path/to/scanner/py-sonar-scanner", "-Dtoml.path=tests/resources/pyproject.toml"]
         configuration.setup()
         self.assertListEqual(
-            configuration.scan_arguments, ["-Dtoml.path=tests/pyproject.toml", "-Dsonar.a=b", "-Dsonar.c=d"]
+            configuration.scan_arguments, ["-Dtoml.path=tests/resources/pyproject.toml", "-Dsonar.a=b", "-Dsonar.c=d"]
         )
 
-        mock_sys.argv = ["path/to/scanner/py-sonar-scanner", "-Dproject.home=tests"]
+        mock_sys.argv = ["path/to/scanner/py-sonar-scanner", "-Dproject.home=tests/resources/"]
         configuration.setup()
-        self.assertListEqual(configuration.scan_arguments, ["-Dproject.home=tests", "-Dsonar.a=b", "-Dsonar.c=d"])
+        self.assertListEqual(
+            configuration.scan_arguments, ["-Dproject.home=tests/resources/", "-Dsonar.a=b", "-Dsonar.c=d"]
+        )
 
         mock_sys.argv = ["path/to/scanner/py-sonar-scanner", "-Dproject.home=tests2"]
         configuration.setup()
         self.assertListEqual(configuration.scan_arguments, ["-Dproject.home=tests2"])
+
+        mock_sys.argv = ["path/to/scanner/py-sonar-scanner", "-Dproject.home=tests=2"]
+        configuration.setup()
+        self.assertListEqual(configuration.scan_arguments, ["-Dproject.home=tests=2"])
