@@ -24,6 +24,7 @@ jobs:
       with:
         secrets: |
           development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader access_token | ARTIFACTORY_PASSWORD;
+          development/artifactory/token/{REPO_OWNER_NAME_DASH}-qa-deployer access_token | ARTIFACTORY_PASSWORD_QA;
           development/kv/data/repox url | REPOX_URL;
           development/kv/data/sonarcloud token | SONARCLOUD_TOKEN;
     - uses: actions/checkout@v3
@@ -59,7 +60,7 @@ jobs:
     - name: Build and publish
       env:
         ARTIFACTORY_PYPI_DEPLOYER_USER: vault-SonarSource-sonar-scanner-python-qa-deployer
-        ARTIFACTORY_PYPI_DEPLOYER_API_KEY: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_PASSWORD }}
+        ARTIFACTORY_PYPI_DEPLOYER_API_KEY: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_PASSWORD_QA }}
       run: |
         hatch version patch
         hatch version $(hatch version).dev${{ github.run_number }}
