@@ -133,8 +133,6 @@ class TestConfiguration(unittest.TestCase):
     @patch("builtins.open")
     @patch("py_sonar_scanner.configuration.sys")
     def test_error_while_reading_toml_file(self, mock_sys, mock_open, mock_logger):
-        configuration = Configuration()
-
         mock_sys.argv = ["path/to/scanner/py-sonar-scanner"]
 
         mock_open.side_effect = OSError("Test error while opening file.")
@@ -143,6 +141,7 @@ class TestConfiguration(unittest.TestCase):
         mock_logger_instance.error = Mock()
         mock_logger.return_value = mock_logger_instance
 
+        configuration = Configuration()
         configuration.setup()
 
         self.assertListEqual(configuration.scan_arguments, [])

@@ -20,6 +20,8 @@
 from __future__ import annotations
 import os
 import sys
+from logging import Logger
+
 import toml
 
 from py_sonar_scanner.logger import ApplicationLogger
@@ -30,12 +32,14 @@ class Configuration:
     sonar_scanner_path: str
     sonar_scanner_version: str
     scan_arguments: list[str]
+    log: Logger
 
     def __init__(self):
         self.sonar_scanner_path = ".scanner"
         self.sonar_scanner_version = "4.6.2.2472"
         self.sonar_scanner_executable_path = ""
         self.scan_arguments = []
+        self.log = ApplicationLogger.get_logger()
 
     def setup(self) -> None:
         """This is executed when run from the command line"""
@@ -48,7 +52,7 @@ class Configuration:
         try:
             toml_data = self._read_toml_file()
         except OSError:
-            ApplicationLogger.get_logger().error("Test error while opening file.")
+            self.log.error("Test error while opening file.")
         sonar_properties = self._extract_sonar_properties(toml_data)
         for key, value in sonar_properties.items():
             self._add_parameter_to_scanner_args(scan_arguments, key, value)
