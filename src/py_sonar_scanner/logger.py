@@ -17,6 +17,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+import functools
 import logging
 from logging import Logger
 from typing import Optional
@@ -37,3 +38,8 @@ class ApplicationLogger:
         log.setLevel(logging.INFO)
         handler = logging.StreamHandler()
         log.addHandler(handler)
+
+    @classmethod
+    def set_debug(cls, debug: bool) -> None:
+        if debug:
+            cls.get_logger().exception = functools.partial(cls.get_logger().exception, exc_info=False)

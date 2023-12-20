@@ -20,6 +20,7 @@
 import unittest
 from unittest.mock import patch, Mock, MagicMock
 from py_sonar_scanner.__main__ import scan
+from py_sonar_scanner.logger import ApplicationLogger
 from py_sonar_scanner.scanner import Scanner
 
 
@@ -44,3 +45,21 @@ class TestMain(unittest.TestCase):
         environment_instance.setup.assert_called_once()
         environment_instance.scanner.assert_called_once()
         mock_scanner.scan.assert_called_once()
+
+    @patch("py_sonar_scanner.scanner.Scanner")
+    @patch("py_sonar_scanner.__main__.Environment")
+    @patch("py_sonar_scanner.__main__.Configuration")
+    def test_main_scan_fail(self, mock_cfg, mock_env, mock_scanner):
+        configuration_instance = MagicMock()
+        configuration_instance.setup = Mock(side_effect=BaseException("Something"))
+        mock_cfg.return_value = configuration_instance
+
+        environment_instance = MagicMock()
+        environment_instance.setup = Mock()
+        mock_scanner.scan = Mock()
+        environment_instance.scanner.return_value = mock_scanner
+        mock_env.return_value = environment_instance
+
+        with self.assertLogs(ApplicationLogger.get_logger()) as log:
+            scan()
+            self.assertEqual("Error during SonarScanner execution: Something", log.records[0].getMessage())

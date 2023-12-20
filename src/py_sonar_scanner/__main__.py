@@ -17,19 +17,26 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+import sys
 
 from py_sonar_scanner.configuration import Configuration
 from py_sonar_scanner.environment import Environment
+from py_sonar_scanner.logger import ApplicationLogger
 
 
 def scan():
-    cfg = Configuration()
-    cfg.setup()
+    log = ApplicationLogger.get_logger()
+    try:
+        cfg = Configuration()
+        cfg.setup()
 
-    env = Environment(cfg)
-    env.setup()
-    env.scanner().scan()
-    env.cleanup()
+        env = Environment(cfg)
+        env.setup()
+        env.scanner().scan()
+        env.cleanup()
+    except BaseException as e:
+        log.exception("Error during SonarScanner execution: %s", str(e))
+        log.info("Re-run SonarScanner using the -X switch to enable full debug logging.")
 
 
 if __name__ == "__main__":
