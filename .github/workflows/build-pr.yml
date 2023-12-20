@@ -65,4 +65,4 @@ jobs:
         hatch version patch
         hatch version $(hatch version).dev${{ github.run_number }}
         hatch build
-        twine upload --repository-url https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple/ dist/* --username $ARTIFACTORY_PYPI_DEPLOYER_USER --password $ARTIFACTORY_PYPI_DEPLOYER_API_KEY
+        twine upload --repository-url https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple/ dist/* --username $ARTIFACTORY_PYPI_DEPLOYER_USER --password $ARTIFACTORY_PYPI_DEPLOYER_API_KEY --verbose
