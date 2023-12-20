@@ -42,4 +42,7 @@ class ApplicationLogger:
     @classmethod
     def set_debug(cls, debug: bool) -> None:
         if debug:
+            cls.get_logger().setLevel(logging.DEBUG)
+            cls.get_logger().exception = functools.partial(cls.get_logger().exception, exc_info=True)
+        else:
             cls.get_logger().exception = functools.partial(cls.get_logger().exception, exc_info=False)

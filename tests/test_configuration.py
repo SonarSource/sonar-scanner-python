@@ -30,7 +30,7 @@ class TestConfiguration(unittest.TestCase):
     @patch("py_sonar_scanner.configuration.sys")
     def test_argument_parsing(self, mock_sys):
         configuration = Configuration()
-        self.assertFalse(configuration.debug())
+        self.assertFalse(configuration.is_debug())
 
         mock_sys.argv = ["path/to/scanner/py-sonar-scanner"]
         configuration.setup()
@@ -75,7 +75,7 @@ class TestConfiguration(unittest.TestCase):
 
         mock_sys.argv = ["path/to/scanner/py-sonar-scanner", "-X"]
         configuration.setup()
-        self.assertTrue(configuration.debug())
+        self.assertTrue(configuration.is_debug())
 
     @patch("py_sonar_scanner.configuration.sys")
     def test_dict_with_no_valid_values(self, mock_sys):
