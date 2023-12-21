@@ -50,8 +50,10 @@ class Configuration:
         """This is executed when run from the command line"""
         self._read_wrapper_arguments()
         ApplicationLogger.set_debug(self.is_debug())
-        self.scan_arguments = sys.argv[1:]
-        self.scan_arguments.extend(self._read_toml_args())
+        self.scan_arguments = self._read_toml_args()
+        # If duplicate properties are provided, newer values will override older ones.
+        # We therefore read CLI arguments last so that they have priority over toml configuration.
+        self.scan_arguments.extend(sys.argv[1:])
 
     def _read_wrapper_arguments(self):
         argument_parser = argparse.ArgumentParser()
