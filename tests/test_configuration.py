@@ -56,13 +56,13 @@ class TestConfiguration(unittest.TestCase):
         configuration.setup()
         self.assertListEqual(
             configuration.scan_arguments,
-            [f"-Dtoml.path={CURRENT_DIR}/resources/pyproject.toml", "-Dsonar.a=b", "-Dsonar.c=d"],
+            ["-Dsonar.a=b", "-Dsonar.c=d", f"-Dtoml.path={CURRENT_DIR}/resources/pyproject.toml"],
         )
 
         mock_sys.argv = ["path/to/scanner/py-sonar-scanner", f"-Dproject.home={CURRENT_DIR}/resources/"]
         configuration.setup()
         self.assertListEqual(
-            configuration.scan_arguments, [f"-Dproject.home={CURRENT_DIR}/resources/", "-Dsonar.a=b", "-Dsonar.c=d"]
+            configuration.scan_arguments, ["-Dsonar.a=b", "-Dsonar.c=d", f"-Dproject.home={CURRENT_DIR}/resources/"]
         )
 
         mock_sys.argv = ["path/to/scanner/py-sonar-scanner", "-Dproject.home=tests2"]
@@ -133,10 +133,31 @@ class TestConfiguration(unittest.TestCase):
         self.assertListEqual(
             configuration.scan_arguments,
             [
-                f"-Dtoml.path={CURRENT_DIR}/resources/test_toml_file.toml",
                 "-Dsonar.property1=value1",
                 "-Dsonar.property2=value2",
                 "-Dsonar.property_class.property1=value1",
+                f"-Dtoml.path={CURRENT_DIR}/resources/test_toml_file.toml",
+            ],
+        )
+
+    @patch("py_sonar_scanner.configuration.sys")
+    def test_duplicate_values_toml_cli(self, mock_sys):
+        configuration = Configuration()
+        toml_file_path = os.path.join(CURRENT_DIR, "resources", "test_toml_file.toml")
+        mock_sys.argv = [
+            "path/to/scanner/py-sonar-scanner",
+            f"-Dtoml.path={toml_file_path}",
+            "-Dsonar.property1=value1"
+        ]
+        configuration.setup()
+        self.assertListEqual(
+            configuration.scan_arguments,
+            [
+                "-Dsonar.property1=value1",
+                "-Dsonar.property2=value2",
+                "-Dsonar.property_class.property1=value1",
+                f"-Dtoml.path={CURRENT_DIR}/resources/test_toml_file.toml",
+                "-Dsonar.property1=value1",
             ],
         )
 
