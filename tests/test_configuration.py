@@ -21,6 +21,7 @@ import os
 import unittest
 from unittest.mock import patch, Mock
 from py_sonar_scanner.configuration import Configuration
+from py_sonar_scanner.logger import ApplicationLogger
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -29,6 +30,7 @@ class TestConfiguration(unittest.TestCase):
     @patch("py_sonar_scanner.configuration.sys")
     def test_argument_parsing(self, mock_sys):
         configuration = Configuration()
+        self.assertFalse(configuration.is_debug())
 
         mock_sys.argv = ["path/to/scanner/py-sonar-scanner"]
         configuration.setup()
@@ -70,6 +72,10 @@ class TestConfiguration(unittest.TestCase):
         mock_sys.argv = ["path/to/scanner/py-sonar-scanner", "-Dproject.home=tests=2"]
         configuration.setup()
         self.assertListEqual(configuration.scan_arguments, ["-Dproject.home=tests=2"])
+
+        mock_sys.argv = ["path/to/scanner/py-sonar-scanner", "-X"]
+        configuration.setup()
+        self.assertTrue(configuration.is_debug())
 
     @patch("py_sonar_scanner.configuration.sys")
     def test_dict_with_no_valid_values(self, mock_sys):
@@ -134,26 +140,24 @@ class TestConfiguration(unittest.TestCase):
             ],
         )
 
-    @patch("py_sonar_scanner.configuration.ApplicationLogger.get_logger")
     @patch("builtins.open")
     @patch("py_sonar_scanner.configuration.sys")
-    def test_error_while_reading_toml_file(self, mock_sys, mock_open, mock_logger):
+    def test_error_while_reading_toml_file(self, mock_sys, mock_open):
         toml_file_path = os.path.join(CURRENT_DIR, "resources", "test_toml_file.toml")
         mock_sys.argv = ["path/to/scanner/py-sonar-scanner", f"-Dtoml.path={toml_file_path}"]
 
         mock_open.side_effect = OSError("Test error while opening file.")
+        with self.assertLogs(ApplicationLogger.get_logger()) as log:
+            configuration = Configuration()
+            configuration.setup()
 
-        mock_logger_instance = Mock()
-        mock_logger_instance.error = Mock()
-        mock_logger.return_value = mock_logger_instance
+            self.assertListEqual(
+                configuration.scan_arguments,
+                [
+                    f"-Dtoml.path={CURRENT_DIR}/resources/test_toml_file.toml",
+                ],
+            )
 
-        configuration = Configuration()
-        configuration.setup()
-
-        self.assertListEqual(
-            configuration.scan_arguments,
-            [
-                f"-Dtoml.path={CURRENT_DIR}/resources/test_toml_file.toml",
-            ],
-        )
-        mock_logger_instance.error.assert_called_once_with("Test error while opening file.")
+            self.assertEqual(
+                "Error while opening .toml file: Test error while opening file.", log.records[0].getMessage()
+            )
