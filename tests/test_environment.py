@@ -157,3 +157,17 @@ class TestEnvironment(unittest.TestCase):
         environment._is_sonar_scanner_on_path()
 
         mock_shutil.which.assert_called_once_with("sonar-scanner")
+
+    def test_env_scan(self):
+        cfg = Configuration()
+        environment = Environment(cfg)
+        environment.setup = Mock()
+        environment.scanner = Mock(side_effect=Exception("Something wrong"))
+        environment.cleanup = Mock()
+
+        with self.assertRaises(Exception):
+            environment.scan()
+
+        environment.setup.assert_called_once()
+        environment.scanner.assert_called_once()
+        environment.cleanup.assert_called_once()

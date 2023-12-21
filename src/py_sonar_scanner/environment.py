@@ -44,6 +44,13 @@ class Environment:
         self.cfg = cfg
         self.log = ApplicationLogger.get_logger()
 
+    def scan(self):
+        try:
+            self.setup()
+            self.scanner().scan()
+        finally:
+            self.cleanup()
+
     def setup(self):
         self.cleanup()
         if self._is_sonar_scanner_on_path():

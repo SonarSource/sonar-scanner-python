@@ -26,19 +26,14 @@ from py_sonar_scanner.logger import ApplicationLogger
 
 def scan():
     log = ApplicationLogger.get_logger()
-    debug_enabled = False
+    cfg = Configuration()
     try:
-        cfg = Configuration()
         cfg.setup()
-        debug_enabled = cfg.is_debug()
-
         env = Environment(cfg)
-        env.setup()
-        env.scanner().scan()
-        env.cleanup()
+        env.scan()
     except Exception as e:
         log.exception("Error during SonarScanner execution: %s", str(e))
-        if not debug_enabled:
+        if not cfg.is_debug():
             log.info("Re-run SonarScanner using the -X switch to enable full debug logging.")
 
 
