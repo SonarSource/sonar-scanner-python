@@ -24,6 +24,8 @@ from py_sonar_scanner.configuration import Configuration
 from py_sonar_scanner.logger import ApplicationLogger
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+TEST_TOML_FILE = "test_toml_file.toml"
+SAMPLE_SCANNER_PATH = "path/to/scanner/py-sonar-scanner"
 
 
 class TestConfiguration(unittest.TestCase):
@@ -32,16 +34,16 @@ class TestConfiguration(unittest.TestCase):
         configuration = Configuration()
         self.assertFalse(configuration.is_debug())
 
-        mock_sys.argv = ["path/to/scanner/py-sonar-scanner"]
+        mock_sys.argv = [SAMPLE_SCANNER_PATH]
         configuration.setup()
         self.assertListEqual(configuration.scan_arguments, [])
 
-        mock_sys.argv = ["path/to/scanner/py-sonar-scanner", "-DSomeJVMArg"]
+        mock_sys.argv = [SAMPLE_SCANNER_PATH, "-DSomeJVMArg"]
         configuration.setup()
         self.assertListEqual(configuration.scan_arguments, ["-DSomeJVMArg"])
 
         mock_sys.argv = [
-            "path/to/scanner/py-sonar-scanner",
+            SAMPLE_SCANNER_PATH,
             "-DSomeJVMArg",
             "-DAnotherJVMArg",
             "-dNotAJVMArg",
@@ -52,35 +54,35 @@ class TestConfiguration(unittest.TestCase):
             configuration.scan_arguments, ["-DSomeJVMArg", "-DAnotherJVMArg", "-dNotAJVMArg", "-SomeNonsense"]
         )
 
-        mock_sys.argv = ["path/to/scanner/py-sonar-scanner", f"-Dtoml.path={CURRENT_DIR}/resources/pyproject.toml"]
+        mock_sys.argv = [SAMPLE_SCANNER_PATH, f"-Dtoml.path={CURRENT_DIR}/resources/pyproject.toml"]
         configuration.setup()
         self.assertListEqual(
             configuration.scan_arguments,
             ["-Dsonar.a=b", "-Dsonar.c=d", f"-Dtoml.path={CURRENT_DIR}/resources/pyproject.toml"],
         )
 
-        mock_sys.argv = ["path/to/scanner/py-sonar-scanner", f"-Dproject.home={CURRENT_DIR}/resources/"]
+        mock_sys.argv = [SAMPLE_SCANNER_PATH, f"-Dproject.home={CURRENT_DIR}/resources/"]
         configuration.setup()
         self.assertListEqual(
             configuration.scan_arguments, ["-Dsonar.a=b", "-Dsonar.c=d", f"-Dproject.home={CURRENT_DIR}/resources/"]
         )
 
-        mock_sys.argv = ["path/to/scanner/py-sonar-scanner", "-Dproject.home=tests2"]
+        mock_sys.argv = [SAMPLE_SCANNER_PATH, "-Dproject.home=tests2"]
         configuration.setup()
         self.assertListEqual(configuration.scan_arguments, ["-Dproject.home=tests2"])
 
-        mock_sys.argv = ["path/to/scanner/py-sonar-scanner", "-Dproject.home=tests=2"]
+        mock_sys.argv = [SAMPLE_SCANNER_PATH, "-Dproject.home=tests=2"]
         configuration.setup()
         self.assertListEqual(configuration.scan_arguments, ["-Dproject.home=tests=2"])
 
-        mock_sys.argv = ["path/to/scanner/py-sonar-scanner", "-X"]
+        mock_sys.argv = [SAMPLE_SCANNER_PATH, "-X"]
         configuration.setup()
         self.assertTrue(configuration.is_debug())
 
     @patch("py_sonar_scanner.configuration.sys")
     def test_dict_with_no_valid_values(self, mock_sys):
         configuration = Configuration()
-        mock_sys.argv = ["path/to/scanner/py-sonar-scanner"]
+        mock_sys.argv = [SAMPLE_SCANNER_PATH]
 
         test_dict = {}
         configuration._read_toml_file = Mock(return_value=test_dict)
@@ -100,7 +102,7 @@ class TestConfiguration(unittest.TestCase):
     @patch("py_sonar_scanner.configuration.sys")
     def test_dict_with_valid_values(self, mock_sys):
         configuration = Configuration()
-        mock_sys.argv = ["path/to/scanner/py-sonar-scanner"]
+        mock_sys.argv = [SAMPLE_SCANNER_PATH]
 
         test_dict = {"tool": {"sonar": {"property1": "value1"}}}
         configuration._read_toml_file = Mock(return_value=test_dict)
@@ -127,8 +129,8 @@ class TestConfiguration(unittest.TestCase):
     @patch("py_sonar_scanner.configuration.sys")
     def test_toml_with_valid_values(self, mock_sys):
         configuration = Configuration()
-        toml_file_path = os.path.join(CURRENT_DIR, "resources", "test_toml_file.toml")
-        mock_sys.argv = ["path/to/scanner/py-sonar-scanner", f"-Dtoml.path={toml_file_path}"]
+        toml_file_path = os.path.join(CURRENT_DIR, "resources", TEST_TOML_FILE)
+        mock_sys.argv = [SAMPLE_SCANNER_PATH, f"-Dtoml.path={toml_file_path}"]
         configuration.setup()
         self.assertListEqual(
             configuration.scan_arguments,
@@ -143,12 +145,8 @@ class TestConfiguration(unittest.TestCase):
     @patch("py_sonar_scanner.configuration.sys")
     def test_duplicate_values_toml_cli(self, mock_sys):
         configuration = Configuration()
-        toml_file_path = os.path.join(CURRENT_DIR, "resources", "test_toml_file.toml")
-        mock_sys.argv = [
-            "path/to/scanner/py-sonar-scanner",
-            f"-Dtoml.path={toml_file_path}",
-            "-Dsonar.property1=value1"
-        ]
+        toml_file_path = os.path.join(CURRENT_DIR, "resources", TEST_TOML_FILE)
+        mock_sys.argv = [SAMPLE_SCANNER_PATH, f"-Dtoml.path={toml_file_path}", "-Dsonar.property1=value1"]
         configuration.setup()
         self.assertListEqual(
             configuration.scan_arguments,
@@ -164,7 +162,7 @@ class TestConfiguration(unittest.TestCase):
     @patch("builtins.open")
     @patch("py_sonar_scanner.configuration.sys")
     def test_error_while_reading_toml_file(self, mock_sys, mock_open):
-        toml_file_path = os.path.join(CURRENT_DIR, "resources", "test_toml_file.toml")
+        toml_file_path = os.path.join(CURRENT_DIR, "resources", TEST_TOML_FILE)
         mock_sys.argv = ["path/to/scanner/py-sonar-scanner", f"-Dtoml.path={toml_file_path}"]
 
         mock_open.side_effect = OSError("Test error while opening file.")
