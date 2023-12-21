@@ -17,8 +17,6 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-import sys
-
 from py_sonar_scanner.configuration import Configuration
 from py_sonar_scanner.environment import Environment
 from py_sonar_scanner.logger import ApplicationLogger
