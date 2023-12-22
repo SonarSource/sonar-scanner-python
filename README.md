@@ -14,13 +14,13 @@ pip install sonar-scanner-python FIXME -- The actual package name is not yet def
 
 There are two ways of setting up sonar-scanner-python.
 
-### with a pyproject.toml file
+### With a pyproject.toml file
 
-Inside a `pyproject.toml` setup your Sonar configuration under the `tool.sonar` table. FIXME -- This is not yet implemented and should be tackled by PYSCAN-31
+Inside a `pyproject.toml` setup your Sonar configuration under the `tool.sonar` table.
 
 ```
 # must be unique in a given SonarQube/SonarCloud instance
-[tool.sonar] FIXME -- This is not yet implemented and should be tackled by PYSCAN-31
+[tool.sonar]
 projectKey=my:project
 
 # --- optional properties ---
@@ -40,7 +40,7 @@ The configuration parameters can be found in the [SonarQube documentation](https
 In the `pyproject.toml` file the prefix `sonar.` for parameter keys should be omitted. 
 For example, `sonar.scm.provider` in the documentation will become `scm.provider` in the `pyproject.toml` file.
 
-### with a sonar-project.properties file
+### With a sonar-project.properties file
 
 Exactly like [__SonarScanner__](https://docs.sonarsource.com/sonarqube/9.9/analyzing-source-code/scanners/sonarscanner/) 
 you can configure a project analysis with a `sonar-project.properties` file:
@@ -62,6 +62,23 @@ sonar.projectKey=my:project
 # Encoding of the source code. Default is default system encoding
 #sonar.sourceEncoding=UTF-8
 ```
+
+### Through CLI arguments
+
+Analysis properties can also be provided as CLI arguments to the `py-sonar-scanner` command.
+They follow the same convention as when running the `sonar-scanner-cli` directly 
+(described [here](https://docs.sonarsource.com/sonarqube/9.9/analyzing-source-code/scanners/sonarscanner/#running-from-zip-file)).
+This means that analysis properties provided that way should be prepended with `-D`, for instance:
+```
+py-sonar-scanner -Dsonar.projectKey="myProjectKey"
+```
+
+### Priority rules for duplicated properties
+
+When the same property is defined through multiple means, the following priority is applied, in descending order:
+* CLI arguments to the `py-sonar-scanner` command
+* Properties under the `[tool.sonar]` key of the `pyproject.toml` file
+* Properties found in the `sonar-project.properties` file
 
 ## Running an analysis
 
