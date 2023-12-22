@@ -59,7 +59,8 @@ projectKey=my:project
 #sourceEncoding=UTF-8
 ```
 
-The configuration parameters can be found in the [SonarQube documentation](https://docs.sonarsource.com/sonarqube/9.9/analyzing-source-code/analysis-parameters/)
+The configuration parameters can be found in the [SonarQube documentation](https://docs.sonarsource.com/sonarqube/9.9/analyzing-source-code/analysis-parameters/).
+
 In the `pyproject.toml` file the prefix `sonar.` for parameter keys should be omitted. 
 For example, `sonar.scm.provider` in the documentation will become `scm.provider` in the `pyproject.toml` file.
 
@@ -67,13 +68,13 @@ By default, the scanner will expect the `pyproject.toml` file to be present in t
 However, its path can be provided manually through the `toml.path` ([PYSCAN-40](https://sonarsource.atlassian.net/jira/software/c/projects/PYSCAN/issues/PYSCAN-40)) CLI argument as well as through the `sonar.projectHome` argument. For instance:
 
 ```
-sonar-scanner-python -Dtoml.path="my/pyproject/path"
+sonar-scanner-python -Dtoml.path="path/to/pyproject.toml"
 ```
 
 Or:
 
 ```
-sonar-scanner-python -Dsonar.projectHome="my/projectHome/path"
+sonar-scanner-python -Dsonar.projectHome="path/to/projectHome"
 ```
 
 ### With a sonar-project.properties file
@@ -159,7 +160,8 @@ For more options on the version update see [the hatch documentation](https://hat
 # Tooling 
 ## Formatting 
 
-Run `hatch run tool:format` to run the formatter on all files.
+Run `hatch run tool:format` to run the check the formatting on all files.
+To automatically apply formatting, run `hatch run tool:apply_format`.
 
 ## Type checking
 
