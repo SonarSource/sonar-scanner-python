@@ -1,21 +1,20 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
-[project]
+[tool.poetry]
 # PYSCAN-35: Decide on definitive package name
 name = "py-sonar-scanner"
-dynamic = ["version"]
+version = "0.0.6"
 authors = [
-  { name="Guillaume Dequenne", email="guillaume.dequenne@sonarsource.com" },
-  { name="Jeremi Do Dinh", email="jeremi.dodinh@sonarsource.com" },
-  { name="Maksim Grebeniuk", email="maksim.grebeniuk@sonarsource.com" },
-  { name="David Kunzmann", email="david.kunzmann@sonarsource.com" },
+  "Guillaume Dequenne <guillaume.dequenne@sonarsource.com>",
+  "Jeremi Do Dinh <jeremi.dodinh@sonarsource.com>",
+  "Maksim Grebeniuk <maksim.grebeniuk@sonarsource.com>",
+  "David Kunzmann <david.kunzmann@sonarsource.com>"
 ]
 description = "Sonar Scanner for the Python Ecosystem"
 readme = "README.md"
-license = {file = "LICENSE"}
-requires-python = ">=3.8"
+license = "LGPL-3.0-only"
 keywords = [
   "sonar",
   "sonarqube",
@@ -36,61 +35,39 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Topic :: Software Development :: Quality Assurance",
 ]
-dependencies = [
-  "toml>=0.10.2",
-  "pyfiglet>=0.8.0"  
-]
+packages = [{ include = "py_sonar_scanner", from = "src" }]
+
+[tool.poetry.dependencies]
+python = ">=3.8"
+setuptools = "69.0.3"
+toml = ">=0.10.2"
+pyfiglet= ">=0.8.0"  
+
+[[tool.poetry.source]]
+name = "repox"
+url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple/"
+priority = "default"
+
+[[tool.poetry.source]]
+name = "PyPI"
+priority = "primary"
 
 [project.urls]
 Homepage = "https://github.com/SonarSource/sonar-scanner-python"
 Repository = "https://github.com/SonarSource/sonar-scanner-python"
 
-[project.scripts]
+[tool.poetry.scripts]
 "py-sonar-scanner" = "py_sonar_scanner.__main__:scan"
 
-[tool.hatch.envs.default]
-python="3.12"
+[tool.poetry.group.test.dependencies]
+coverage = ">=7.3.3"
+pytest = ">=7.4.3"
+pytest-cov = ">=4.1.0"
 
-[tool.hatch.envs.default.env-vars]
-PIP_INDEX_URL = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple/"
-PIP_EXTRA_INDEX_URL = "https://pypi.org/simple/"
-
-[tool.hatch.version]
-path = "src/py_sonar_scanner/__about__.py"
-
-[tool.hatch.build.targets.wheel]
-only-include = ["src/py_sonar_scanner"]
-sources = ["src"]
-
-[tool.hatch.envs.test]
-dependencies = [
-  "coverage[toml]>=7.3.3",
-  "pytest>=7.4.3",
-  "pytest-cov>=4.1.0",
-]
-
-[tool.hatch.envs.test.scripts]
-test = "pytest tests/"
-cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=src --cov-branch tests"
-cov_xml = "pytest --cov-report=xml:coverage.xml --cov-config=pyproject.toml --cov=src --cov-branch tests"
-
-[[tool.hatch.envs.test.matrix]]
-python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
-
-[tool.hatch.envs.tool]
-dependencies = [
-  "licenseheaders>=0.8.8",
-  "black>=23.12.0",
-  "mypy>=1.7.1"
-] 
-
-[tool.hatch.envs.tool.scripts]
-license_script = 'python -m licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2023 -n "Sonar Scanner Python" -E .py' 
-license = ["license_script -d ./src", "license_script -d ./tests"]
-license_check = ["license", "git diff --name-only --exit-code ./src ./tests"]
-format = 'python -m black src/ tests/ --check'
-apply_format = 'python -m black src/ tests/'
-type_check = "python -m mypy src/ tests/ --ignore-missing-imports"
+[tool.poetry.group.dev.dependencies]
+licenseheaders = ">=0.8.8"
+black = ">=23.12.0"
+mypy = ">=1.7.1"
 
 [tool.pytest.ini_options]
 pythonpath = [
