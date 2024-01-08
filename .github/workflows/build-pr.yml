@@ -28,14 +28,15 @@ jobs:
           development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader access_token | ARTIFACTORY_PASSWORD;
           development/kv/data/repox url | REPOX_URL;
     - uses: actions/checkout@v3
-    - name: Install Poetry
-      run: |
-        pipx install poetry
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
         cache: "poetry"
+    - name: Install Poetry
+      run: |
+        pipx install poetry
     - name: Install dependencies
       env:
         ARTIFACTORY_USERNAME: vault-${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ROLE }}
@@ -45,6 +46,14 @@ jobs:
         poetry config repositories.repox "${REPOX_URL}/api/pypi/sonarsource-pypi/simple/"
         poetry config http-basic.repox "${ARTIFACTORY_USERNAME}" "${ARTIFACTORY_PASSWORD}"
         poetry install 
+    - name: Check tests 
+      run: |
+        poetry run pytest tests/
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install poetry
+        poetry install --with test
     - name: Check tests 
       run: |
         poetry run pytest tests/
@@ -67,15 +76,15 @@ jobs:
           development/kv/data/repox url | REPOX_URL;
           development/kv/data/sonarcloud token | SONARCLOUD_TOKEN;
     - uses: actions/checkout@v3
-    - name: Install Poetry
-      run: |
-        pipx install poetry
     - name: Set up Python 
       uses: actions/setup-python@v4
       with:
         python-version: |
           3.12
         cache: "poetry"
+    - name: Install Poetry
+      run: |
+        pipx install poetry
     - name: Install dependencies
       env:
         ARTIFACTORY_USERNAME: vault-${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ROLE }}
@@ -127,7 +136,6 @@ jobs:
       with:
         python-version: |
           3.12
-        cache: "poetry"
     - name: Install its dependencies
       working-directory: ./its
       env:

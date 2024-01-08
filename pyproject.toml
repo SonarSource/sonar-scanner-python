@@ -59,6 +59,7 @@ Repository = "https://github.com/SonarSource/sonar-scanner-python"
 [tool.poetry.scripts]
 "py-sonar-scanner" = "py_sonar_scanner.__main__:scan"
 
+<<<<<<< HEAD
 [tool.poetry.group.dev.dependencies]
 coverage = ">=7.3.3"
 pytest = ">=7.4.3"
