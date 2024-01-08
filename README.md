@@ -116,27 +116,35 @@ See the __SonarScanner__ [documentation](https://docs.sonarsource.com/sonarqube/
 ## Prerequisites
 
  - Python 3.12
- - [Hatch](https://hatch.pypa.io/latest/install/)
+ - [pipx](https://github.com/pypa/pipx)
 
-## Install virtual env and create a new environment
+## Install poetry
 
-Run `python3 -m pip install --user virtualenv`
-
-Then create a new env with `python3 -m venv <name of your venv>`
-
-Activate the venv with `source <name of your venv>/bin/activate`
+Install poetry with `pipx install poetry`
 
 # Run the main script
 
-Run `python3 main.py <args>`
+Run `python src/py_sonar_scanner`
 
 # Run the tests
 
-Run `hatch run test:test`
+Run `poetry install` to install the dependencies
+
+## Run the tests only
+
+Run `poetry run pytest test/`
+
+## Run the tests with coverage and results displayed in the terminal
+
+Run `poetry run pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=src --cov-branch tests`
+
+## Run the tests with coverage and store the result in an xml file
+
+Run `poetry run pytest --cov-report=xml:coverage.xml --cov-config=pyproject.toml --cov=src --cov-branch tests`
 
 # Build the package
 
-Run `hatch build` to create the package. 
+Run `poetry build` to create the package. 
 The binaries will be located in the `dist` directory at the root level of the project.
 
 # Publish the script
@@ -153,25 +161,28 @@ Also `dist/*` can be a bit more precise to upload a specific version of the bina
 To update the version use the hatch command:
 
 ```
-hatch version "X.Y.Z"
+poetry version "X.Y.Z"
 ```
 For more options on the version update see [the hatch documentation](https://hatch.pypa.io/latest/version/)
 
 # Tooling 
 ## Formatting 
 
-Run `hatch run tool:format` to run the check the formatting on all files.
-To automatically apply formatting, run `hatch run tool:apply_format`.
+Run `poetry run black src/ tests/ --check` to run the check the formatting on all files.
+To automatically apply formatting, run `poetry run black src/ tests/`.
 
 ## Type checking
 
-Run `hatch run tool:type_check` to execute the type checking on all files.
+Run `poetry run mypy src/ tests/ --ignore-missing-imports` to execute the type checking on all files.
 
 ## License header
 
 Before pushing, please check if all files have a license header.
-If not all files have a license header please execute: `hatch run tool:license`.
-
+If not all files have a license header please execute: 
+```
+poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2023 -n "Sonar Scanner Python" -E .py -d src/
+poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2023 -n "Sonar Scanner Python" -E .py -d tests/
+```
 
 # License
 
