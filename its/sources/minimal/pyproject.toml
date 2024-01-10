@@ -1,0 +1,9 @@
+[project]
+name = "minimal"
+
+[tool.sonar]
+projectKey="minimal"
+sources="src"
+login="admin"
+password="admin"
+
