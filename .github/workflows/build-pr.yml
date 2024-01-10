@@ -64,7 +64,8 @@ jobs:
       run: |
         poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2023 -n "Sonar Scanner Python" -E .py -d src/
         poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2023 -n "Sonar Scanner Python" -E .py -d tests/
-        git diff --name-only --exit-code ./src ./tests
+        poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d its/ -x its/sources/**.py
+        git diff --name-only --exit-code ./src ./tests ./its
     - name: Check tests and generate coverage
       run: |
         poetry run pytest --cov-report=xml:coverage.xml --cov-config=pyproject.toml --cov=src --cov-branch tests
@@ -75,3 +76,28 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).SONARCLOUD_TOKEN }}
+  integration_tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read      # required by actions/checkout
+      pull-requests: read # required by SonarSource/sonarcloud-github-action
+    strategy:
+      fail-fast: false
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 
+      uses: actions/setup-python@v4
+      with:
+        python-version: |
+          3.12
+    - name: Install its dependencies
+      working-directory: ./its
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install poetry
+        poetry install
+        python -m pip install ..
+    - name: Run integration tests
+      working-directory: ./its
+      run: |
+        poetry run pytest 
