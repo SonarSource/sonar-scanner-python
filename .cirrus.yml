@@ -1,0 +1,50 @@
+env:
+  ARTIFACTORY_URL: VAULT[development/kv/data/repox data.url]
+  ARTIFACTORY_PRIVATE_USERNAME: vault-${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader
+  ARTIFACTORY_PRIVATE_PASSWORD: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
+  ARTIFACTORY_DEPLOY_USERNAME: vault-${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-qa-deployer
+  ARTIFACTORY_DEPLOY_PASSWORD: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-qa-deployer access_token]
+  #Possible values for ARTIFACTORY_DEPLOY_REPO: sonarsource-private-qa, sonarsource-public-qa
+  ARTIFACTORY_DEPLOY_REPO: sonarsource-public-qa
+  ARTIFACTORY_ACCESS_TOKEN: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
+  GITHUB_TOKEN: VAULT[development/github/token/licenses-ro token]
+
+only_sonarsource_qa: &ONLY_SONARSOURCE_QA
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && ($CIRRUS_PR != "" || $CIRRUS_BRANCH == "master" || $CIRRUS_BRANCH =~ "feature/*" || $CIRRUS_BRANCH =~ "dogfood-on-.*")
+
+container_definition: &CONTAINER_DEFINITION
+  dockerfile: .cirrus/poetry.Dockerfile
+  cluster_name: ${CIRRUS_CLUSTER_NAME}
+  region: eu-central-1
+  builder_image_name: POETRY_VM
+  builder_role: cirrus-builder
+  builder_image: docker-builder-v*
+  builder_instance_type: t3.small
+  builder_subnet_id: ${CIRRUS_AWS_SUBNET}
+  zone: eu-central-1
+  namespace: default
+  use_in_memory_disk: true
+
+common_build_definition: &COMMON_BUILD_DEFINITION
+  eks_container:
+    <<: *CONTAINER_DEFINITION
+  env:
+    # analysis on SonarCloud
+    SONAR_TOKEN: VAULT[development/kv/data/sonarcloud data.token]
+    SONAR_HOST_URL: hhttps://sonarcloud.io
+    #allow deployment of pull request artifacts to repox
+    DEPLOY_PULL_REQUEST: true
+    cpu: 3
+    memory: 8G
+
+build_task:
+  <<: *COMMON_BUILD_DEFINITION
+  <<: *ONLY_SONARSOURCE_QA
+  script:
+    - poetry config repositories.sonarsource https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi-builds
+    - poetry install
+    - poetry run pytest --cov-report=xml:coverage.xml --cov-config=pyproject.toml --cov=src --cov-branch tests
+    - poetry version patch
+    - poetry version $(poetry version -s).dev$BUILD_NUMBER
+    - sonar-scanner -Dsonar.organization=sonarsource -DbuildNumber=$BUILD_NUMBER
+    - poetry publish -r sonarsource --username $ARTIFACTORY_DEPLOY_USERNAME --password $ARTIFACTORY_DEPLOY_PASSWORD --verbose
