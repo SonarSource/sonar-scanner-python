@@ -18,7 +18,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import time
-import requests
 from requests import Session
 
 
@@ -30,7 +29,7 @@ class SonarQubeClient():
 
     def __init__(self, base_url):
         self.base_url = base_url
-        self.session = requests.Session()
+        self.session = Session()
         self.session.auth = ("admin", "admin")
 
     def get_system_health(self):

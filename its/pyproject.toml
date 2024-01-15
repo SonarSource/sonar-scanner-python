@@ -46,6 +46,7 @@ black = ">=23.12.0"
 pytest = ">=7.4.3"
 pytest-docker = ">=2.0.1"
 requests = "2.31.0"
+py-sonar-scanner = { "path" = "../" }
 
 [[tool.poetry.source]]
 name = "repox"
