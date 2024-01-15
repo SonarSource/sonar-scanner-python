@@ -67,15 +67,15 @@ jobs:
           development/kv/data/repox url | REPOX_URL;
           development/kv/data/sonarcloud token | SONARCLOUD_TOKEN;
     - uses: actions/checkout@v3
+    - name: Install Poetry
+      run: |
+        pipx install poetry
     - name: Set up Python 
       uses: actions/setup-python@v4
       with:
         python-version: |
           3.12
         cache: "poetry"
-    - name: Install Poetry
-      run: |
-        pipx install poetry
     - name: Install dependencies
       env:
         ARTIFACTORY_USERNAME: vault-${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ROLE }}
