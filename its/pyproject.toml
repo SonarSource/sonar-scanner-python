@@ -4,15 +4,15 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 # PYSCAN-35: Decide on definitive package name
-name = "py-sonar-scanner"
-version = "0.0.6"
+name = "py-sonar-scanner-its"
+version = "0.0.1"
 authors = [
   "Guillaume Dequenne <guillaume.dequenne@sonarsource.com>",
   "Jeremi Do Dinh <jeremi.dodinh@sonarsource.com>",
   "Maksim Grebeniuk <maksim.grebeniuk@sonarsource.com>",
   "David Kunzmann <david.kunzmann@sonarsource.com>"
 ]
-description = "Sonar Scanner for the Python Ecosystem"
+description = "Integration tests for Sonar Scanner for the Python Ecosystem"
 readme = "README.md"
 license = "LGPL-3.0-only"
 keywords = [
@@ -35,13 +35,17 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Topic :: Software Development :: Quality Assurance",
 ]
-packages = [{ include = "py_sonar_scanner", from = "src" }]
+
+packages = [{ include = "utils" }]
 
 [tool.poetry.dependencies]
 python = ">=3.8"
-setuptools = "69.0.3"
-toml = ">=0.10.2"
-pyfiglet= ">=0.8.0"  
+licenseheaders = ">=0.8.8"
+black = ">=23.12.0"
+pytest = ">=7.4.3"
+pytest-docker = ">=2.0.1"
+requests = "2.31.0"
+py-sonar-scanner = { "path" = "../" }
 
 [[tool.poetry.source]]
 name = "repox"
@@ -52,25 +56,7 @@ priority = "default"
 name = "PyPI"
 priority = "primary"
 
-[project.urls]
-Homepage = "https://github.com/SonarSource/sonar-scanner-python"
-Repository = "https://github.com/SonarSource/sonar-scanner-python"
-
-[tool.poetry.scripts]
-"py-sonar-scanner" = "py_sonar_scanner.__main__:scan"
-
-[tool.poetry.group.dev.dependencies]
-coverage = ">=7.3.3"
-pytest = ">=7.4.3"
-pytest-cov = ">=4.1.0"
-licenseheaders = ">=0.8.8"
-black = ">=23.12.0"
-mypy = ">=1.7.1"
-
 [tool.pytest.ini_options]
-pythonpath = [
-  "src",
-]
 addopts = [
   "--import-mode=importlib",
 ]
@@ -78,8 +64,3 @@ addopts = [
 [tool.black]
 line-length = 120
 target-version = ["py38", "py39", "py310", "py311", "py312"]
-
-
-[tool.coverage.run]
-branch = true
-relative_files = true

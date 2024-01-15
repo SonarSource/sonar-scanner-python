@@ -17,3 +17,24 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+from subprocess import CompletedProcess
+import subprocess
+import os
+from utils.sonarqube_client import SonarQubeClient
+
+
+class CliClient():
+
+    SCANNER_CMD: str = "py-sonar-scanner"
+    SOURCES_FOLDER_PATH: str = os.path.join(
+        os.path.dirname(__file__), "../sources")
+
+    def run_analysis(self, client: SonarQubeClient, params: list[str] = None, sources_dir: str = None) -> CompletedProcess:
+        if params is None:
+            params = []
+        workdir = os.path.join(self.SOURCES_FOLDER_PATH, sources_dir)
+        command = [self.SCANNER_CMD] + params
+        process = subprocess.run(command, stdout=subprocess.PIPE,
+                                 stderr=subprocess.STDOUT, text=True, cwd=workdir)
+        client.wait_for_analysis_completion()
+        return process
