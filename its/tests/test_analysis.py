@@ -17,3 +17,13 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+from utils.sonarqube_client import SonarQubeClient
+from utils.cli_client import CliClient
+
+
+def test_minimal_project(sonarqube_client: SonarQubeClient):
+    process = CliClient().run_analysis(sonarqube_client, sources_dir="minimal")
+    assert process.returncode == 0
+    response = sonarqube_client.get_project_issues("minimal")
+    data = response.json()
+    assert len(data["issues"]) == 1

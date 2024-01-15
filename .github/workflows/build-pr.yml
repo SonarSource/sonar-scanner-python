@@ -12,20 +12,38 @@ jobs:
   test:
     runs-on: ubuntu-latest
     permissions:
+      id-token: write     # required by SonarSource/vault-action-wrapper
       contents: read      # required by actions/checkout
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
     steps:
+    - name: Get vault secrets
+      id: secrets
+      uses: SonarSource/vault-action-wrapper@v2
+      with:
+        secrets: |
+          development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader role | ARTIFACTORY_ROLE;
+          development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader access_token | ARTIFACTORY_PASSWORD;
+          development/kv/data/repox url | REPOX_URL;
     - uses: actions/checkout@v3
+    - name: Install Poetry
+      run: |
+        pipx install poetry
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
+        cache: "poetry"
     - name: Install dependencies
+      env:
+        ARTIFACTORY_USERNAME: vault-${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ROLE }}
+        ARTIFACTORY_PASSWORD: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_PASSWORD }}
+        REPOX_URL: ${{ fromJSON(steps.secrets.outputs.vault).REPOX_URL }}
       run: |
-        pipx install poetry
+        poetry config repositories.repox "${REPOX_URL}/api/pypi/sonarsource-pypi/simple/"
+        poetry config http-basic.repox "${ARTIFACTORY_USERNAME}" "${ARTIFACTORY_PASSWORD}"
         poetry install 
     - name: Check tests 
       run: |
@@ -44,34 +62,83 @@ jobs:
       uses: SonarSource/vault-action-wrapper@v2
       with:
         secrets: |
+          development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader role | ARTIFACTORY_ROLE;
           development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader access_token | ARTIFACTORY_PASSWORD;
           development/kv/data/repox url | REPOX_URL;
           development/kv/data/sonarcloud token | SONARCLOUD_TOKEN;
     - uses: actions/checkout@v3
-    - name: Set up Python
+    - name: Install Poetry
+      run: |
+        pipx install poetry
+    - name: Set up Python 
       uses: actions/setup-python@v4
       with:
         python-version: |
           3.12
+        cache: "poetry"
     - name: Install dependencies
+      env:
+        ARTIFACTORY_USERNAME: vault-${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ROLE }}
+        ARTIFACTORY_PASSWORD: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_PASSWORD }}
+        REPOX_URL: ${{ fromJSON(steps.secrets.outputs.vault).REPOX_URL }}
       run: |
-        pipx install poetry
+        poetry config repositories.repox "${REPOX_URL}/api/pypi/sonarsource-pypi/simple/"
+        poetry config http-basic.repox "${ARTIFACTORY_USERNAME}" "${ARTIFACTORY_PASSWORD}"
         poetry install
     - name: Check formatting
       run: |
         poetry run black src/ tests/ --check
     - name: Check licensing
       run: |
-        poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2023 -n "Sonar Scanner Python" -E .py -d src/
-        poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2023 -n "Sonar Scanner Python" -E .py -d tests/
-        git diff --name-only --exit-code ./src ./tests
+        poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d src/
+        poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d tests/
+        poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d its/ -x its/sources/**.py
+        git diff --name-only --exit-code ./src ./tests ./its
     - name: Check tests and generate coverage
       run: |
         poetry run pytest --cov-report=xml:coverage.xml --cov-config=pyproject.toml --cov=src --cov-branch tests
-      env:
-        ARTIFACTORY_ACCESS_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_PASSWORD }}
     - name: SonarCloud Scan
       uses: SonarSource/sonarcloud-github-action@master
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).SONARCLOUD_TOKEN }}
+  integration_tests:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write     # required by SonarSource/vault-action-wrapper
+      contents: read      # required by actions/checkout
+    strategy:
+      fail-fast: false
+    steps:
+    - name: Get vault secrets
+      id: secrets
+      uses: SonarSource/vault-action-wrapper@v2
+      with:
+        secrets: |
+          development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader role | ARTIFACTORY_ROLE;
+          development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader access_token | ARTIFACTORY_PASSWORD;
+          development/kv/data/repox url | REPOX_URL;
+    - uses: actions/checkout@v3
+    - name: Install Poetry
+      run: |
+        pipx install poetry
+    - name: Set up Python 
+      uses: actions/setup-python@v4
+      with:
+        python-version: |
+          3.12
+        cache: "poetry"
+    - name: Install its dependencies
+      working-directory: ./its
+      env:
+        ARTIFACTORY_USERNAME: vault-${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ROLE }}
+        ARTIFACTORY_PASSWORD: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_PASSWORD }}
+        REPOX_URL: ${{ fromJSON(steps.secrets.outputs.vault).REPOX_URL }}
+      run: |
+        poetry config repositories.repox "${REPOX_URL}/api/pypi/sonarsource-pypi/simple/"
+        poetry config http-basic.repox "${ARTIFACTORY_USERNAME}" "${ARTIFACTORY_PASSWORD}"
+        poetry install
+    - name: Run integration tests
+      working-directory: ./its
+      run: |
+        poetry run pytest 
