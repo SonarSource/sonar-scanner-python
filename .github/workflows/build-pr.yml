@@ -25,38 +25,11 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        python -m pip install poetry
-        poetry install --with test
+        pipx install poetry
+        poetry install 
     - name: Check tests 
       run: |
         poetry run pytest tests/
-  formatting:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read      # required by actions/checkout
-    strategy:
-      fail-fast: false
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python 
-      uses: actions/setup-python@v4
-      with:
-        python-version: |
-          3.12
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install poetry
-        poetry install --with dev
-    - name: Check formatting
-      run: |
-        poetry run black src/ tests/ --check
-    - name: Check licensing
-      run: |
-        poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2023 -n "Sonar Scanner Python" -E .py -d src/
-        poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2023 -n "Sonar Scanner Python" -E .py -d tests/
-        git diff --name-only --exit-code ./src ./tests
   analysis:
     runs-on: ubuntu-latest
     permissions:
@@ -75,16 +48,23 @@ jobs:
           development/kv/data/repox url | REPOX_URL;
           development/kv/data/sonarcloud token | SONARCLOUD_TOKEN;
     - uses: actions/checkout@v3
-    - name: Set up Python 
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: |
           3.12
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        python -m pip install poetry
-        poetry install --with test
+        pipx install poetry
+        poetry install
+    - name: Check formatting
+      run: |
+        poetry run black src/ tests/ --check
+    - name: Check licensing
+      run: |
+        poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2023 -n "Sonar Scanner Python" -E .py -d src/
+        poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2023 -n "Sonar Scanner Python" -E .py -d tests/
+        git diff --name-only --exit-code ./src ./tests
     - name: Check tests and generate coverage
       run: |
         poetry run pytest --cov-report=xml:coverage.xml --cov-config=pyproject.toml --cov=src --cov-branch tests

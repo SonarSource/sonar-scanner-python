@@ -39,7 +39,6 @@ packages = [{ include = "py_sonar_scanner", from = "src" }]
 
 [tool.poetry.dependencies]
 python = ">=3.8"
-setuptools = "69.0.3"
 toml = ">=0.10.2"
 pyfiglet= ">=0.8.0"  
 
@@ -59,12 +58,10 @@ Repository = "https://github.com/SonarSource/sonar-scanner-python"
 [tool.poetry.scripts]
 "py-sonar-scanner" = "py_sonar_scanner.__main__:scan"
 
-[tool.poetry.group.test.dependencies]
+[tool.poetry.group.dev.dependencies]
 coverage = ">=7.3.3"
 pytest = ">=7.4.3"
 pytest-cov = ">=4.1.0"
-
-[tool.poetry.group.dev.dependencies]
 licenseheaders = ">=0.8.8"
 black = ">=23.12.0"
 mypy = ">=1.7.1"

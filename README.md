@@ -116,18 +116,11 @@ See the __SonarScanner__ [documentation](https://docs.sonarsource.com/sonarqube/
 ## Prerequisites
 
  - Python 3.12
+ - [pipx](https://github.com/pypa/pipx)
 
-## Install virtual env and create a new environment
+## Install poetry
 
-Run `python3 -m pip install --user virtualenv`
-
-Then create a new env with `python3 -m venv <name of your venv>`
-
-Activate the venv with `source <name of your venv>/bin/activate`
-
-Install poetry with `pip install poetry`
-
-Install setuptools with `pip install setuptools`
+Install poetry with `pipx install poetry`
 
 # Run the main script
 
