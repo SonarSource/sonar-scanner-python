@@ -116,18 +116,11 @@ See the __SonarScanner__ [documentation](https://docs.sonarsource.com/sonarqube/
 ## Prerequisites
 
  - Python 3.12
-<<<<<<< HEAD
  - [pipx](https://github.com/pypa/pipx)
-=======
->>>>>>> fbee484 (PYSCAN-36: Migrate from Hatch to Poetry (#27))
 
 ## Install poetry
 
 Install poetry with `pipx install poetry`
-
-Install poetry with `pip install poetry`
-
-Install setuptools with `pip install setuptools`
 
 # Run the main script
 
