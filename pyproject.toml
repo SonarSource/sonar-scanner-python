@@ -39,6 +39,7 @@ packages = [{ include = "py_sonar_scanner", from = "src" }]
 
 [tool.poetry.dependencies]
 python = ">=3.8"
+setuptools = "69.0.3"
 toml = ">=0.10.2"
 pyfiglet= ">=0.8.0"  
 
