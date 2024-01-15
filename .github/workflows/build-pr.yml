@@ -51,8 +51,9 @@ jobs:
         poetry run pytest tests/
     - name: Install dependencies
       run: |
-        pipx install poetry
-        poetry install 
+        python -m pip install --upgrade pip
+        python -m pip install poetry
+        poetry install --with test
     - name: Check tests 
       run: |
         poetry run pytest tests/
@@ -75,7 +76,7 @@ jobs:
           development/kv/data/repox url | REPOX_URL;
           development/kv/data/sonarcloud token | SONARCLOUD_TOKEN;
     - uses: actions/checkout@v3
-    - name: Set up Python
+    - name: Set up Python 
       uses: actions/setup-python@v4
       with:
         python-version: |
@@ -127,14 +128,14 @@ jobs:
           development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader access_token | ARTIFACTORY_PASSWORD;
           development/kv/data/repox url | REPOX_URL;
     - uses: actions/checkout@v3
+    - name: Install Poetry
+      run: |
+        pipx install poetry
     - name: Set up Python 
       uses: actions/setup-python@v4
       with:
         python-version: |
           3.12
-    - name: Install Poetry
-      run: |
-        pipx install poetry
     - name: Install its dependencies
       working-directory: ./its
       env:
