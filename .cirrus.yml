@@ -44,6 +44,29 @@ poetry_cache_template: &POETRY_CACHE
     - jfrog poetry-config --server-id-resolve repox --repo-resolve sonarsource-pypi
     - jfrog poetry install --build-name="$CIRRUS_REPO_NAME" --build-number="$CI_BUILD_NUMBER"
 
+mend_scan_task:
+  <<: *POETRY_TEMPLATE
+  depends_on:
+    - build
+  # run only on master and long-living branches
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && ($CIRRUS_BRANCH == "master" || $CIRRUS_BRANCH =~ "branch-.*")
+  eks_container:
+    image: ${CIRRUS_AWS_ACCOUNT}.dkr.ecr.eu-central-1.amazonaws.com/base:j18-latest
+    region: eu-central-1
+    cluster_name: ${CIRRUS_CLUSTER_NAME}
+    namespace: default
+    cpu: 4
+    memory: 2G
+  env:
+    WS_APIKEY: VAULT[development/kv/data/mend data.apikey]
+  mend_script:
+    - source cirrus-env QA
+    - source ws_scan.sh
+  allow_failures: "true"
+  always:
+    ws_scan_artifacts:
+      path: "whitesource/**/*"
+
 formatting_task:
   <<: *POETRY_TEMPLATE
   alias: formatting
