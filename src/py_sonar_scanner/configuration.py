@@ -44,7 +44,7 @@ class Configuration:
         self.sonar_scanner_version = "4.6.2.2472"
         self.sonar_scanner_executable_path = ""
         self.scan_arguments = []
-        self.wrapper_arguments = argparse.Namespace(debug=False)
+        self.wrapper_arguments = argparse.Namespace(debug=False, read_toml=False)
 
     def setup(self) -> None:
         """This is executed when run from the command line"""
@@ -60,6 +60,9 @@ class Configuration:
         argument_parser.add_argument("-toml.path", "-Dtoml.path", "--toml.path", dest="toml_path")
         argument_parser.add_argument("-project.home", "-Dproject.home", "--project.home", dest="project_home")
         argument_parser.add_argument("-X", action="store_true", dest="debug")
+        argument_parser.add_argument(
+            "-read.toml", "-Dread.toml", "--read.toml", "-read_toml", action="store_true", dest="read_toml"
+        )
         self.wrapper_arguments, _ = argument_parser.parse_known_args(args=sys.argv[1:])
 
     def _read_toml_args(self) -> list[str]:
@@ -69,6 +72,10 @@ class Configuration:
             toml_data = self._read_toml_file()
         except OSError as e:
             self.log.exception("Error while opening .toml file: %s", str(e))
+        if self.wrapper_arguments.read_toml:
+            common_toml_properties = self._extract_common_properties(toml_data)
+            for key, value in common_toml_properties.items():
+                self._add_parameter_to_scanner_args(scan_arguments, key, value)
         sonar_properties = self._extract_sonar_properties(toml_data)
         for key, value in sonar_properties.items():
             self._add_parameter_to_scanner_args(scan_arguments, key, value)
@@ -82,6 +89,23 @@ class Configuration:
             return {}
         sonar_properties = tool_data["sonar"]
         return sonar_properties if isinstance(sonar_properties, dict) else {}
+
+    def _extract_common_properties(self, toml_properties):
+        properties = {}
+        if "tool" in toml_properties.keys() and "poetry" in toml_properties["tool"]:
+            poetry_properties = toml_properties["tool"]["poetry"]
+            properties = self._extract_from_poetry_properties(poetry_properties)
+        return properties
+
+    def _extract_from_poetry_properties(self, poetry_properties):
+        result = {}
+        if "name" in poetry_properties:
+            result["project.name"] = poetry_properties["name"]
+        if "version" in poetry_properties:
+            result["project.version"] = poetry_properties["version"]
+        # Note: Python version can be extracted from dependencies.python, however it
+        # may be specified with constraints, e.g ">3.8", which is not currently supported by sonar-python
+        return result
 
     def _add_parameter_to_scanner_args(self, scan_arguments: list[str], key: str, value: Union[str, dict]):
         if isinstance(value, str):

@@ -1,0 +1,14 @@
+[tool]
+ignored_property="something"
+
+[tool.poetry]
+name = "my_name"
+version = "0.0.1"
+
+[tool.sonar]
+project.name = "overridden_name"
+python.version = "3.10"
+
+[tool.sonar.property_class]
+property1="value1"
+
