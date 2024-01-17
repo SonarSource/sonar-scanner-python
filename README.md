@@ -20,6 +20,7 @@ There are multiple ways of providing these properties, described below in descen
 
 * Through CLI arguments to the `sonar-scanner-python` command
 * Under the `[tool.sonar]` key of the `pyproject.toml` file
+* Through common properties extracted from the `pyproject.toml`
 * In a dedicated `sonar-project.properties` file
 * Through environment variables
 
@@ -76,6 +77,16 @@ Or:
 ```
 sonar-scanner-python -Dsonar.projectHome="path/to/projectHome"
 ```
+
+
+### Through project properties extracted from the `pyproject.toml`
+
+When a `pyproject.toml` file is available, it is possible to set the `-read-project-config` flag
+to allow the scanner to deduce analysis properties from the project configuration.
+
+This is currently supported only for projects using `poetry`.
+
+The Sonar scanner will then use the project name and version defined through Poetry, they won't have to be duplicated under a dedicated `tool.sonar` section.
 
 ### With a sonar-project.properties file
 

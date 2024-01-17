@@ -44,7 +44,7 @@ class Configuration:
         self.sonar_scanner_version = "4.6.2.2472"
         self.sonar_scanner_executable_path = ""
         self.scan_arguments = []
-        self.wrapper_arguments = argparse.Namespace(debug=False, read_toml=False)
+        self.wrapper_arguments = argparse.Namespace(debug=False, read_project_config=False)
 
     def setup(self) -> None:
         """This is executed when run from the command line"""
@@ -61,7 +61,12 @@ class Configuration:
         argument_parser.add_argument("-project.home", "-Dproject.home", "--project.home", dest="project_home")
         argument_parser.add_argument("-X", action="store_true", dest="debug")
         argument_parser.add_argument(
-            "-read.toml", "-Dread.toml", "--read.toml", "-read_toml", action="store_true", dest="read_toml"
+            "-read.project.config",
+            "-Dread.project.config",
+            "--read-project-config",
+            "-read-project-config",
+            action="store_true",
+            dest="read_project_config",
         )
         self.wrapper_arguments, _ = argument_parser.parse_known_args(args=sys.argv[1:])
 
@@ -72,7 +77,7 @@ class Configuration:
             toml_data = self._read_toml_file()
         except OSError as e:
             self.log.exception("Error while opening .toml file: %s", str(e))
-        if self.wrapper_arguments.read_toml:
+        if self.wrapper_arguments.read_project_config:
             common_toml_properties = self._extract_common_properties(toml_data)
             for key, value in common_toml_properties.items():
                 self._add_parameter_to_scanner_args(scan_arguments, key, value)

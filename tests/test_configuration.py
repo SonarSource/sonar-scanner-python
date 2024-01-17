@@ -147,7 +147,7 @@ class TestConfiguration(unittest.TestCase):
     def test_toml_overridden_common_properties(self, mock_sys):
         configuration = Configuration()
         toml_file_path = os.path.join(CURRENT_DIR, "resources", TEST_TOML_FILE_POETRY)
-        mock_sys.argv = [SAMPLE_SCANNER_PATH, f"-Dtoml.path={toml_file_path}", "-read.toml"]
+        mock_sys.argv = [SAMPLE_SCANNER_PATH, f"-Dtoml.path={toml_file_path}", "-read.project.config"]
         configuration.setup()
         self.assertListEqual(
             configuration.scan_arguments,
@@ -158,7 +158,7 @@ class TestConfiguration(unittest.TestCase):
                 "-Dsonar.python.version=3.10",
                 "-Dsonar.property_class.property1=value1",
                 f"-Dtoml.path={CURRENT_DIR}/resources/{TEST_TOML_FILE_POETRY}",
-                "-read.toml",
+                "-read.project.config",
             ],
         )
 
@@ -166,7 +166,7 @@ class TestConfiguration(unittest.TestCase):
     def test_toml_no_common_properties(self, mock_sys):
         configuration = Configuration()
         toml_file_path = os.path.join(CURRENT_DIR, "resources", TOML_NO_COMMON_PROPERTIES)
-        mock_sys.argv = [SAMPLE_SCANNER_PATH, f"-Dtoml.path={toml_file_path}", "-read.toml"]
+        mock_sys.argv = [SAMPLE_SCANNER_PATH, f"-Dtoml.path={toml_file_path}", "-read.project.config"]
         configuration.setup()
         self.assertListEqual(
             configuration.scan_arguments,
@@ -174,7 +174,7 @@ class TestConfiguration(unittest.TestCase):
                 "-Dsonar.project.name=my_project_name",
                 "-Dsonar.python.version=3.10",
                 f"-Dtoml.path={CURRENT_DIR}/resources/{TOML_NO_COMMON_PROPERTIES}",
-                "-read.toml",
+                "-read.project.config",
             ],
         )
 
