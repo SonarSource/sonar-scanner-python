@@ -53,3 +53,6 @@ class SonarQubeClient():
 
     def get_project_issues(self, project_key: str):
         return self.session.get(f"{self.base_url}/api/issues/search?projects={project_key}")
+
+    def get_project_analyses(self, project_key: str):
+        return self.session.get(f"{self.base_url}/api/project_analyses/search?project={project_key}")

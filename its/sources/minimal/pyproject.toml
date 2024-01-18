@@ -1,6 +1,9 @@
 [project]
 name = "minimal"
 
+[tool.poetry]
+version = "1.5"
+
 [tool.sonar]
 projectKey="minimal"
 sources="src"

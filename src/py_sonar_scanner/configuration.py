@@ -45,15 +45,25 @@ class Configuration:
         self.sonar_scanner_executable_path = ""
         self.scan_arguments = []
         self.wrapper_arguments = argparse.Namespace(debug=False, read_project_config=False)
+        self.unknown_arguments = []
 
     def setup(self) -> None:
         """This is executed when run from the command line"""
         self._read_wrapper_arguments()
         ApplicationLogger.set_debug(self.is_debug())
         self.scan_arguments = self._read_toml_args()
+        # The sonar-scanner-cli may crash with an error when receiving unexpected arguments
+        # Therefore, arguments only expected by the sonar-scanner-python are filtered out.
+        self._append_common_arguments()
         # If duplicate properties are provided, newer values will override older ones.
         # We therefore read CLI arguments last so that they have priority over toml configuration.
-        self.scan_arguments.extend(sys.argv[1:])
+        self.scan_arguments.extend(self.unknown_arguments)
+
+    def _append_common_arguments(self):
+        if self.wrapper_arguments.debug:
+            self.scan_arguments.append("-X")
+        if self.wrapper_arguments.project_home is not None:
+            self.scan_arguments.append(f"-Dproject.home={self.wrapper_arguments.project_home}")
 
     def _read_wrapper_arguments(self):
         argument_parser = argparse.ArgumentParser()
@@ -68,7 +78,7 @@ class Configuration:
             action="store_true",
             dest="read_project_config",
         )
-        self.wrapper_arguments, _ = argument_parser.parse_known_args(args=sys.argv[1:])
+        self.wrapper_arguments, self.unknown_arguments = argument_parser.parse_known_args(args=sys.argv[1:])
 
     def _read_toml_args(self) -> list[str]:
         scan_arguments: list[str] = []
@@ -107,7 +117,7 @@ class Configuration:
         if "name" in poetry_properties:
             result["project.name"] = poetry_properties["name"]
         if "version" in poetry_properties:
-            result["project.version"] = poetry_properties["version"]
+            result["projectVersion"] = poetry_properties["version"]
         # Note: Python version can be extracted from dependencies.python, however it
         # may be specified with constraints, e.g ">3.8", which is not currently supported by sonar-python
         return result
