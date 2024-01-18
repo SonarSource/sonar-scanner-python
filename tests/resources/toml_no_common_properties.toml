@@ -1,0 +1,6 @@
+[tool.poetry]
+random="42"
+
+[tool.sonar]
+project.name = "my_project_name"
+python.version = "3.10"
