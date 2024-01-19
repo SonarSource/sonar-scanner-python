@@ -139,7 +139,15 @@ Run `python src/py_sonar_scanner`
 
 # Run the tests
 
-Run `poetry install` to install the dependencies
+Run `poetry install` to install the dependencies. By default, the dependencies are installed from a private repository. 
+
+If you wish to install the dependencies from the public PyPI repository, remove the following from `pyproject.toml`:
+```toml
+[[tool.poetry.source]]
+name = "repox"
+url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple/"
+priority = "default"
+```
 
 ## Run the tests only
 

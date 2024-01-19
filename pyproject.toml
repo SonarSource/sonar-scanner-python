@@ -83,3 +83,6 @@ target-version = ["py38", "py39", "py310", "py311", "py312"]
 [tool.coverage.run]
 branch = true
 relative_files = true
+
+[tool.pytype]
+inputs = ['src']
