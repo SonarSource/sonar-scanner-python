@@ -20,8 +20,8 @@
 import os
 import unittest
 from unittest.mock import patch, Mock
-from py_sonar_scanner.configuration import Configuration
-from py_sonar_scanner.logger import ApplicationLogger
+from pysonar.configuration import Configuration
+from pysonar.logger import ApplicationLogger
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 TEST_TOML_FILE_POETRY = "test_toml_file_poetry.toml"
@@ -30,7 +30,7 @@ SAMPLE_SCANNER_PATH = "path/to/scanner/py-sonar-scanner"
 
 
 class TestConfiguration(unittest.TestCase):
-    @patch("py_sonar_scanner.configuration.sys")
+    @patch("pysonar.configuration.sys")
     def test_argument_parsing(self, mock_sys):
         configuration = Configuration()
         self.assertFalse(configuration.is_debug())
@@ -80,7 +80,7 @@ class TestConfiguration(unittest.TestCase):
         configuration.setup()
         self.assertTrue(configuration.is_debug())
 
-    @patch("py_sonar_scanner.configuration.sys")
+    @patch("pysonar.configuration.sys")
     def test_dict_with_no_valid_values(self, mock_sys):
         configuration = Configuration()
         mock_sys.argv = [SAMPLE_SCANNER_PATH]
@@ -100,7 +100,7 @@ class TestConfiguration(unittest.TestCase):
         configuration.setup()
         self.assertListEqual(configuration.scan_arguments, [])
 
-    @patch("py_sonar_scanner.configuration.sys")
+    @patch("pysonar.configuration.sys")
     def test_dict_with_valid_values(self, mock_sys):
         configuration = Configuration()
         mock_sys.argv = [SAMPLE_SCANNER_PATH]
@@ -127,7 +127,7 @@ class TestConfiguration(unittest.TestCase):
             configuration.scan_arguments, ["-Dsonar.property1=value1", "-Dsonar.property_class.sub_property=sub_value"]
         )
 
-    @patch("py_sonar_scanner.configuration.sys")
+    @patch("pysonar.configuration.sys")
     def test_toml_with_valid_values(self, mock_sys):
         configuration = Configuration()
         toml_file_path = os.path.join(CURRENT_DIR, "resources", TEST_TOML_FILE_POETRY)
@@ -142,7 +142,7 @@ class TestConfiguration(unittest.TestCase):
             ],
         )
 
-    @patch("py_sonar_scanner.configuration.sys")
+    @patch("pysonar.configuration.sys")
     def test_toml_overridden_common_properties(self, mock_sys):
         configuration = Configuration()
         toml_file_path = os.path.join(CURRENT_DIR, "resources", TEST_TOML_FILE_POETRY)
@@ -159,7 +159,7 @@ class TestConfiguration(unittest.TestCase):
             ],
         )
 
-    @patch("py_sonar_scanner.configuration.sys")
+    @patch("pysonar.configuration.sys")
     def test_toml_no_common_properties(self, mock_sys):
         configuration = Configuration()
         toml_file_path = os.path.join(CURRENT_DIR, "resources", TOML_NO_COMMON_PROPERTIES)
@@ -170,7 +170,7 @@ class TestConfiguration(unittest.TestCase):
             ["-Dsonar.project.name=my_project_name", "-Dsonar.python.version=3.10", "-DsomeProp"],
         )
 
-    @patch("py_sonar_scanner.configuration.sys")
+    @patch("pysonar.configuration.sys")
     def test_duplicate_values_toml_cli(self, mock_sys):
         configuration = Configuration()
         toml_file_path = os.path.join(CURRENT_DIR, "resources", TEST_TOML_FILE_POETRY)
@@ -187,7 +187,7 @@ class TestConfiguration(unittest.TestCase):
         )
 
     @patch("builtins.open")
-    @patch("py_sonar_scanner.configuration.sys")
+    @patch("pysonar.configuration.sys")
     def test_error_while_reading_toml_file(self, mock_sys, mock_open):
         toml_file_path = os.path.join(CURRENT_DIR, "resources", TEST_TOML_FILE_POETRY)
         mock_sys.argv = ["path/to/scanner/py-sonar-scanner", f"-Dtoml.path={toml_file_path}"]
