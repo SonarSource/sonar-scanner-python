@@ -25,10 +25,10 @@ import shutil
 import urllib.request
 from urllib.error import HTTPError
 
-from py_sonar_scanner.logger import ApplicationLogger
-from py_sonar_scanner.configuration import Configuration
-from py_sonar_scanner.utils.binaries_utils import write_binaries, unzip_binaries
-from py_sonar_scanner.scanner import Scanner
+from pysonar.logger import ApplicationLogger
+from pysonar.configuration import Configuration
+from pysonar.utils.binaries_utils import write_binaries, unzip_binaries
+from pysonar.scanner import Scanner
 
 systems = {"Darwin": "macosx", "Windows": "windows"}
 

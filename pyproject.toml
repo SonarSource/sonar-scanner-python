@@ -3,8 +3,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-# PYSCAN-35: Decide on definitive package name
-name = "py-sonar-scanner"
+name = "pysonar"
 version = "0.0.6"
 authors = [
   "Guillaume Dequenne <guillaume.dequenne@sonarsource.com>",
@@ -35,7 +34,7 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Topic :: Software Development :: Quality Assurance",
 ]
-packages = [{ include = "py_sonar_scanner", from = "src" }]
+packages = [{ include = "pysonar", from = "src" }]
 
 [tool.poetry.dependencies]
 python = ">=3.8"
@@ -57,7 +56,7 @@ Homepage = "https://github.com/SonarSource/sonar-scanner-python"
 Repository = "https://github.com/SonarSource/sonar-scanner-python"
 
 [tool.poetry.scripts]
-"py-sonar-scanner" = "py_sonar_scanner.__main__:scan"
+"pysonar" = "pysonar.__main__:scan"
 
 [tool.poetry.group.dev.dependencies]
 coverage = ">=7.3.3"
