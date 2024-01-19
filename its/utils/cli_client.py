@@ -25,7 +25,7 @@ from utils.sonarqube_client import SonarQubeClient
 
 class CliClient():
 
-    SCANNER_CMD: str = "py-sonar-scanner"
+    SCANNER_CMD: str = "pysonar"
     SOURCES_FOLDER_PATH: str = os.path.join(
         os.path.dirname(__file__), "../sources")
 
