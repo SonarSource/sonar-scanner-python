@@ -139,7 +139,14 @@ Run `python src/py_sonar_scanner`
 
 # Run the tests
 
-Run `poetry install` to install the dependencies. By default, the dependencies are installed from a private repository. 
+Run `poetry install` to install the dependencies. By default, the dependencies are installed from the Repox private repository.
+
+To configure your credentials for Repox, go to your Repox user profile, and generate an identity token. Then set the following two environment variables:
+```markdown
+export POETRY_HTTP_BASIC_REPOX_USERNAME=<username>
+export POETRY_HTTP_BASIC_REPOX_PASSWORD=<password>
+```
+Where `<username>` is your Repox username and `<password>` is the identity token you generated.
 
 If you wish to install the dependencies from the public PyPI repository, remove the following from `pyproject.toml`:
 ```toml
