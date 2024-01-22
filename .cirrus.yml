@@ -1,0 +1,104 @@
+env:
+  ARTIFACTORY_URL: VAULT[development/kv/data/repox data.url]
+  ARTIFACTORY_PRIVATE_USERNAME: vault-${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader
+  ARTIFACTORY_PRIVATE_PASSWORD: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
+  ARTIFACTORY_DEPLOY_USERNAME: vault-${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-qa-deployer
+  ARTIFACTORY_DEPLOY_PASSWORD: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-qa-deployer access_token]
+  #Possible values for ARTIFACTORY_DEPLOY_REPO: sonarsource-private-qa, sonarsource-public-qa
+  ARTIFACTORY_DEPLOY_REPO: sonarsource-public-qa
+  REPOX_URL: VAULT[development/kv/data/repox data.url]
+  GITHUB_TOKEN: VAULT[development/github/token/licenses-ro token]
+  SONAR_TOKEN: VAULT[development/kv/data/sonarcloud data.token]
+  SONAR_HOST_URL: https://sonarcloud.io
+
+only_sonarsource_qa: &ONLY_SONARSOURCE_QA
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && ($CIRRUS_PR != "" || $CIRRUS_BRANCH == "master" || $CIRRUS_BRANCH =~ "feature/*" || $CIRRUS_BRANCH =~ "dogfood-on-.*")
+
+container_definition: &CONTAINER_DEFINITION
+  dockerfile: .cirrus/poetry.Dockerfile
+  cluster_name: ${CIRRUS_CLUSTER_NAME}
+  region: eu-central-1
+  builder_image_name: POETRY_VM
+  builder_role: cirrus-builder
+  builder_image: docker-builder-v*
+  builder_instance_type: t3.small
+  builder_subnet_id: ${CIRRUS_AWS_SUBNET}
+  zone: eu-central-1
+  namespace: default
+  use_in_memory_disk: true
+  docker_arguments:
+    CIRRUS_AWS_ACCOUNT: ${CIRRUS_AWS_ACCOUNT}
+  DEPLOY_PULL_REQUEST: true
+  cpu: 3
+  memory: 8G
+
+
+.poetry_template: &POETRY_TEMPLATE
+  <<: *ONLY_SONARSOURCE_QA
+  eks_container:
+    <<: *CONTAINER_DEFINITION
+  poetry_script:
+    - poetry config repositories.repox "${REPOX_URL}/api/pypi/sonarsource-pypi/simple/"
+    - poetry config http-basic.repox "${ARTIFACTORY_PRIVATE_USERNAME}" "${ARTIFACTORY_PRIVATE_PASSWORD}"
+    - poetry install
+
+formatting_task:
+  <<: *POETRY_TEMPLATE
+  alias: formatting
+  name: "Formatting"
+  formatting_script:
+    - poetry run black src/ tests/ --check
+    - poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d src/
+    - poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d tests/
+    - poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d its/ -x its/sources/**.py
+    - git diff --name-only --exit-code ./src ./tests ./its
+
+analysis_task:
+  <<: *POETRY_TEMPLATE
+  alias: analysis
+  name: "SC Analysis"
+  analysis_script:
+    - poetry run pytest --cov-report=xml:coverage.xml --cov-config=pyproject.toml --cov=src --cov-branch tests
+    - sonar-scanner -Dsonar.organization=sonarsource -DbuildNumber=${CI_BUILD_NUMBER}
+
+qa_task:
+  alias: qa
+  matrix:
+    - name: "Test Python 3.8"
+      eks_container:
+        docker_arguments:
+          PYTHON_VERSION: 3.8.18
+    - name: "Test Python 3.9"
+      eks_container:
+        docker_arguments:
+          PYTHON_VERSION: 3.9.18
+    - name: "Test Python 3.10"
+      eks_container:
+        docker_arguments:
+          PYTHON_VERSION: 3.10.13
+    - name: "Test Python 3.11"
+      eks_container:
+        docker_arguments:
+          PYTHON_VERSION: 3.11.7
+    - name: "Test Python 3.12"
+      eks_container:
+        docker_arguments:
+          PYTHON_VERSION: 3.12.1
+  <<: *POETRY_TEMPLATE
+  qa_script:
+    - poetry run pytest tests/
+
+publish_task:
+  depends_on:
+    - formatting
+    - analysis
+    - qa
+  <<: *POETRY_TEMPLATE
+  name: "Publish (Repox)"
+  publish_script:
+    - poetry version patch
+    - poetry version $(poetry version -s).dev${CI_BUILD_NUMBER}
+    - poetry build
+    - poetry config repositories.sonarsource https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi-builds
+    - poetry publish -r sonarsource --username ${ARTIFACTORY_DEPLOY_USERNAME} --password ${ARTIFACTORY_DEPLOY_PASSWORD} --verbose
+
