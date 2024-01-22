@@ -59,7 +59,7 @@ class TestConfiguration(unittest.TestCase):
         configuration.setup()
         self.assertListEqual(
             configuration.scan_arguments,
-            ["-Dsonar.a=b", "-Dsonar.c=d", f"-Dtoml.path={CURRENT_DIR}/resources/pyproject.toml"],
+            ["-Dsonar.a=b", "-Dsonar.c=d"],
         )
 
         mock_sys.argv = [SAMPLE_SCANNER_PATH, f"-Dproject.home={CURRENT_DIR}/resources/"]
@@ -139,7 +139,6 @@ class TestConfiguration(unittest.TestCase):
                 "-Dsonar.project.name=overridden_name",
                 "-Dsonar.python.version=3.10",
                 "-Dsonar.property_class.property1=value1",
-                f"-Dtoml.path={CURRENT_DIR}/resources/{TEST_TOML_FILE_POETRY}",
             ],
         )
 
@@ -153,12 +152,10 @@ class TestConfiguration(unittest.TestCase):
             configuration.scan_arguments,
             [
                 "-Dsonar.project.name=my_name",
-                "-Dsonar.project.version=0.0.1",
+                "-Dsonar.projectVersion=0.0.1",
                 "-Dsonar.project.name=overridden_name",
                 "-Dsonar.python.version=3.10",
                 "-Dsonar.property_class.property1=value1",
-                f"-Dtoml.path={CURRENT_DIR}/resources/{TEST_TOML_FILE_POETRY}",
-                "-read.project.config",
             ],
         )
 
@@ -166,16 +163,11 @@ class TestConfiguration(unittest.TestCase):
     def test_toml_no_common_properties(self, mock_sys):
         configuration = Configuration()
         toml_file_path = os.path.join(CURRENT_DIR, "resources", TOML_NO_COMMON_PROPERTIES)
-        mock_sys.argv = [SAMPLE_SCANNER_PATH, f"-Dtoml.path={toml_file_path}", "-read.project.config"]
+        mock_sys.argv = [SAMPLE_SCANNER_PATH, f"-Dtoml.path={toml_file_path}", "-read.project.config", "-DsomeProp"]
         configuration.setup()
         self.assertListEqual(
             configuration.scan_arguments,
-            [
-                "-Dsonar.project.name=my_project_name",
-                "-Dsonar.python.version=3.10",
-                f"-Dtoml.path={CURRENT_DIR}/resources/{TOML_NO_COMMON_PROPERTIES}",
-                "-read.project.config",
-            ],
+            ["-Dsonar.project.name=my_project_name", "-Dsonar.python.version=3.10", "-DsomeProp"],
         )
 
     @patch("py_sonar_scanner.configuration.sys")
@@ -190,7 +182,6 @@ class TestConfiguration(unittest.TestCase):
                 "-Dsonar.project.name=overridden_name",
                 "-Dsonar.python.version=3.10",
                 "-Dsonar.property_class.property1=value1",
-                f"-Dtoml.path={CURRENT_DIR}/resources/{TEST_TOML_FILE_POETRY}",
                 "-Dsonar.project.name=second_override",
             ],
         )
@@ -206,12 +197,7 @@ class TestConfiguration(unittest.TestCase):
             configuration = Configuration()
             configuration.setup()
 
-            self.assertListEqual(
-                configuration.scan_arguments,
-                [
-                    f"-Dtoml.path={CURRENT_DIR}/resources/{TEST_TOML_FILE_POETRY}",
-                ],
-            )
+            self.assertListEqual(configuration.scan_arguments, [])
 
             self.assertEqual(
                 "Error while opening .toml file: Test error while opening file.", log.records[0].getMessage()

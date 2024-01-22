@@ -27,3 +27,30 @@ def test_minimal_project(sonarqube_client: SonarQubeClient):
     response = sonarqube_client.get_project_issues("minimal")
     data = response.json()
     assert len(data["issues"]) == 1
+    analyses_data = sonarqube_client.get_project_analyses("minimal").json()
+    latest_analysis_data = analyses_data['analyses'][0]
+    assert latest_analysis_data['projectVersion'] == '1.2'
+
+
+def test_minimal_project_read_poetry_data(sonarqube_client: SonarQubeClient):
+    process = CliClient().run_analysis(sonarqube_client, params=["-read.project.config"], sources_dir="minimal")
+    assert process.returncode == 0
+    response = sonarqube_client.get_project_issues("minimal")
+    data = response.json()
+    assert len(data["issues"]) == 1
+    analyses_data = sonarqube_client.get_project_analyses("minimal").json()
+    latest_analysis_data = analyses_data['analyses'][0]
+    assert latest_analysis_data['projectVersion'] == '1.5'
+
+
+def test_minimal_project_unexpected_arg(sonarqube_client: SonarQubeClient):
+    process = CliClient().run_analysis(sonarqube_client, params=["-unexpected"], sources_dir="minimal")
+    assert process.returncode == 0
+    assert "ERROR: Unrecognized option: -unexpected" in process.stdout
+
+
+def test_minimal_project_wrong_home(sonarqube_client: SonarQubeClient):
+    process = CliClient().run_analysis(sonarqube_client, params=["-Dproject.home='unknown/path'"],
+                                       sources_dir="minimal")
+    assert process.returncode == 0
+    assert "Project home must be an existing directory" in process.stdout
