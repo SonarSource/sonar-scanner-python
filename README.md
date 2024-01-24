@@ -1,4 +1,4 @@
-# sonar-scanner-python
+# pysonar
 A wrapper around SonarScanner CLI, available on PyPI.
 
 # Installation
