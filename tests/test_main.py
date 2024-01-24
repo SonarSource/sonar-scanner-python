@@ -20,13 +20,13 @@
 import logging
 import unittest
 from unittest.mock import patch, Mock, MagicMock
-from py_sonar_scanner.__main__ import scan
-from py_sonar_scanner.logger import ApplicationLogger
+from pysonar.__main__ import scan
+from pysonar.logger import ApplicationLogger
 
 
 class TestMain(unittest.TestCase):
-    @patch("py_sonar_scanner.__main__.Environment")
-    @patch("py_sonar_scanner.__main__.Configuration")
+    @patch("pysonar.__main__.Environment")
+    @patch("pysonar.__main__.Configuration")
     def test_main_scan(self, mock_cfg, mock_env):
         configuration_instance = MagicMock()
         configuration_instance.setup = Mock()
@@ -41,8 +41,8 @@ class TestMain(unittest.TestCase):
         configuration_instance.setup.assert_called_once()
         environment_instance.scan.assert_called_once()
 
-    @patch("py_sonar_scanner.__main__.Environment")
-    @patch("py_sonar_scanner.configuration.sys")
+    @patch("pysonar.__main__.Environment")
+    @patch("pysonar.configuration.sys")
     def test_main_scan_fail(self, mock_sys, mock_env):
         mock_sys.argv = ["path/to/scanner/py-sonar-scanner"]
         environment_instance = MagicMock()
@@ -60,9 +60,9 @@ class TestMain(unittest.TestCase):
             )
             self.assertEqual(logging.INFO, log.records[1].levelno)
 
-    @patch("py_sonar_scanner.scanner.Scanner")
-    @patch("py_sonar_scanner.__main__.Environment")
-    @patch("py_sonar_scanner.configuration.sys")
+    @patch("pysonar.scanner.Scanner")
+    @patch("pysonar.__main__.Environment")
+    @patch("pysonar.configuration.sys")
     def test_main_scan_debug_fail(self, mock_sys, mock_env, mock_scanner):
         mock_sys.argv = ["path/to/scanner/py-sonar-scanner", "-X"]
 

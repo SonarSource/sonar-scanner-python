@@ -20,13 +20,13 @@
 import unittest
 from unittest.mock import patch, Mock
 from urllib.error import HTTPError
-from py_sonar_scanner.configuration import Configuration
-from py_sonar_scanner.environment import Environment
+from pysonar.configuration import Configuration
+from pysonar.environment import Environment
 
 
 class TestEnvironment(unittest.TestCase):
-    @patch("py_sonar_scanner.environment.write_binaries")
-    @patch("py_sonar_scanner.environment.urllib.request.urlopen")
+    @patch("pysonar.environment.write_binaries")
+    @patch("pysonar.environment.urllib.request.urlopen")
     def test_download_scanner(self, mock_urlopen, mock_write_binaries):
         cfg = Configuration()
         environment = Environment(cfg)
@@ -40,8 +40,8 @@ class TestEnvironment(unittest.TestCase):
         mock_write_binaries.assert_called_once_with(bytes(), expected_destination)
         assert destination == expected_destination
 
-    @patch("py_sonar_scanner.environment.write_binaries")
-    @patch("py_sonar_scanner.environment.urllib.request.urlopen")
+    @patch("pysonar.environment.write_binaries")
+    @patch("pysonar.environment.urllib.request.urlopen")
     def test_download_scanner_http_error(self, mock_urlopen, mock_write_binaries):
         cfg = Configuration()
         environment = Environment(cfg)
@@ -57,8 +57,8 @@ class TestEnvironment(unittest.TestCase):
             expected_error_message = "ERROR: could not download scanner binaries - 504 - Test"
             assert log.records[0].getMessage() == expected_error_message
 
-    @patch("py_sonar_scanner.environment.unzip_binaries")
-    @patch("py_sonar_scanner.environment.os")
+    @patch("pysonar.environment.unzip_binaries")
+    @patch("pysonar.environment.os")
     def test_install_scanner(self, mock_os, mock_unzip_binaries):
         cfg = Configuration()
         scanner_path = "scanner_path"
@@ -95,7 +95,7 @@ class TestEnvironment(unittest.TestCase):
         environment.cleanup.assert_called_once()
         assert cfg.sonar_scanner_executable_path == "sonar-scanner"
 
-    @patch("py_sonar_scanner.environment.systems")
+    @patch("pysonar.environment.systems")
     def test_setup_when_scanner_is_not_on_path(self, mock_systems):
         cfg = Configuration()
         cfg.sonar_scanner_path = "path"
@@ -116,8 +116,8 @@ class TestEnvironment(unittest.TestCase):
 
         assert cfg.sonar_scanner_executable_path == expected_path
 
-    @patch("py_sonar_scanner.environment.os.path")
-    @patch("py_sonar_scanner.environment.shutil")
+    @patch("pysonar.environment.os.path")
+    @patch("pysonar.environment.shutil")
     def test_cleanup_when_scanner_path_exists(self, mock_shutil, mock_os_path):
         cfg = Configuration()
         scanner_path = "path"
@@ -131,8 +131,8 @@ class TestEnvironment(unittest.TestCase):
         mock_os_path.exists.assert_called_once_with(scanner_path)
         mock_shutil.rmtree.assert_called_once_with(scanner_path)
 
-    @patch("py_sonar_scanner.environment.os.path")
-    @patch("py_sonar_scanner.environment.shutil")
+    @patch("pysonar.environment.os.path")
+    @patch("pysonar.environment.shutil")
     def test_cleanup_when_scanner_path_does_not_exist(self, mock_shutil, mock_os_path):
         cfg = Configuration()
         scanner_path = "path"
@@ -146,7 +146,7 @@ class TestEnvironment(unittest.TestCase):
         mock_os_path.exists.assert_called_once_with(scanner_path)
         assert not mock_shutil.rmtree.called
 
-    @patch("py_sonar_scanner.environment.shutil")
+    @patch("pysonar.environment.shutil")
     def test_is_sonar_scanner_on_path(self, mock_shutil):
         cfg = Configuration()
         scanner_path = "path"

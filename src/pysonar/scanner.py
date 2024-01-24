@@ -22,8 +22,8 @@ from logging import Logger
 from threading import Thread
 from subprocess import Popen, PIPE
 
-from py_sonar_scanner.logger import ApplicationLogger
-from py_sonar_scanner.configuration import Configuration
+from pysonar.logger import ApplicationLogger
+from pysonar.configuration import Configuration
 
 
 class Scanner:

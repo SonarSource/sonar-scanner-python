@@ -20,8 +20,8 @@
 import unittest
 from unittest.mock import Mock, patch, call
 import threading
-from py_sonar_scanner.scanner import Scanner
-from py_sonar_scanner.configuration import Configuration
+from pysonar.scanner import Scanner
+from pysonar.configuration import Configuration
 
 
 class TestScanner(unittest.TestCase):
@@ -66,7 +66,7 @@ class TestScanner(unittest.TestCase):
         process.wait.assert_called_once()
         self.assertEqual(return_code, success_code)
 
-    @patch("py_sonar_scanner.scanner.Thread")
+    @patch("pysonar.scanner.Thread")
     def test_scan(self, mock_thread):
         scanner = Scanner(Configuration())
         process = Mock()
@@ -82,7 +82,7 @@ class TestScanner(unittest.TestCase):
         self.assertEqual(mock_thread.call_count, 2)
         scanner.process_output.assert_called_once()
 
-    @patch("py_sonar_scanner.scanner.Popen")
+    @patch("pysonar.scanner.Popen")
     def test_execute_command(self, mock_popen):
         from subprocess import PIPE
 
