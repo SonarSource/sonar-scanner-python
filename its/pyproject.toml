@@ -50,7 +50,7 @@ py-sonar-scanner = { "path" = "../" }
 [[tool.poetry.source]]
 name = "repox"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple/"
-priority = "default"
+priority = "primary"
 
 [[tool.poetry.source]]
 name = "PyPI"

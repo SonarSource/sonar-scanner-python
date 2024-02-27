@@ -46,7 +46,7 @@ pyfiglet= ">=0.8.0"
 [[tool.poetry.source]]
 name = "repox"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple/"
-priority = "default"
+priority = "primary"
 
 [[tool.poetry.source]]
 name = "PyPI"
