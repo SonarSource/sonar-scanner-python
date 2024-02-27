@@ -19,7 +19,7 @@ jobs:
     steps:
     - name: Get vault secrets
       id: secrets
-      uses: SonarSource/vault-action-wrapper@v2
+      uses: SonarSource/vault-action-wrapper@v3
       with:
         secrets: |
           development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader role | ARTIFACTORY_ROLE;
