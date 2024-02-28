@@ -52,10 +52,6 @@ name = "repox"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple/"
 priority = "primary"
 
-[[tool.poetry.source]]
-name = "PyPI"
-priority = "primary"
-
 [tool.pytest.ini_options]
 addopts = [
   "--import-mode=importlib",
