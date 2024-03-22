@@ -184,12 +184,16 @@ Also `dist/*` can be a bit more precise to upload a specific version of the bina
 
 # Update the package version
 
-To update the version use the hatch command:
+To update the version use the Poetry command:
 
 ```
 poetry version "X.Y.Z"
 ```
-For more options on the version update see [the hatch documentation](https://hatch.pypa.io/latest/version/)
+or
+```shell
+poetry version patch
+```
+For more options on the version update see [the Poetry documentation](https://python-poetry.org/docs/cli/#version)
 
 # Tooling 
 ## Formatting 

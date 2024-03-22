@@ -25,10 +25,7 @@ RUN curl "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-
 USER sonarsource
 
 RUN curl -sSL https://install.python-poetry.org | python3 -
-ENV PATH=/usr/bin:$PATH
-ENV PATH="/home/sonarsource/bin:${PATH}"
 ENV PATH="${PATH}:/opt/sonar-scanner/bin"
 ENV PATH="${PATH}:/home/sonarsource/.local/bin"
 
 ENV SONARCLOUD_ANALYSIS true
-
