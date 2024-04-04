@@ -175,12 +175,7 @@ The binaries will be located in the `dist` directory at the root level of the pr
 
 # Publish the script
 
-Run if needed `python3 -python3 -m pip install --upgrade twine` to upgrade to the latest version of twine
-
-Run `python3 -m twine upload --repository testpypi dist/*` 
-
-`--repository testpypi` can be removed to push to the prod PyPI instance.
-Also `dist/*` can be a bit more precise to upload a specific version of the binaries
+Create a GitHub release.
 
 # Update the package version
 
