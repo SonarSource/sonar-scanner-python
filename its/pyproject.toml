@@ -6,12 +6,7 @@ build-backend = "poetry.core.masonry.api"
 # PYSCAN-35: Decide on definitive package name
 name = "pysonar-its"
 version = "0.0.1"
-authors = [
-  "Guillaume Dequenne <guillaume.dequenne@sonarsource.com>",
-  "Jeremi Do Dinh <jeremi.dodinh@sonarsource.com>",
-  "Maksim Grebeniuk <maksim.grebeniuk@sonarsource.com>",
-  "David Kunzmann <david.kunzmann@sonarsource.com>"
-]
+authors = ['Python Squad <analysis.python@sonarsource.com>']
 description = "Integration tests for Sonar Scanner for the Python Ecosystem"
 readme = "README.md"
 license = "LGPL-3.0-only"
