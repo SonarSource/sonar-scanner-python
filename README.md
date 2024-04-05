@@ -139,21 +139,19 @@ Run `python src/pysonar`
 
 # Run the tests
 
-Run `poetry install` to install the dependencies. By default, the dependencies are installed from the Repox private repository.
+Run `poetry install` to install the dependencies. By default, the dependencies are installed from the Jfrog private repository.
 
-To configure your credentials for Repox, go to your Repox user profile, and generate an identity token. Then set the following two environment variables:
-```markdown
-export POETRY_HTTP_BASIC_REPOX_USERNAME=<username>
-export POETRY_HTTP_BASIC_REPOX_PASSWORD=<password>
+To configure your credentials for Jfrog, go to your Jfrog user profile, and generate an identity token. Then set the following two environment variables:
+```shell
+poetry config http-basic.jfrog-server <username> <password>
 ```
-Where `<username>` is your Repox username and `<password>` is the identity token you generated.
+Where `<username>` is your Jfrog username and `<password>` is the identity token you generated.
 
-If you wish to install the dependencies from the public PyPI repository, remove the following from `pyproject.toml`:
+If you wish to install the dependencies from the public PyPI repository, remove the following source from `pyproject.toml`:
 ```toml
 [[tool.poetry.source]]
-name = "repox"
-url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple/"
-priority = "default"
+name = 'jfrog-server'
+url = 'https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple'
 ```
 
 ## Run the tests only
@@ -175,12 +173,7 @@ The binaries will be located in the `dist` directory at the root level of the pr
 
 # Publish the script
 
-Run if needed `python3 -python3 -m pip install --upgrade twine` to upgrade to the latest version of twine
-
-Run `python3 -m twine upload --repository testpypi dist/*` 
-
-`--repository testpypi` can be removed to push to the prod PyPI instance.
-Also `dist/*` can be a bit more precise to upload a specific version of the binaries
+Create a GitHub release.
 
 # Update the package version
 
@@ -210,12 +203,12 @@ Run `poetry run mypy src/ tests/ --ignore-missing-imports` to execute the type c
 Before pushing, please check if all files have a license header.
 If not all files have a license header please execute: 
 ```
-poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2023 -n "Sonar Scanner Python" -E .py -d src/
-poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2023 -n "Sonar Scanner Python" -E .py -d tests/
+poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d src/
+poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d tests/
 ```
 
 # License
 
-Copyright 2011-2023 SonarSource.
+Copyright 2011-2024 SonarSource.
 
 Licensed under the [GNU Lesser General Public License, Version 3.0](http://www.gnu.org/licenses/lgpl.txt)
