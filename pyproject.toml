@@ -18,7 +18,7 @@ branch = true
 relative_files = true
 
 [tool.poetry]
-authors = ['Guillaume Dequenne <guillaume.dequenne@sonarsource.com>', 'Jeremi Do Dinh <jeremi.dodinh@sonarsource.com>', 'Maksim Grebeniuk <maksim.grebeniuk@sonarsource.com>', 'David Kunzmann <david.kunzmann@sonarsource.com>']
+authors = ['Python Squad <analysis.python@sonarsource.com>']
 classifiers = ['Environment :: Console', 'Intended Audience :: Developers', 'Operating System :: OS Independent', 'Programming Language :: Python', 'Programming Language :: Python :: 3', 'Programming Language :: Python :: 3 :: Only', 'Programming Language :: Python :: 3.8', 'Programming Language :: Python :: 3.9', 'Programming Language :: Python :: 3.10', 'Programming Language :: Python :: 3.11', 'Programming Language :: Python :: 3.12', 'Topic :: Software Development :: Quality Assurance']
 description = 'Sonar Scanner for the Python Ecosystem'
 keywords = ['sonar', 'sonarqube', 'sonarcloud', 'cleancode']
