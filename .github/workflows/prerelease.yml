@@ -1,18 +1,16 @@
-name: sonar-release
-# This workflow is triggered when publishing a new GitHub release
+name: sonar-pre-release
+# This workflow is triggered when publishing a new GitHub pre-release
 on:
   release:
     types:
-      - published
+      - prereleased
 
 jobs:
-  release:
-    if: "!github.event.release.prerelease"
+  prerelease:
     permissions:
       id-token: write
       contents: write
     uses: SonarSource/gh-action_release/.github/workflows/main.yaml@v5
     with:
-      publishToPyPI: false
       publishToTestPyPI: true
       skipPythonReleasabilityChecks: true
