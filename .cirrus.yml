@@ -95,6 +95,21 @@ qa_task:
   qa_script:
     - poetry run pytest tests/
 
+its_task:
+  alias : integration-tests
+  additional_containers:
+    - name: sq_last
+      image: docker.io/sonarqube:community
+      port: 9000
+      cpu: 4
+      memory: 8G
+  <<: *POETRY_TEMPLATE
+  its_script:
+    - while ! curl -X GET 'localhost:9000/' | grep "data-server-status=\"UP\""; do sleep 10; echo SLEEP;  done 
+    - cd its/
+    - poetry run pytest 
+
+
 build_task:
   <<: *POETRY_TEMPLATE
   alias: build
@@ -107,6 +122,7 @@ promote_task:
     - analysis
     - qa
     - build
+    - its
   env:
     ARTIFACTORY_PROMOTE_ACCESS_TOKEN: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promoter access_token]
     GITHUB_TOKEN: VAULT[development/github/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promotion token]
