@@ -43,13 +43,8 @@ requests = "2.31.0"
 pysonar = { "path" = "../" }
 
 [[tool.poetry.source]]
-name = "repox"
-url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple/"
-priority = "default"
-
-[[tool.poetry.source]]
-name = "PyPI"
-priority = "primary"
+name = 'jfrog-server'
+url = 'https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple'
 
 [tool.pytest.ini_options]
 addopts = [
