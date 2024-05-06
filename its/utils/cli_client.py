@@ -25,7 +25,7 @@ from utils.sonarqube_client import SonarQubeClient
 
 class CliClient():
 
-    SCANNER_CMD: str = ["poetry",  "run", "pysonar"]
+    SCANNER_CMD: str = ["pysonar"]
     SOURCES_FOLDER_PATH: str = os.path.join(
         os.path.dirname(__file__), "../sources")
 
@@ -37,6 +37,6 @@ class CliClient():
         print("WORKDIR = ", workdir)
         print("COMMAND = ", command)
         process = subprocess.run(command, stdout=subprocess.PIPE,
-                                 stderr=subprocess.STDOUT, text=True, cwd=workdir)
+                                 stderr=subprocess.STDOUT, text=True, cwd=workdir, env=os.environ.copy())
         client.wait_for_analysis_completion()
         return process

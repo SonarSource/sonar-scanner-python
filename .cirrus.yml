@@ -121,7 +121,7 @@ its_task:
     - pwd
     - poetry env info
     - poetry debug info
-    - poetry run pysonar --help
+    - pysonar --help
     - poetry run pytest 
 
 
