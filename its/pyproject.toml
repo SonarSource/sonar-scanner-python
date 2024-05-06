@@ -46,6 +46,10 @@ pysonar = { "path" = "../" }
 name = 'jfrog-server'
 url = 'https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple'
 
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.0"
+
 [tool.pytest.ini_options]
 addopts = [
   "--import-mode=importlib",
