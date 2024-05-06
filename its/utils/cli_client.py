@@ -34,6 +34,8 @@ class CliClient():
             params = []
         workdir = os.path.join(self.SOURCES_FOLDER_PATH, sources_dir)
         command = [self.SCANNER_CMD] + params
+        print("WORKDIR = ", workdir)
+        print("COMMAND = ", command)
         process = subprocess.run(command, stdout=subprocess.PIPE,
                                  stderr=subprocess.STDOUT, text=True, cwd=workdir)
         client.wait_for_analysis_completion()
