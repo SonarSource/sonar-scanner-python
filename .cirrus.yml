@@ -105,7 +105,9 @@ its_task:
   sonarqube_cache:
     folder: sonarqube_cache/
     populate_script: mkdir -p sonarqube_cache && wget -q https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.5.1.90531.zip -O sonarqube_cache/sonarqube.zip
-  <<: *POETRY_TEMPLATE
+  # <<: *POETRY_TEMPLATE
+  eks_container:
+    <<: *CONTAINER_DEFINITION
   its_script:
     - ls -la
     - unzip -q sonarqube_cache/sonarqube.zip -d sonarqube
