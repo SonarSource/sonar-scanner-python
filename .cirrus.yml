@@ -105,9 +105,9 @@ its_task:
   sonarqube_cache:
     folder: sonarqube_cache/
     populate_script: mkdir -p sonarqube_cache && wget -q https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.5.1.90531.zip -O sonarqube_cache/sonarqube.zip
-  # <<: *POETRY_TEMPLATE
-  eks_container:
-    <<: *CONTAINER_DEFINITION
+  <<: *POETRY_TEMPLATE
+  # eks_container:
+  #   <<: *CONTAINER_DEFINITION
   its_script:
     - ls -la
     - unzip -q sonarqube_cache/sonarqube.zip -d sonarqube
@@ -116,7 +116,8 @@ its_task:
     - cd -
     - while ! curl -X GET 'localhost:9000/' | grep "data-server-status=\"UP\""; do sleep 10; echo SLEEP;  done 
     - cd its/
-    - poetry install
+    - jfrog poetry-config --server-id-resolve repox --repo-resolve sonarsource-pypi
+    - jfrog poetry install
     - poetry run pytest 
 
 
