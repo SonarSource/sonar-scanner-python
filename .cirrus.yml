@@ -120,8 +120,7 @@ its_task:
     - jfrog poetry install
     - pwd
     - poetry env info --path
-    - source $(poetry env info --path)/bin/activate
-    - pysonar --help
+    - poetry run pysonar --help
     - poetry run pytest 
 
 

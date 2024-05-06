@@ -30,7 +30,7 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Topic :: Software Development :: Quality Assurance",
 ]
-
+package-mode = false
 packages = [{ include = "utils" }]
 
 [tool.poetry.dependencies]
