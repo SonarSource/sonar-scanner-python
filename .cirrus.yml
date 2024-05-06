@@ -121,6 +121,7 @@ its_task:
     - pwd
     - poetry env info
     - poetry debug info
+    - source $(poetry env info --path)/bin/activate
     - pysonar --help
     - poetry run pytest 
 
