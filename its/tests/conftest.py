@@ -38,17 +38,25 @@ def check_health(sonarqube_client: SonarQubeClient) -> bool:
         return False
 
 
-@pytest.fixture(scope="session")
-def sonarqube_client(docker_ip, docker_services) -> SonarQubeClient:
-    """Ensure that sonarqube service is up and responsive."""
-    port = docker_services.port_for("sonarqube", 9000)
-    url = f"http://{docker_ip}:{port}"
-    sonarqube_client = SonarQubeClient(url)
-    docker_services.wait_until_responsive(
-        timeout=120.0, pause=5, check=lambda: check_health(sonarqube_client)
-    )
-    response = sonarqube_client.get_system_status()
-    assert response.status_code == 200
-    status = response.json()["status"]
-    assert status == "UP"
-    return sonarqube_client
+if "CIRRUS_OS" in os.environ:
+    @pytest.fixture(scope="session")
+    def sonarqube_client() -> SonarQubeClient:
+        """Ensure that sonarqube service is up and responsive."""
+        url = f"http://localhost:9000"
+        sonarqube_client = SonarQubeClient(url)
+        return sonarqube_client
+else:
+    @pytest.fixture(scope="session")
+    def sonarqube_client(docker_ip, docker_services) -> SonarQubeClient:
+        """Ensure that sonarqube service is up and responsive."""
+        port = docker_services.port_for("sonarqube", 9000)
+        url = f"http://{docker_ip}:{port}"
+        sonarqube_client = SonarQubeClient(url)
+        docker_services.wait_until_responsive(
+            timeout=120.0, pause=5, check=lambda: check_health(sonarqube_client)
+        )
+        response = sonarqube_client.get_system_status()
+        assert response.status_code == 200
+        status = response.json()["status"]
+        assert status == "UP"
+        return sonarqube_client
