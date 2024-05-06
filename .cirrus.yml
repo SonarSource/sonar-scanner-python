@@ -123,7 +123,7 @@ its_task:
     - poetry debug info
     - source $(poetry env info --path)/bin/activate
     - pysonar --help
-    - poetry run pytest 
+    - pytest 
 
 
 build_task:
