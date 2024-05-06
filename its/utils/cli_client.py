@@ -25,7 +25,7 @@ from utils.sonarqube_client import SonarQubeClient
 
 class CliClient():
 
-    SCANNER_CMD: str = "pysonar"
+    SCANNER_CMD: str = ["poetry",  "run", "pysonar"]
     SOURCES_FOLDER_PATH: str = os.path.join(
         os.path.dirname(__file__), "../sources")
 
@@ -33,7 +33,7 @@ class CliClient():
         if params is None:
             params = []
         workdir = os.path.join(self.SOURCES_FOLDER_PATH, sources_dir)
-        command = [self.SCANNER_CMD] + params
+        command = self.SCANNER_CMD + params
         print("WORKDIR = ", workdir)
         print("COMMAND = ", command)
         process = subprocess.run(command, stdout=subprocess.PIPE,
