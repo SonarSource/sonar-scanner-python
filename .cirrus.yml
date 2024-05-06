@@ -119,7 +119,8 @@ its_task:
     - jfrog poetry-config --server-id-resolve repox --repo-resolve sonarsource-pypi
     - jfrog poetry install
     - pwd
-    - poetry env info --path
+    - poetry env info
+    - poetry debug info
     - poetry run pysonar --help
     - poetry run pytest 
 
