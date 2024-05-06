@@ -41,7 +41,7 @@ class Configuration:
     def __init__(self):
         self.log = ApplicationLogger.get_logger()
         self.sonar_scanner_path = ".scanner"
-        self.sonar_scanner_version = "4.6.2.2472"
+        self.sonar_scanner_version = "5.0.1.3006"
         self.sonar_scanner_executable_path = ""
         self.scan_arguments = []
         self.wrapper_arguments = argparse.Namespace(debug=False, read_project_config=False)

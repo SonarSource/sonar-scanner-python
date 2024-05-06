@@ -1,6 +1,11 @@
 # pysonar
 A wrapper around SonarScanner CLI, available on PyPI.
 
+# Requirements
+
+ - SonarScanner v9.9 or higher
+ - Python 3.8 or above
+
 # Installation
 
 Install with pip:
