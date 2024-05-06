@@ -6,7 +6,17 @@ on:
       - published
 
 jobs:
+  prerelease:
+    if: "github.event.release.prerelease"
+    permissions:
+      id-token: write
+      contents: write
+    uses: SonarSource/gh-action_release/.github/workflows/main.yaml@v5
+    with:
+      publishToTestPyPI: true
+      skipPythonReleasabilityChecks: true
   release:
+    if: "!github.event.release.prerelease"
     permissions:
       id-token: write
       contents: write
