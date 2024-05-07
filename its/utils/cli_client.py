@@ -37,5 +37,4 @@ class CliClient():
         process = subprocess.run(command, stdout=subprocess.PIPE,
                                  stderr=subprocess.STDOUT, text=True, cwd=workdir)
         client.wait_for_analysis_completion()
-        print("Output: ", process.stdout)
         return process
