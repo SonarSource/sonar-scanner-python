@@ -137,10 +137,13 @@ its_task:
     - cd $(ls -d sonarqube/*/)
     - ./bin/linux-x86-64/sonar.sh start
     - cd -
-    - while ! curl -X GET 'localhost:9000/' | grep "data-server-status=\"UP\""; do sleep 15; echo SLEEP;  done 
     - cd its/
     - jfrog poetry-config --server-id-resolve repox --repo-resolve sonarsource-pypi
     - jfrog poetry install
+    - while ! curl -X GET 'localhost:9000/' | grep "data-server-status=\"UP\""; do sleep 15; echo SLEEP;  done 
+    - unset SONAR_TOKEN
+    - unset SONARCLOUD_ANALYSIS
+    - unset SONAR_HOST_URL
     - poetry run pytest 
 
 promote_task:
