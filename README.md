@@ -1,6 +1,11 @@
 # pysonar
 A wrapper around SonarScanner CLI, available on PyPI.
 
+# Disclaimer 
+
+This project is currently in the Beta stage and APIs are subject to change. 
+These changes include configuration parameter names.
+
 # Requirements
 
  - SonarQube v9.9 or higher
