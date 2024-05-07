@@ -102,7 +102,8 @@ build_task:
   build_script: regular_poetry_build_publish
 
 its_task:
-  alias : integration-tests
+  name: "Integration Tests"
+  alias: its
   sonarqube_cache:
     folder: sonarqube_cache/
     populate_script: mkdir -p sonarqube_cache && wget -q https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.5.1.90531.zip -O sonarqube_cache/sonarqube.zip
