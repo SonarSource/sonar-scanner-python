@@ -8,8 +8,8 @@ env:
   SONAR_TOKEN: VAULT[development/kv/data/sonarcloud data.token]
   SONAR_HOST_URL: https://sonarcloud.io
   DEPLOY_PULL_REQUEST: 'true'
-  POETRY_VIRTUALENVS_PATH: ".cache/poetry/venvs"
-  POETRY_CACHE_DIR: ".cache/poetry/pypoetry"
+  POETRY_VIRTUALENVS_PATH: "~/.cache/poetry/venvs"
+  POETRY_CACHE_DIR: "~/.cache/poetry/pypoetry"
 
 only_if: $CIRRUS_USER_COLLABORATOR == "true" && $CIRRUS_TAG == "" && ($CIRRUS_PR != "" || $CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_BRANCH =~ "feature/*" || $CIRRUS_BRANCH =~ "dogfood-on-.*")
 
@@ -30,7 +30,7 @@ container_definition: &CONTAINER_DEFINITION
 
 poetry_cache_template: &POETRY_CACHE
   poetry_cache:
-    folder: .cache/poetry/
+    folder: ~/.cache/poetry/
     fingerprint_script: cat poetry.lock
 
 .poetry_template: &POETRY_TEMPLATE
