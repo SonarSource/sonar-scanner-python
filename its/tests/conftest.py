@@ -39,11 +39,18 @@ def check_health(sonarqube_client: SonarQubeClient) -> bool:
 
 
 if "CIRRUS_OS" in os.environ:
+    from time import sleep
     @pytest.fixture(scope="session")
     def sonarqube_client() -> SonarQubeClient:
         """Ensure that sonarqube service is up and responsive."""
-        url = f"http://localhost:9000"
+        url = "http://localhost:9000"
         sonarqube_client = SonarQubeClient(url)
+        while not check_health(sonarqube_client):
+            sleep(5)
+        response = sonarqube_client.get_system_status()
+        assert response.status_code == 200
+        status = response.json()["status"]
+        assert status == "UP"
         return sonarqube_client
 else:
     @pytest.fixture(scope="session")
