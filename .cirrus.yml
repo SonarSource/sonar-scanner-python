@@ -104,16 +104,8 @@ build_task:
 its_task:
   name: "Integration Tests"
   alias: its
-  sonarqube_cache:
-    folder: sonarqube_cache/
-    populate_script: mkdir -p sonarqube_cache && wget -q https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.5.1.90531.zip -O sonarqube_cache/sonarqube.zip
-    fingerprint_key: sonarqube-10.5.1.90531
   <<: *POETRY_TEMPLATE
   its_script:
-    - unzip -q sonarqube_cache/sonarqube.zip -d sonarqube
-    - cd $(ls -d sonarqube/*/)
-    - ./bin/linux-x86-64/sonar.sh start
-    - cd -
     - cd its/
     - jfrog poetry-config --server-id-resolve repox --repo-resolve sonarsource-pypi
     - jfrog poetry install
