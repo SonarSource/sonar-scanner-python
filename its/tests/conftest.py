@@ -46,7 +46,8 @@ if "CIRRUS_OS" in os.environ:
         url = "http://localhost:9000"
         sonarqube_client = SonarQubeClient(url)
         while not check_health(sonarqube_client):
-            sleep(5)
+            print("Waiting for SonarQube to be up")
+            sleep(10)
         response = sonarqube_client.get_system_status()
         assert response.status_code == 200
         status = response.json()["status"]
