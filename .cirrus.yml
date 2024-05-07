@@ -8,8 +8,8 @@ env:
   SONAR_TOKEN: VAULT[development/kv/data/sonarcloud data.token]
   SONAR_HOST_URL: https://sonarcloud.io
   DEPLOY_PULL_REQUEST: 'true'
-  POETRY_VIRTUALENVS_PATH: ".cache/poetry/venvs"
-  POETRY_CACHE_DIR: ".cache/poetry/pypoetry"
+  POETRY_VIRTUALENVS_PATH: "~/.cache/poetry/venvs"
+  POETRY_CACHE_DIR: "~/.cache/poetry/pypoetry"
 
 only_if: $CIRRUS_USER_COLLABORATOR == "true" && $CIRRUS_TAG == "" && ($CIRRUS_PR != "" || $CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_BRANCH =~ "feature/*" || $CIRRUS_BRANCH =~ "dogfood-on-.*")
 
@@ -30,8 +30,8 @@ container_definition: &CONTAINER_DEFINITION
 
 poetry_cache_template: &POETRY_CACHE
   poetry_cache:
-    folder: .cache/poetry/
-    fingerprint_script: cat poetry.lock
+    folder: ~/.cache/poetry/
+    fingerprint_script: cat poetry.lock its/poetry.lock
 
 .poetry_template: &POETRY_TEMPLATE
   eks_container:
@@ -124,12 +124,34 @@ build_task:
   name: "Build"
   build_script: regular_poetry_build_publish
 
+its_task:
+  name: "Integration Tests"
+  alias: its
+  sonarqube_cache:
+    folder: sonarqube_cache/
+    populate_script: mkdir -p sonarqube_cache && wget -q https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.5.1.90531.zip -O sonarqube_cache/sonarqube.zip
+    fingerprint_key: sonarqube-10.5.1.90531
+  <<: *POETRY_TEMPLATE
+  its_script:
+    - unzip -q sonarqube_cache/sonarqube.zip -d sonarqube
+    - cd $(ls -d sonarqube/*/)
+    - ./bin/linux-x86-64/sonar.sh start
+    - cd -
+    - cd its/
+    - jfrog poetry-config --server-id-resolve repox --repo-resolve sonarsource-pypi
+    - jfrog poetry install
+    - unset SONAR_TOKEN
+    - unset SONARCLOUD_ANALYSIS
+    - unset SONAR_HOST_URL
+    - poetry run pytest 
+
 promote_task:
   depends_on:
     - formatting
     - analysis
     - qa
     - build
+    - its
   env:
     ARTIFACTORY_PROMOTE_ACCESS_TOKEN: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promoter access_token]
     GITHUB_TOKEN: VAULT[development/github/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promotion token]
