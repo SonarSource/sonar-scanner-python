@@ -212,6 +212,14 @@ poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-202
 poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d tests/
 ```
 
+# Installation from testPyPI
+
+To install the latest pre-released version of Sonar Scanner Python. Execute the following command: 
+
+```shell
+pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pysonar
+```
+
 # License
 
 Copyright 2011-2024 SonarSource.
