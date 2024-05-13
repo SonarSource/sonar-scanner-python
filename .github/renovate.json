@@ -1,0 +1,17 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "github>SonarSource/renovate-config:languages-team"
+  ],
+  "enabledManagers": ["poetry","github-actions", "dockerfile"],
+  "poetry": {
+    "enabled": true
+  },
+  "dockerfile": {
+    "enabled": true
+  },
+  "ignorePaths": [
+    "its/**",
+    "**/test/**"
+  ]
+}
