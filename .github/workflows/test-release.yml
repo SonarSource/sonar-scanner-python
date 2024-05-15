@@ -1,0 +1,100 @@
+name: test pypi upload
+
+on:
+  workflow_dispatch:
+    inputs:
+      vaultAddr:
+        type: string
+        description: Custom Vault installation
+        default: https://vault.sonar.build:8200
+        required: false
+      vaultTokenKey:
+        type: string
+        description: Vault key to read the token from
+        default: pypi
+        required: false
+      artifactoryRoleSuffix:
+        type: string
+        description: Artifactory reader suffix specified in vault repo config
+        default: private-reader
+        required: false
+      downloadExclusions:
+        type: string
+        description: exclusions for the JFrog build download
+        default: "-"
+        required: false
+      pypiRepoUrl:
+        type: string
+        description: PyPI Repository URL for publishing the package
+        default: https://upload.pypi.org/legacy/
+        required: false
+      slackChannel:
+        type: string
+        description: Slack channel to post notifications
+        default: build
+        required: false
+
+jobs:
+  pypi:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # to authenticate via OIDC
+      contents: read  # to revert a GitHub release
+    timeout-minutes: 30
+    steps:
+      - name: Get the version
+        id: get_version
+        run: |
+          IFS=. read -r major minor patch build <<< "0.1.0.300"
+          echo "build=${build}" >> $GITHUB_OUTPUT
+          echo "patch=${patch}" >> $GITHUB_OUTPUT
+          echo "minor=${minor}" >> $GITHUB_OUTPUT
+          echo "major=${major}" >> $GITHUB_OUTPUT
+      - name: Create local repository directory
+        id: local_repo
+        run: echo "dir=$(mktemp -d repo.XXXXXXXX)" >> $GITHUB_OUTPUT
+      - name: Vault
+        id: secrets
+        uses: SonarSource/vault-action-wrapper@d0877ce7085bc313bd7a7b99c4e4489d42fb40e1 # tag=3.0.0
+        with:
+          url: ${{ inputs.vaultAddr }}
+          secrets:
+            development/artifactory/token/{REPO_OWNER_NAME_DASH}-${{ inputs.artifactoryRoleSuffix }} access_token  | artifactory_access_token;
+            development/kv/data/${{ inputs.vaultTokenKey }} token | pypi_token;
+            development/kv/data/slack webhook | slack_webhook;
+      - name: Setup JFrog
+        uses: SonarSource/jfrog-setup-wrapper@907e87c3d2081a98d2ab8cb03284ee6711f1ee83 # 3.2.3
+        with:
+          jfrogAccessToken: ${{ fromJSON(steps.secrets.outputs.vault).artifactory_access_token }}
+      - name: Download Artifacts
+        uses: SonarSource/gh-action_release/download-build@master
+        with:
+          build-number: ${{ steps.get_version.outputs.build }}
+          local-repo-dir: ${{ steps.local_repo.outputs.dir }}
+          exclusions: ${{ inputs.downloadExclusions }}
+          remote-repo: sonarsource-pypi-public-releases
+          flat-download: true
+          download-checksums: false
+      - name: Publish to PyPI
+        id: publish-pypi
+        continue-on-error: true
+        uses: pypa/gh-action-pypi-publish@81e9d935c883d0b210363ab89cf05f3894778450 # tag=v1.8.14
+        with:
+          packages-dir: ${{ steps.local_repo.outputs.dir }}
+          password: ${{ fromJSON(steps.secrets.outputs.vault).pypi_token }}
+          repository-url: ${{ inputs.pypiRepoUrl }}
+          print-hash: true
+          verbose: true
+      - name: Notify on failure
+        if: ${{ failure() }}
+        uses: 8398a7/action-slack@28ba43ae48961b90635b50953d216767a6bea486 # v3.16.2
+        with:
+          status: failure
+          fields: repo,author,eventName
+          channel: ${{ inputs.slackChannel }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ fromJSON(steps.secrets.outputs.vault).slack_webhook }}
+      - name: Exit with error
+        if: ${{ failure() }}
+        run: exit 1
