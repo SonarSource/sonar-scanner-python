@@ -405,8 +405,8 @@ url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
 reference = "jfrog-server"
 
 [[package]]
-name = "pysonar"
-version = "0.0.6"
+name = "pysonar-scanner"
+version = "0.1.0"
 description = "Sonar Scanner for the Python Ecosystem"
 optional = false
 python-versions = ">=3.8"
@@ -699,4 +699,4 @@ reference = "jfrog-server"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8"
-content-hash = "d51813f48bdf96a6db506e8ab65dee08f362a3d16c428a843d04f4ff253f1643"
+content-hash = "38847be97e7e39fb3929b4547834e2cd367954ed5cf8514a691cb4c3b7564c7c"
