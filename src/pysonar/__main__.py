@@ -17,9 +17,9 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-from pysonar.configuration import Configuration
-from pysonar.environment import Environment
-from pysonar.logger import ApplicationLogger
+from .configuration import Configuration
+from .environment import Environment
+from .logger import ApplicationLogger
 
 
 def scan():
