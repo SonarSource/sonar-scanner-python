@@ -27,7 +27,7 @@ from typing import Union
 
 import toml
 
-from pysonar.logger import ApplicationLogger
+from pysonar_scanner.logger import ApplicationLogger
 
 
 class Configuration:

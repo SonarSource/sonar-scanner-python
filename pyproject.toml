@@ -23,7 +23,7 @@ classifiers = ['Environment :: Console', 'Intended Audience :: Developers', 'Ope
 description = 'Sonar Scanner for the Python Ecosystem'
 keywords = ['sonar', 'sonarqube', 'sonarcloud', 'cleancode']
 license = 'LGPL-3.0-only'
-name = 'pysonar'
+name = 'pysonar-scanner'
 readme = 'README.md'
 version = '0.1.0'
 
@@ -45,10 +45,10 @@ pytest-cov = '>=4.1.0'
 
 [[tool.poetry.packages]]
 from = 'src'
-include = 'pysonar'
+include = 'pysonar_scanner'
 
 [tool.poetry.scripts]
-pysonar = 'pysonar.__main__:scan'
+pysonar-scanner = 'pysonar_scanner.__main__:scan'
 
 [[tool.poetry.source]]
 name = 'jfrog-server'

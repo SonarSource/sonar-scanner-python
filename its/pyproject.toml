@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 # PYSCAN-35: Decide on definitive package name
-name = "pysonar-its"
+name = "pysonar-scanner-its"
 version = "0.0.1"
 authors = ['Python Squad <analysis.python@sonarsource.com>']
 description = "Integration tests for Sonar Scanner for the Python Ecosystem"
@@ -40,7 +40,7 @@ black = ">=23.12.0"
 pytest = ">=7.4.3"
 pytest-docker = ">=2.0.1"
 requests = "2.31.0"
-pysonar = { "path" = "../" }
+pysonar-scanner = { "path" = "../" }
 
 [[tool.poetry.source]]
 name = 'jfrog-server'
