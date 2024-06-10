@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 # PYSCAN-35: Decide on definitive package name
-name = "pysonar-its"
+name = "pysonar-scanner-its"
 version = "0.0.1"
 authors = ['Python Squad <analysis.python@sonarsource.com>']
 description = "Integration tests for Sonar Scanner for the Python Ecosystem"

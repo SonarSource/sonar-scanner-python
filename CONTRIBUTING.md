@@ -11,7 +11,7 @@ Install poetry with `pipx install poetry`
 
 # Run the main script
 
-Run `python src/pysonar`
+Run `python src/pysonar_scanner`
 
 # Run the tests
 
