@@ -15,7 +15,7 @@ These changes include configuration parameter names.
 
 Install with pip:
 ```
-pip install pysonar
+pip install pysonar-scanner
 ```
 
 # Usage
