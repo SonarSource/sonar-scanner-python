@@ -3,7 +3,6 @@ FROM ${CIRRUS_AWS_ACCOUNT}.dkr.ecr.eu-central-1.amazonaws.com/base:j17-latest
 
 USER root
 
-ARG SCANNER_VERSION=5.0.1.3006
 ARG PYTHON_VERSION=3.12.1
 
 # install required dependencies to build Python from source see: https://devguide.python.org/getting-started/setup-building/#install-dependencies
@@ -17,15 +16,9 @@ RUN cd /usr/local/bin \
     && ln -s pip${PYTHON_VERSION%.*} pip \
     && ln -s pip${PYTHON_VERSION%.*} pip3
 
-RUN curl "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SCANNER_VERSION}.zip" -o /tmp/sonar-scanner.zip \
-  && unzip -d /opt /tmp/sonar-scanner.zip \
-  && mv /opt/sonar-scanner-${SCANNER_VERSION} /opt/sonar-scanner \
-  && rm /tmp/sonar-scanner.zip
-
 USER sonarsource
 
 RUN curl -sSL https://install.python-poetry.org | python3 -
-ENV PATH="${PATH}:/opt/sonar-scanner/bin"
 ENV PATH="${PATH}:/home/sonarsource/.local/bin"
 
 ENV SONARCLOUD_ANALYSIS true
