@@ -37,7 +37,7 @@ class Environment:
     cfg: Configuration
 
     # a full download path for a scanner has the following shape:
-    # https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${version}-${os}.zip
+    # https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${version}-${os}-${arch}.zip
     scanner_base_url: str = "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli"
 
     def __init__(self, cfg: Configuration):
@@ -57,15 +57,22 @@ class Environment:
             self.cfg.sonar_scanner_executable_path = "sonar-scanner"
         else:
             system_name = systems.get(platform.uname().system, "linux")
-            self._install_scanner(system_name)
+            arch_name = self._get_platform_arch()
+            self._install_scanner(system_name, arch_name)
             sonar_scanner_home = os.path.join(
                 self.cfg.sonar_scanner_path,
-                f"sonar-scanner-{self.cfg.sonar_scanner_version}-{system_name}",
+                f"sonar-scanner-{self.cfg.sonar_scanner_version}-{system_name}-{arch_name}",
             )
             self.cfg.sonar_scanner_executable_path = os.path.join(sonar_scanner_home, "bin", "sonar-scanner")
 
         ascii_banner = pyfiglet.figlet_format("Sonar Scanner")
         self.log.info(ascii_banner)
+
+    def _get_release(self) -> str:
+        return platform.uname().release
+
+    def _get_platform_arch(self) -> str:
+        return "x64" if "ARM64" not in self._get_release().upper() else "aarch64"
 
     def scanner(self) -> Scanner:
         return Scanner(self.cfg)
@@ -77,11 +84,14 @@ class Environment:
         if os.path.exists(self.cfg.sonar_scanner_path):
             shutil.rmtree(self.cfg.sonar_scanner_path)
 
-    def _install_scanner(self, system_name: str):
+    def _install_scanner(self, system_name: str, arch_name: str):
         os.mkdir(self.cfg.sonar_scanner_path)
         # Download the binaries and unzip them
         scanner_zip_path = self._download_scanner_binaries(
-            self.cfg.sonar_scanner_path, self.cfg.sonar_scanner_version, system_name
+            self.cfg.sonar_scanner_path,
+            self.cfg.sonar_scanner_version,
+            system_name,
+            arch_name,
         )
         unzip_binaries(scanner_zip_path, self.cfg.sonar_scanner_path)
         os.remove(scanner_zip_path)
@@ -94,9 +104,13 @@ class Environment:
             for file in [os.path.join(root, f) for f in files]:
                 os.chmod(file, mode)
 
-    def _download_scanner_binaries(self, destination: str, scanner_version: str, system_name: str) -> str:
+    def _download_scanner_binaries(
+        self, destination: str, scanner_version: str, system_name: str, arch_name: str
+    ) -> str:
         try:
-            scanner_res = urllib.request.urlopen(f"{self.scanner_base_url}-{scanner_version}-{system_name}.zip")
+            scanner_res = urllib.request.urlopen(
+                f"{self.scanner_base_url}-{scanner_version}-{system_name}-{arch_name}.zip"
+            )
             scanner_zip_path = os.path.join(destination, "scanner.zip")
             write_binaries(scanner_res, scanner_zip_path)
             return scanner_zip_path
