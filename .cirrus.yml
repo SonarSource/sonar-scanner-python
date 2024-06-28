@@ -84,8 +84,10 @@ analysis_task:
   name: "SC Analysis"
   analysis_script:
     - poetry run pytest --cov-report=xml:coverage.xml --cov-config=pyproject.toml --cov=src --cov-branch tests
-    - poetry install
-    - poetry run pysonar-scanner -Dsonar.organization=sonarsource -DbuildNumber=${CI_BUILD_NUMBER}
+    - python -m venv .venv
+    - source .venv/bin/activate
+    - pip install . 
+    - pysonar-scanner -Dsonar.organization=sonarsource -DbuildNumber=${CI_BUILD_NUMBER}
   always:
     pytest_artifacts:
       path: "coverage.xml"
