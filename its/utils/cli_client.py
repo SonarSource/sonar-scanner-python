@@ -29,9 +29,10 @@ class CliClient():
     SOURCES_FOLDER_PATH: str = os.path.join(
         os.path.dirname(__file__), "../sources")
 
-    def run_analysis(self, client: SonarQubeClient, params: list[str] = None, sources_dir: str = None) -> CompletedProcess:
+    def run_analysis(self, client: SonarQubeClient, params: list[str] = [], sources_dir: str = None) -> CompletedProcess:
         if params is None:
             params = []
+        params.append("-Dsonar.host.url=http://localhost:9000")
         workdir = os.path.join(self.SOURCES_FOLDER_PATH, sources_dir)
         command = [self.SCANNER_CMD] + params
         process = subprocess.run(command, stdout=subprocess.PIPE,

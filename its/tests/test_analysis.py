@@ -46,7 +46,7 @@ def test_minimal_project_read_poetry_data(sonarqube_client: SonarQubeClient):
 def test_minimal_project_unexpected_arg(sonarqube_client: SonarQubeClient):
     process = CliClient().run_analysis(sonarqube_client, params=["-unexpected"], sources_dir="minimal")
     assert process.returncode == 0
-    assert "ERROR: Unrecognized option: -unexpected" in process.stdout
+    assert "ERROR Unrecognized option: -unexpected" in process.stdout
 
 
 def test_minimal_project_wrong_home(sonarqube_client: SonarQubeClient):
