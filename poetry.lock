@@ -46,11 +46,6 @@ d = ["aiohttp (>=3.7.4)", "aiohttp (>=3.7.4,!=3.9.0)"]
 jupyter = ["ipython (>=7.8.0)", "tokenize-rt (>=3.2.0)"]
 uvloop = ["uvloop (>=0.15.2)"]
 
-[package.source]
-type = "legacy"
-url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
-
 [[package]]
 name = "click"
 version = "8.1.7"
@@ -65,11 +60,6 @@ files = [
 [package.dependencies]
 colorama = {version = "*", markers = "platform_system == \"Windows\""}
 
-[package.source]
-type = "legacy"
-url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
-
 [[package]]
 name = "colorama"
 version = "0.4.6"
@@ -80,11 +70,6 @@ files = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
 ]
-
-[package.source]
-type = "legacy"
-url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
 
 [[package]]
 name = "coverage"
@@ -153,11 +138,6 @@ tomli = {version = "*", optional = true, markers = "python_full_version <= \"3.1
 [package.extras]
 toml = ["tomli"]
 
-[package.source]
-type = "legacy"
-url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
-
 [[package]]
 name = "exceptiongroup"
 version = "1.2.0"
@@ -172,11 +152,6 @@ files = [
 [package.extras]
 test = ["pytest (>=6)"]
 
-[package.source]
-type = "legacy"
-url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
-
 [[package]]
 name = "iniconfig"
 version = "2.0.0"
@@ -187,11 +162,6 @@ files = [
     {file = "iniconfig-2.0.0-py3-none-any.whl", hash = "sha256:b6a85871a79d2e3b22d2d1b94ac2824226a63c6b741c88f7ae975f18b6778374"},
     {file = "iniconfig-2.0.0.tar.gz", hash = "sha256:2d91e135bf72d31a410b17c16da610a82cb55f6b0477d1a902134b24a455b8b3"},
 ]
-
-[package.source]
-type = "legacy"
-url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
 
 [[package]]
 name = "licenseheaders"
@@ -206,11 +176,6 @@ files = [
 
 [package.dependencies]
 regex = "*"
-
-[package.source]
-type = "legacy"
-url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
 
 [[package]]
 name = "mypy"
@@ -259,11 +224,6 @@ install-types = ["pip"]
 mypyc = ["setuptools (>=50)"]
 reports = ["lxml"]
 
-[package.source]
-type = "legacy"
-url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
-
 [[package]]
 name = "mypy-extensions"
 version = "1.0.0"
@@ -274,11 +234,6 @@ files = [
     {file = "mypy_extensions-1.0.0-py3-none-any.whl", hash = "sha256:4392f6c0eb8a5668a69e23d168ffa70f0be9ccfd32b5cc2d26a34ae5b844552d"},
     {file = "mypy_extensions-1.0.0.tar.gz", hash = "sha256:75dbf8955dc00442a438fc4d0666508a9a97b6bd41aa2f0ffe9d2f2725af0782"},
 ]
-
-[package.source]
-type = "legacy"
-url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
 
 [[package]]
 name = "packaging"
@@ -291,11 +246,6 @@ files = [
     {file = "packaging-24.0.tar.gz", hash = "sha256:eb82c5e3e56209074766e6885bb04b8c38a0c015d0a30036ebe7ece34c9989e9"},
 ]
 
-[package.source]
-type = "legacy"
-url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
-
 [[package]]
 name = "pathspec"
 version = "0.12.1"
@@ -306,11 +256,6 @@ files = [
     {file = "pathspec-0.12.1-py3-none-any.whl", hash = "sha256:a0d503e138a4c123b27490a4f7beda6a01c6f288df0e4a8b79c7eb0dc7b4cc08"},
     {file = "pathspec-0.12.1.tar.gz", hash = "sha256:a482d51503a1ab33b1c67a6c3813a26953dbdc71c31dacaef9a838c4e29f5712"},
 ]
-
-[package.source]
-type = "legacy"
-url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
 
 [[package]]
 name = "platformdirs"
@@ -327,11 +272,6 @@ files = [
 docs = ["furo (>=2023.9.10)", "proselint (>=0.13)", "sphinx (>=7.2.6)", "sphinx-autodoc-typehints (>=1.25.2)"]
 test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.4.3)", "pytest-cov (>=4.1)", "pytest-mock (>=3.12)"]
 
-[package.source]
-type = "legacy"
-url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
-
 [[package]]
 name = "pluggy"
 version = "1.4.0"
@@ -347,11 +287,6 @@ files = [
 dev = ["pre-commit", "tox"]
 testing = ["pytest", "pytest-benchmark"]
 
-[package.source]
-type = "legacy"
-url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
-
 [[package]]
 name = "pyfiglet"
 version = "0.8.post1"
@@ -362,11 +297,6 @@ files = [
     {file = "pyfiglet-0.8.post1-py2.py3-none-any.whl", hash = "sha256:d555bcea17fbeaf70eaefa48bb119352487e629c9b56f30f383e2c62dd67a01c"},
     {file = "pyfiglet-0.8.post1.tar.gz", hash = "sha256:c6c2321755d09267b438ec7b936825a4910fec696292139e664ca8670e103639"},
 ]
-
-[package.source]
-type = "legacy"
-url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
 
 [[package]]
 name = "pytest"
@@ -390,11 +320,6 @@ tomli = {version = ">=1", markers = "python_version < \"3.11\""}
 [package.extras]
 testing = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
 
-[package.source]
-type = "legacy"
-url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
-
 [[package]]
 name = "pytest-cov"
 version = "4.1.0"
@@ -412,11 +337,6 @@ pytest = ">=4.6"
 
 [package.extras]
 testing = ["fields", "hunter", "process-tests", "pytest-xdist", "six", "virtualenv"]
-
-[package.source]
-type = "legacy"
-url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
 
 [[package]]
 name = "regex"
@@ -520,11 +440,6 @@ files = [
     {file = "regex-2023.12.25.tar.gz", hash = "sha256:29171aa128da69afdf4bde412d5bedc335f2ca8fcfe4489038577d05f16181e5"},
 ]
 
-[package.source]
-type = "legacy"
-url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
-
 [[package]]
 name = "setuptools"
 version = "69.0.3"
@@ -541,11 +456,6 @@ docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "pygments
 testing = ["build[virtualenv]", "filelock (>=3.4.0)", "flake8-2020", "ini2toml[lite] (>=0.9)", "jaraco.develop (>=7.21)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "pip (>=19.1)", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-mypy (>=0.9.1)", "pytest-perf", "pytest-ruff", "pytest-timeout", "pytest-xdist", "tomli-w (>=1.0.0)", "virtualenv (>=13.0.0)", "wheel"]
 testing-integration = ["build[virtualenv] (>=1.0.3)", "filelock (>=3.4.0)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "packaging (>=23.1)", "pytest", "pytest-enabler", "pytest-xdist", "tomli", "virtualenv (>=13.0.0)", "wheel"]
 
-[package.source]
-type = "legacy"
-url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
-
 [[package]]
 name = "toml"
 version = "0.10.2"
@@ -556,11 +466,6 @@ files = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
     {file = "toml-0.10.2.tar.gz", hash = "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"},
 ]
-
-[package.source]
-type = "legacy"
-url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
 
 [[package]]
 name = "tomli"
@@ -573,11 +478,6 @@ files = [
     {file = "tomli-2.0.1.tar.gz", hash = "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"},
 ]
 
-[package.source]
-type = "legacy"
-url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
-
 [[package]]
 name = "typing-extensions"
 version = "4.10.0"
@@ -588,11 +488,6 @@ files = [
     {file = "typing_extensions-4.10.0-py3-none-any.whl", hash = "sha256:69b1a937c3a517342112fb4c6df7e72fc39a38e7891a5730ed4985b5214b5475"},
     {file = "typing_extensions-4.10.0.tar.gz", hash = "sha256:b0abd7c89e8fb96f98db18d86106ff1d90ab692004eb746cf6eda2682f91b3cb"},
 ]
-
-[package.source]
-type = "legacy"
-url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
 
 [metadata]
 lock-version = "2.0"
