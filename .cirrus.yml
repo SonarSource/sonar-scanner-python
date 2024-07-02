@@ -28,6 +28,16 @@ container_definition: &CONTAINER_DEFINITION
   cpu: 3
   memory: 8G
 
+win_vm_definition: &WINDOWS_VM_DEFINITION
+  ec2_instance:
+    experimental: true # see https://github.com/cirruslabs/cirrus-ci-docs/issues/1051
+    image: base-windows-jdk17-v*
+    platform: windows
+    region: eu-central-1
+    type: t3.small
+    subnet_id: ${CIRRUS_AWS_SUBNET}
+    use_ssd: true
+
 poetry_cache_template: &POETRY_CACHE
   poetry_cache:
     folder: ~/.cache/poetry/
@@ -93,6 +103,17 @@ analysis_task:
       path: "coverage.xml"
       format: junit
       type: text/xml
+
+
+analysis_win_task:
+  <<: *WINDOWS_VM_DEFINITION
+  alias: analysis_win
+  name: "Windows analysis"
+  analysis_win_script:
+    - python -m venv .venv
+    - .venv\Scripts\activate
+    - pip install . 
+    - pysonar-scanner --version
 
 qa_task:
   alias: qa
