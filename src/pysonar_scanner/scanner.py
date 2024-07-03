@@ -51,7 +51,7 @@ class Scanner:
 
     def execute_command(self) -> Popen:
         cmd = self.compute_command()
-        return Popen(cmd, stdout=PIPE, stderr=PIPE)
+        return Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
 
     def compute_command(self) -> list[str]:
         if not self.cfg.sonar_scanner_executable_path:
