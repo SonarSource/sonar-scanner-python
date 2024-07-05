@@ -112,7 +112,6 @@ analysis_win_task:
   alias: analysis_win
   name: "Windows analysis"
   analysis_win_script:
-    - choco upgrade python --version=3.10.0 -y
     - python --version
     - python -m venv .venv
     - .venv\Scripts\activate
