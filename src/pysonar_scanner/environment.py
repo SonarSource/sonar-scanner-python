@@ -20,7 +20,6 @@
 from __future__ import annotations
 import os
 import platform
-import pyfiglet
 import shutil
 import urllib.request
 from urllib.error import HTTPError
@@ -65,8 +64,7 @@ class Environment:
             )
             self.cfg.sonar_scanner_executable_path = os.path.join(sonar_scanner_home, "bin", "sonar-scanner")
 
-        ascii_banner = pyfiglet.figlet_format("Sonar Scanner")
-        self.log.info(ascii_banner)
+        self.log.info("Sonar Scanner for Python")
 
     def _get_release(self) -> str:
         return platform.uname().release
