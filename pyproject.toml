@@ -28,15 +28,13 @@ readme = 'README.md'
 version = '0.1.0'
 
 [tool.poetry.dependencies]
-pyfiglet = '>=0.8.0'
 python = '>=3.8'
-setuptools = '69.0.3'
 toml = '>=0.10.2'
 
 [tool.poetry.group]
 [tool.poetry.group.dev]
 [tool.poetry.group.dev.dependencies]
-black = "24.3.0"
+black = "24.8.0"
 coverage = '>=7.3.3'
 licenseheaders = '>=0.8.8'
 mypy = '>=1.7.1'
