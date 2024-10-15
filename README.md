@@ -76,7 +76,7 @@ In the `pyproject.toml` file the prefix `sonar.` for parameter keys should be om
 For example, `sonar.scm.provider` in the documentation will become `scm.provider` in the `pyproject.toml` file.
 
 By default, the scanner will expect the `pyproject.toml` file to be present in the current directory. 
-However, its path can be provided manually through the `toml.path` ([PYSCAN-40](https://sonarsource.atlassian.net/jira/software/c/projects/PYSCAN/issues/PYSCAN-40)) CLI argument as well as through the `sonar.projectHome` argument. For instance:
+However, its path can be provided manually through the `toml.path` ([SCANPY-40](https://sonarsource.atlassian.net/jira/software/c/projects/PYSCAN/issues/PYSCAN-40)) CLI argument as well as through the `sonar.projectHome` argument. For instance:
 
 ```
 pysonar-scanner -Dtoml.path="path/to/pyproject.toml"
