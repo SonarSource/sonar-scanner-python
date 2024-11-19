@@ -13,5 +13,21 @@
   "ignorePaths": [
     "its/**",
     "**/test/**"
+  ],
+  "packageRules": [
+    {
+      "description": "Enable only major, minor and patch version updates for github-actions and poetry",
+      "matchManagers": ["github-actions", "poetry"],
+      "matchUpdateTypes": [
+        "pin",
+        "pinDigest",
+        "digest",
+        "lockFileMaintenance",
+        "rollback",
+        "bump",
+        "replacement"],
+      "enabled": false
+    }
   ]
+
 }
