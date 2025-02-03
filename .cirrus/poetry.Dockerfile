@@ -1,7 +1,7 @@
 ARG CIRRUS_AWS_ACCOUNT=275878209202
 FROM ${CIRRUS_AWS_ACCOUNT}.dkr.ecr.eu-central-1.amazonaws.com/base:j17-latest
 USER root
-ENV PYTHON_VERSION 3.12.1
+ARG PYTHON_VERSION=3.12.1
 ENV POETRY_VERSION 2.0.1
 
 RUN apt-get update && \
