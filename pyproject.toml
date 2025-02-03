@@ -3,6 +3,16 @@ build-backend = 'poetry.core.masonry.api'
 requires = ['poetry-core']
 
 [project]
+authors = [{ name="[Code Quality] Data & ML Squad", email="quality.data-ml@sonarsource.com" }]
+classifiers = ['Environment :: Console', 'Intended Audience :: Developers', 'Operating System :: OS Independent', 'Programming Language :: Python', 'Programming Language :: Python :: 3', 'Programming Language :: Python :: 3 :: Only', 'Programming Language :: Python :: 3.8', 'Programming Language :: Python :: 3.9', 'Programming Language :: Python :: 3.10', 'Programming Language :: Python :: 3.11', 'Programming Language :: Python :: 3.12', 'Topic :: Software Development :: Quality Assurance']
+description = 'Sonar Scanner for the Python Ecosystem'
+keywords = ['sonar', 'sonarqube', 'sonarcloud', 'cleancode']
+license = 'LGPL-3.0-only'
+name = 'pysonar-scanner'
+readme = 'README.md'
+version = "0.2.0"
+dynamic = ["dependencies"]
+
 [project.urls]
 homepage = 'https://github.com/SonarSource/sonar-scanner-python'
 repository = 'https://github.com/SonarSource/sonar-scanner-python'
@@ -16,16 +26,6 @@ target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
 [tool.coverage.run]
 branch = true
 relative_files = true
-
-[tool.poetry]
-authors = ['Python Squad <analysis.python@sonarsource.com>']
-classifiers = ['Environment :: Console', 'Intended Audience :: Developers', 'Operating System :: OS Independent', 'Programming Language :: Python', 'Programming Language :: Python :: 3', 'Programming Language :: Python :: 3 :: Only', 'Programming Language :: Python :: 3.8', 'Programming Language :: Python :: 3.9', 'Programming Language :: Python :: 3.10', 'Programming Language :: Python :: 3.11', 'Programming Language :: Python :: 3.12', 'Topic :: Software Development :: Quality Assurance']
-description = 'Sonar Scanner for the Python Ecosystem'
-keywords = ['sonar', 'sonarqube', 'sonarcloud', 'cleancode']
-license = 'LGPL-3.0-only'
-name = 'pysonar-scanner'
-readme = 'README.md'
-version = "0.2.0"
 
 [tool.poetry.dependencies]
 python = '>=3.8'
