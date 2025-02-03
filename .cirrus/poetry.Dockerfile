@@ -4,6 +4,7 @@ FROM ${CIRRUS_AWS_ACCOUNT}.dkr.ecr.eu-central-1.amazonaws.com/base:j17-latest
 USER root
 
 ARG PYTHON_VERSION=3.12.1
+ENV POETRY_VERSION 2.0.1
 
 # install required dependencies to build Python from source see: https://devguide.python.org/getting-started/setup-building/#install-dependencies
 RUN apt-get update && apt-get install -y build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev curl libbz2-dev
