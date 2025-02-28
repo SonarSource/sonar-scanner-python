@@ -51,6 +51,7 @@ pysonar-scanner = 'pysonar_scanner.__main__:scan'
 [[tool.poetry.source]]
 name = 'jfrog-server'
 url = 'https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple'
+priority = "primary"
 
 [tool.pytest]
 [tool.pytest.ini_options]
