@@ -688,4 +688,4 @@ reference = "jfrog-server"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9"
-content-hash = "affa83a5fe91549fbaa511d633ec23ca2b8b366b739a7dd15883b7950315a679"
+content-hash = "81b4b22c844e0ff98e3e2b6133a5498a9af2688309d27f215316821952040a10"
