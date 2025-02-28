@@ -410,7 +410,7 @@ name = "pysonar-scanner"
 version = "0.2.0"
 description = "Sonar Scanner for the Python Ecosystem"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["main"]
 files = []
 develop = false
@@ -687,5 +687,5 @@ reference = "jfrog-server"
 
 [metadata]
 lock-version = "2.1"
-python-versions = ">=3.8"
-content-hash = "043f946633d6f726f6da0470c6fe222cdffc035bb23cfd5020234a32a81bfd45"
+python-versions = ">=3.9"
+content-hash = "affa83a5fe91549fbaa511d633ec23ca2b8b366b739a7dd15883b7950315a679"
