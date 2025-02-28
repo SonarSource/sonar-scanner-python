@@ -2,11 +2,11 @@
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.poetry]
+[project]
 # PYSCAN-35: Decide on definitive package name
 name = "pysonar-scanner-its"
 version = "0.0.1"
-authors = ['Python Squad <analysis.python@sonarsource.com>']
+authors = [{ name="[Code Quality] Data & ML Squad", email="quality.data-ml@sonarsource.com" }]
 description = "Integration tests for Sonar Scanner for the Python Ecosystem"
 readme = "README.md"
 license = "LGPL-3.0-only"
@@ -32,6 +32,7 @@ classifiers = [
 ]
 
 packages = [{ include = "utils" }]
+dynamic = [ "dependencies" ]
 
 [tool.poetry.dependencies]
 python = ">=3.9"
@@ -45,9 +46,6 @@ pysonar-scanner = { "path" = "../" }
 [[tool.poetry.source]]
 name = 'jfrog-server'
 url = 'https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple'
-
-[[tool.poetry.source]]
-name = "PyPI"
 priority = "primary"
 
 [tool.pytest.ini_options]
