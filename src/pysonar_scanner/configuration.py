@@ -31,21 +31,14 @@ from pysonar_scanner.logger import ApplicationLogger
 
 
 class Configuration:
-    log: Logger
-    sonar_scanner_executable_path: str
-    sonar_scanner_path: str
-    sonar_scanner_version: str
-    scan_arguments: list[str]
-    wrapper_arguments: argparse.Namespace
-
     def __init__(self):
-        self.log = ApplicationLogger.get_logger()
+        self.log: Logger = ApplicationLogger.get_logger()
         self.sonar_scanner_path = ".scanner"
         self.sonar_scanner_version = "6.1.0.4477"
         self.sonar_scanner_executable_path = ""
-        self.scan_arguments = []
+        self.scan_arguments: list[str] = []
         self.wrapper_arguments = argparse.Namespace(debug=False, read_project_config=False)
-        self.unknown_arguments = []
+        self.unknown_arguments: list[str] = []
 
     def setup(self) -> None:
         """This is executed when run from the command line"""
