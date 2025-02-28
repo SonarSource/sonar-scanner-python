@@ -29,8 +29,7 @@ class TestEnvironment(unittest.TestCase):
     @patch("pysonar_scanner.environment.urllib.request.urlopen")
     def test_download_scanner(self, mock_urlopen, mock_write_binaries):
         cfg = Configuration()
-        environment = Environment(cfg)
-        environment.scanner_base_url = "http://scanner.com/download"
+        environment = Environment(cfg, scanner_base_url="http://scanner.com/download")
         mock_urlopen.return_value = bytes()
 
         expected_destination = "destination/scanner.zip"
@@ -44,8 +43,7 @@ class TestEnvironment(unittest.TestCase):
     @patch("pysonar_scanner.environment.urllib.request.urlopen")
     def test_download_scanner_http_error(self, mock_urlopen, mock_write_binaries):
         cfg = Configuration()
-        environment = Environment(cfg)
-        environment.scanner_base_url = "http://scanner.com/download"
+        environment = Environment(cfg, scanner_base_url="http://scanner.com/download")
         url = "http://scanner.com/download-test_version-os_name-x64.zip"
         mock_urlopen.side_effect = Mock(side_effect=HTTPError(url, 504, "Test", {}, None))
 

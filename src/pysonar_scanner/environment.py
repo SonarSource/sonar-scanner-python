@@ -31,17 +31,16 @@ from pysonar_scanner.scanner import Scanner
 
 systems = {"Darwin": "macosx", "Windows": "windows"}
 
+DEFAULT_SCANNER_BASE_URL = "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli"
+
 
 class Environment:
-    cfg: Configuration
-
-    # a full download path for a scanner has the following shape:
-    # https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${version}-${os}-${arch}.zip
-    scanner_base_url: str = "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli"
-
-    def __init__(self, cfg: Configuration):
-        self.cfg = cfg
+    def __init__(self, cfg: Configuration, scanner_base_url: str = DEFAULT_SCANNER_BASE_URL):
+        self.cfg: Configuration = cfg
         self.log = ApplicationLogger.get_logger()
+        # a full download path for a scanner has the following shape:
+        # https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${version}-${os}-${arch}.zip
+        self.scanner_base_url = scanner_base_url
 
     def scan(self):
         try:

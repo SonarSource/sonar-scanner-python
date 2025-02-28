@@ -27,12 +27,9 @@ from pysonar_scanner.configuration import Configuration
 
 
 class Scanner:
-    cfg: Configuration
-    log: Logger
-
     def __init__(self, cfg: Configuration):
-        self.cfg = cfg
-        self.log = ApplicationLogger.get_logger()
+        self.cfg: Configuration = cfg
+        self.log: Logger = ApplicationLogger.get_logger()
 
     def scan(self):
         process = self.execute_command()
