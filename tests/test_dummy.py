@@ -17,14 +17,9 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-import zipfile
+import unittest
 
 
-def write_binaries(scanner_res: bytes, destination: str):
-    with open(destination, "wb") as output:
-        output.write(scanner_res.read())
-
-
-def unzip_binaries(scanner_zip_path: str, destination: str):
-    with zipfile.ZipFile(scanner_zip_path, "r") as zip_ref:
-        zip_ref.extractall(destination)
+class DummyTest(unittest.TestCase):
+    def test_dummy(self):
+        self.assertTrue(True)
