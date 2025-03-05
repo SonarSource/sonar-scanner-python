@@ -84,7 +84,7 @@ analysis_task:
     - poetry run pytest --cov-report=xml:coverage.xml --cov-config=pyproject.toml --cov=src --cov-branch tests
     - uv venv
     - source .venv/bin/activate
-    - uv pip install .
+    - uv pip install pysonar-scanner
     - . .cirrus/analysis.sh
   always:
     pytest_artifacts:
