@@ -5,8 +5,8 @@ env:
   ARTIFACTORY_DEPLOY_ACCESS_TOKEN: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-qa-deployer access_token]
   ARTIFACTORY_DEPLOY_REPO: sonarsource-pypi-public-qa
   GITHUB_TOKEN: VAULT[development/github/token/licenses-ro token]
-  SONAR_TOKEN: VAULT[development/kv/data/sonarcloud data.token]
-  SONAR_HOST_URL: https://sonarcloud.io
+  SONAR_TOKEN: VAULT[development/kv/data/next data.token]
+  SONAR_HOST_URL: https://next.sonarqube.com/sonarqube
   DEPLOY_PULL_REQUEST: 'true'
   POETRY_VIRTUALENVS_PATH: "~/.cache/poetry/venvs"
   POETRY_CACHE_DIR: "~/.cache/poetry/pypoetry"
@@ -80,13 +80,13 @@ formatting_task:
 analysis_task:
   <<: *POETRY_TEMPLATE
   alias: analysis
-  name: "SC Analysis"
+  name: "NEXT Analysis"
   analysis_script:
     - poetry run pytest --cov-report=xml:coverage.xml --cov-config=pyproject.toml --cov=src --cov-branch tests
     - uv venv
     - source .venv/bin/activate
-    - uv pip install . 
-    - pysonar-scanner -Dsonar.organization=sonarsource -DbuildNumber=${CI_BUILD_NUMBER}
+    - uv pip install .
+    - pysonar-scanner -Dsonar.projectKey=SonarSource_sonar-scanner-python -Dsonar.projectName="Python Scanner" -DbuildNumber=${CI_BUILD_NUMBER}
   always:
     pytest_artifacts:
       path: "coverage.xml"
@@ -139,7 +139,6 @@ its_task:
     - jfrog poetry-config --server-id-resolve repox --repo-resolve sonarsource-pypi
     - jfrog poetry install
     - unset SONAR_TOKEN
-    - unset SONARCLOUD_ANALYSIS
     - unset SONAR_HOST_URL
     - poetry run pytest 
 
