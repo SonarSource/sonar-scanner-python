@@ -19,7 +19,12 @@
 #
 import unittest
 
+from pysonar_scanner.utils import remove_trailing_slash
 
-class DummyTest(unittest.TestCase):
-    def test_dummy(self):
-        self.assertTrue(True)
+
+class UtilsTest(unittest.TestCase):
+    def test_removing_trailinlg_slash(self):
+        self.assertEqual(remove_trailing_slash("test/"), "test")
+        self.assertEqual(remove_trailing_slash(" test/ "), "test")
+        self.assertEqual(remove_trailing_slash(" test / "), "test")
+        self.assertEqual(remove_trailing_slash("test"), "test")
