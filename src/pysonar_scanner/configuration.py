@@ -18,7 +18,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import time
-import platform
 
 from dataclasses import dataclass
 from enum import Enum
@@ -33,8 +32,8 @@ class JRECacheStatus(Enum):
 
 @dataclass(frozen=True)
 class Internal:
-    dump_to_file: str = ""  # File path to dump the input to the scanner engine
-    sq_version: str = "9.9"
+    dump_to_file: Optional[str] = None  # File path to dump the input to the scanner engine
+    sq_version: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -43,25 +42,28 @@ class Scanner:
     app_version: str = "1.0"
     bootstrap_start_time: int = int(time.time() * 1000)
 
-    connect_timeout: int = 5
-    socket_timeout: int = 60
-    response_timeout: int = 0
+    os: Optional[str] = None
+    arch: Optional[str] = None
 
-    truststore_path: str = ""
-    truststore_password: str = ""
-    keystore_path: str = ""
-    keystore_password: str = ""
+    connect_timeout: Optional[int] = None
+    socket_timeout: Optional[int] = None
+    response_timeout: Optional[int] = None
 
-    proxy_host: str = ""
-    proxy_port: int = 0
-    proxy_user: str = ""
-    proxy_password: str = ""
+    truststore_path: Optional[str] = None
+    truststore_password: Optional[str] = None
+    keystore_path: Optional[str] = None
+    keystore_password: Optional[str] = None
+
+    proxy_host: Optional[str] = None
+    proxy_port: Optional[int] = None
+    proxy_user: Optional[str] = None
+    proxy_password: Optional[str] = None
 
     was_jre_cache_hit: Optional[JRECacheStatus] = None
     was_engine_cache_hit: Optional[bool] = None
     skip_jre_provisioning: bool = False
-    java_exe_path: str = ""
-    java_opts: str = ""
+    java_exe_path: Optional[str] = None
+    java_opts: Optional[str] = None
 
     sonarcloud_url: str = ""
     api_base_url: str = ""
@@ -75,8 +77,8 @@ class Sonar:
 
     verbose: bool = False
 
-    project_base_dir = ""
-    user_home: str = "~/.sonar"
+    project_base_dir: Optional[str] = None
+    user_home: Optional[str] = None
 
     token: str = ""
     host_url: str = ""
