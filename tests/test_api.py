@@ -20,11 +20,16 @@
 from typing import TypedDict
 import unittest
 
-from pysonar_scanner.api import BaseUrls, get_base_urls
+from pysonar_scanner.api import BaseUrls, SonarQubeApi, SonarQubeApiException, get_base_urls
 from pysonar_scanner.configuration import Configuration, Scanner, Sonar
+import responses
+
+from pysonar_scanner.utils import SQVersion
+from tests import sqapiutils
+from tests.sqapiutils import sq_api_mocker
 
 
-class ApiTest(unittest.TestCase):
+class TestApi(unittest.TestCase):
     def test_BaseUrls_normalization(self):
         self.assertEqual(
             BaseUrls("test1/", "test2/", is_sonar_qube_cloud=True),
@@ -136,3 +141,44 @@ class ApiTest(unittest.TestCase):
                 self.assertEqual(base_urls.api_base_url, expected.api_base_url)
                 self.assertEqual(base_urls.is_sonar_qube_cloud, expected.is_sonar_qube_cloud)
                 self.assertEqual(base_urls, expected)
+
+
+class TestSonarQubeApiWithUnreachableSQServer(unittest.TestCase):
+    def setUp(self):
+        self.sq = SonarQubeApi(
+            base_urls=BaseUrls("https://localhost:1000", "https://localhost:1000/api", is_sonar_qube_cloud=True),
+            token="<invalid_token>",
+        )
+
+    def test_get_analysis_version(self):
+        with self.assertRaises(SonarQubeApiException):
+            self.sq.get_analysis_version()
+
+
+class TestSonarQubeApi(unittest.TestCase):
+    def setUp(self):
+        self.sq = sqapiutils.get_sq_server()
+
+    def test_get_analysis_version(self):
+        with self.subTest("/analysis/version returns 200"), sq_api_mocker() as mocker:
+            mocker.mock_analysis_version("10.7")
+            self.assertEqual(self.sq.get_analysis_version(), SQVersion.from_str("10.7"))
+
+        with self.subTest("/analysis/version returns error"), sq_api_mocker() as mocker:
+            mocker.mock_analysis_version(status=404).mock_server_version("10.8")
+            self.assertEqual(self.sq.get_analysis_version(), SQVersion.from_str("10.8"))
+
+        with (
+            self.subTest("both version endpoints return error"),
+            sq_api_mocker() as mocker,
+            self.assertRaises(SonarQubeApiException),
+        ):
+            mocker.mock_analysis_version(status=404).mock_server_version(status=404)
+            self.sq.get_analysis_version()
+
+        with (
+            self.subTest("request raises an exception"),
+            sq_api_mocker() as mocker,
+            self.assertRaises(SonarQubeApiException),
+        ):
+            self.sq.get_analysis_version()

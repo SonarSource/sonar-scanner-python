@@ -17,17 +17,12 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-from pysonar_scanner.api import SonarQubeApi
-from pysonar_scanner.exceptions import SQTooOldException
+from pysonar_scanner.utils import SQVersion
+import pysonar_scanner.utils as utils
 
 
-class ScannerEngine:
-    def __init__(self, api: SonarQubeApi):
-        self.api = api
-
-    def __version_check(self):
-        if self.api.is_sonar_qube_cloud():
-            return
-        version = self.api.get_analysis_version()
-        if not version.does_support_bootstrapping():
-            raise SQTooOldException(version)
+class SQTooOldException(Exception):
+    def __init__(self, version: SQVersion):
+        super().__init__(
+            f"Only SonarQube versions >= {utils.MIN_SUPPORTED_SQ_VERSION} are supported, but got {version}"
+        )

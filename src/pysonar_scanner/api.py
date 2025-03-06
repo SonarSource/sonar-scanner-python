@@ -19,7 +19,8 @@
 #
 from dataclasses import dataclass
 from pysonar_scanner.configuration import Configuration
-from pysonar_scanner.utils import remove_trailing_slash
+from pysonar_scanner.utils import SQVersion, remove_trailing_slash
+import requests
 
 
 @dataclass(frozen=True)
@@ -55,6 +56,34 @@ def get_base_urls(config: Configuration) -> BaseUrls:
         return BaseUrls(base_url=sonar_host_url, api_base_url=api_base_url, is_sonar_qube_cloud=False)
 
 
+class BearerAuth(requests.auth.AuthBase):
+    def __init__(self, token):
+        self.token = token
+
+    def __call__(self, r):
+        r.headers["Authorization"] = f"Bearer {self.token}"
+        return r
+
+
+class SonarQubeApiException(Exception):
+    pass
+
+
 class SonarQubeApi:
-    def __init__(self, base_urls: BaseUrls):
-        self.base_url = base_urls
+    def __init__(self, base_urls: BaseUrls, token: str):
+        self.base_urls = base_urls
+        self.auth = BearerAuth(token)
+
+    def is_sonar_qube_cloud(self) -> bool:
+        return self.base_urls.is_sonar_qube_cloud
+
+    def get_analysis_version(self) -> SQVersion:
+        try:
+            res = requests.get(f"{self.base_urls.api_base_url}/analysis/version", auth=self.auth)
+            if res.status_code != 200:
+                res = requests.get(f"{self.base_urls.base_url}/api/server/version", auth=self.auth)
+
+            res.raise_for_status()
+            return SQVersion.from_str(res.text)
+        except requests.RequestException as e:
+            raise SonarQubeApiException("Error while fetching the analysis version") from e
