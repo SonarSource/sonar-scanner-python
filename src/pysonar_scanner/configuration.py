@@ -31,6 +31,7 @@ class Sonar:
     scanner: Scanner = Scanner()
     host_url: str = ""
     region: str = ""
+    token: str = ""
 
 
 @dataclass(frozen=True)
