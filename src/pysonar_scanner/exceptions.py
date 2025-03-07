@@ -25,3 +25,7 @@ class SonarQubeApiException(Exception):
 
 class SQTooOldException(Exception):
     pass
+
+
+class ChecksumException(Exception):
+    pass
