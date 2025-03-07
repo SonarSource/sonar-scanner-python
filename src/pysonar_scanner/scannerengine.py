@@ -18,12 +18,14 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 from pysonar_scanner.api import SonarQubeApi
-from pysonar_scanner.exceptions import SQTooOldException
+from pysonar_scanner.cache import Cache, CacheFile
+from pysonar_scanner.exceptions import SQTooOldException, ChecksumException
 
 
 class ScannerEngine:
-    def __init__(self, api: SonarQubeApi):
+    def __init__(self, api: SonarQubeApi, cache: Cache):
         self.api = api
+        self.cache = cache
 
     def __version_check(self):
         if self.api.is_sonar_qube_cloud():
@@ -31,3 +33,25 @@ class ScannerEngine:
         version = self.api.get_analysis_version()
         if not version.does_support_bootstrapping():
             raise SQTooOldException(version)
+
+    def __fetch_scanner_engine(self):
+        def download_and_verify():
+            cache_file = fetch_cache_file()
+            if not cache_file.is_valid():
+                download_scanner_engine(cache_file)
+            return cache_file.is_valid()
+
+        def fetch_cache_file():
+            engine_info = self.api.get_analysis_engine()
+            return self.cache.get_file(engine_info.filename, engine_info.sha256)
+
+        def download_scanner_engine(cache_file: CacheFile):
+            with cache_file.open() as f:
+                self.api.download_analysis_engine(f)
+
+        if download_and_verify():
+            return
+        if download_and_verify():
+            return
+        else:
+            raise ChecksumException("Failed to download and verify scanner engine")

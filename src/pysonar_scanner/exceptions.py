@@ -26,3 +26,7 @@ class SQTooOldException(Exception):
         super().__init__(
             f"Only SonarQube versions >= {utils.MIN_SUPPORTED_SQ_VERSION} are supported, but got {version}"
         )
+
+
+class ChecksumException(Exception):
+    pass
