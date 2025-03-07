@@ -18,10 +18,12 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import contextlib
+from dataclasses import dataclass
 from typing import Optional
 from typing_extensions import Self
-from pysonar_scanner.api import BaseUrls, SonarQubeApi
+from pysonar_scanner.api import BaseUrls, EngineInfo, SonarQubeApi
 import responses
+from responses import matchers
 
 
 def get_sq_server() -> SonarQubeApi:
@@ -48,6 +50,34 @@ class SQApiMocker:
 
     def mock_analysis_version(self, version: str = "", status: int = 200) -> Self:
         self.rsps.get(url=f"{self.api_url}/analysis/version", body=version, status=status)
+        return self
+
+    def mock_analysis_engine(
+        self, filename: Optional[str] = None, sha256: Optional[str] = None, status: int = 200
+    ) -> Self:
+        def prepare_json_obj() -> dict:
+            json_response = {}
+            if filename:
+                json_response["filename"] = filename
+            if sha256:
+                json_response["sha256"] = sha256
+            return json_response
+
+        self.rsps.get(
+            url=f"{self.api_url}/analysis/engine",
+            json=prepare_json_obj(),
+            status=status,
+            match=[matchers.header_matcher({"Accept": "application/json"})],
+        )
+        return self
+
+    def mock_analysis_engine_download(self, body: bytes = b"", status: int = 200) -> Self:
+        self.rsps.get(
+            url=f"{self.api_url}/analysis/engine",
+            body=body,
+            status=status,
+            match=[matchers.header_matcher({"Accept": "application/octet-stream"})],
+        )
         return self
 
     def mock_server_version(self, version: str = "", status: int = 200) -> Self:

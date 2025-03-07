@@ -18,10 +18,12 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 from dataclasses import dataclass
+import typing
 from pysonar_scanner.configuration import Configuration
 from pysonar_scanner.exceptions import SonarQubeApiException
 from pysonar_scanner.utils import remove_trailing_slash
 import requests
+import requests.auth
 
 
 @dataclass(frozen=True)
@@ -103,6 +105,12 @@ class BearerAuth(requests.auth.AuthBase):
         return r
 
 
+@dataclass(frozen=True)
+class EngineInfo:
+    filename: str
+    sha256: str
+
+
 class SonarQubeApi:
     def __init__(self, base_urls: BaseUrls, token: str):
         self.base_urls = base_urls
@@ -121,3 +129,41 @@ class SonarQubeApi:
             return SQVersion.from_str(res.text)
         except requests.RequestException as e:
             raise SonarQubeApiException("Error while fetching the analysis version") from e
+
+    def get_analysis_engine(self) -> EngineInfo:
+        try:
+            res = requests.get(
+                f"{self.base_urls.api_base_url}/analysis/engine", headers={"Accept": "application/json"}, auth=self.auth
+            )
+            res.raise_for_status()
+            json = res.json()
+            if "filename" not in json or "sha256" not in json:
+                raise SonarQubeApiException("Invalid response from the server")
+            return EngineInfo(filename=json["filename"], sha256=json["sha256"])
+        except requests.RequestException as e:
+            raise SonarQubeApiException("Error while fetching the analysis engine information") from e
+
+    def download_analysis_engine(self, handle: typing.BinaryIO) -> None:
+        """
+        This method can raise a SonarQubeApiException if the server doesn't respond successfully.
+        Alternative, if the file IO fails, an IOError or OSError can be raised.
+        """
+
+        def fetch_response():
+            res = requests.get(
+                f"{self.base_urls.api_base_url}/analysis/engine",
+                headers={"Accept": "application/octet-stream"},
+                auth=self.auth,
+            )
+            res.raise_for_status()
+            return res
+
+        def download_file(handle: typing.BinaryIO, requests: requests.Response):
+            for chunk in requests.iter_content(chunk_size=128):
+                handle.write(chunk)
+
+        try:
+            res = fetch_response()
+            download_file(handle, res)
+        except requests.RequestException as e:
+            raise SonarQubeApiException("Error while fetching the analysis engine information") from e
