@@ -19,12 +19,40 @@
 #
 from pysonar_scanner.api import SonarQubeApi
 import pysonar_scanner.api as api
-from pysonar_scanner.exceptions import SQTooOldException
+from pysonar_scanner.exceptions import SQTooOldException, ChecksumException
+from pysonar_scanner.cache import Cache, CacheFile
+
+
+class ScannerEngineProvisioner:
+    def __init__(self, api: SonarQubeApi, cache: Cache):
+        self.api = api
+        self.cache = cache
+
+    def provision(self) -> None:
+        if self.__download_and_verify():
+            return
+        # Retry once in case the checksum failed due to the scanner engine being updated between getting the checksum and downloading the jar
+        if self.__download_and_verify():
+            return
+        else:
+            raise ChecksumException("Failed to download and verify scanner engine")
+
+    def __download_and_verify(self) -> bool:
+        engine_info = self.api.get_analysis_engine()
+        cache_file = self.cache.get_file(engine_info.filename, engine_info.sha256)
+        if not cache_file.is_valid():
+            self.__download_scanner_engine(cache_file)
+        return cache_file.is_valid()
+
+    def __download_scanner_engine(self, cache_file: CacheFile) -> None:
+        with cache_file.open(mode="wb") as f:
+            self.api.download_analysis_engine(f)
 
 
 class ScannerEngine:
-    def __init__(self, api: SonarQubeApi):
+    def __init__(self, api: SonarQubeApi, cache: Cache):
         self.api = api
+        self.cache = cache
 
     def __version_check(self):
         if self.api.is_sonar_qube_cloud():
@@ -34,3 +62,6 @@ class ScannerEngine:
             raise SQTooOldException(
                 f"Only SonarQube versions >= {api.MIN_SUPPORTED_SQ_VERSION} are supported, but got {version}"
             )
+
+    def __fetch_scanner_engine(self):
+        ScannerEngineProvisioner(self.api, self.cache).provision()
