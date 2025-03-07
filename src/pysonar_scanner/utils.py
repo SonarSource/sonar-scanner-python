@@ -18,6 +18,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 from dataclasses import dataclass
+import typing
+import hashlib
 
 
 def remove_trailing_slash(url: str) -> str:
@@ -49,3 +51,10 @@ class SQVersion:
 
 
 MIN_SUPPORTED_SQ_VERSION: SQVersion = SQVersion.from_str("10.6")
+
+
+def calculate_checksum(filehandle: typing.BinaryIO) -> str:
+    sha256_hash = hashlib.sha256()
+    for byte_block in iter(lambda: filehandle.read(4096), b""):
+        sha256_hash.update(byte_block)
+    return sha256_hash.hexdigest()

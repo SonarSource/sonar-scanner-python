@@ -17,9 +17,10 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+from io import BytesIO
 import unittest
 
-from pysonar_scanner.utils import SQVersion, remove_trailing_slash
+from pysonar_scanner.utils import SQVersion, calculate_checksum, remove_trailing_slash
 
 
 class TestUtils(unittest.TestCase):
@@ -53,3 +54,14 @@ class TestSQVersion(unittest.TestCase):
     def test_str(self):
         self.assertEqual(str(SQVersion.from_str("10.6")), "10.6")
         self.assertEqual(str(SQVersion.from_str("9.9.9aa")), "9.9.9aa")
+
+
+class TestCalculateChecksum(unittest.TestCase):
+    def test_calculate_checksum(self):
+        self.assertEqual(
+            calculate_checksum(BytesIO(b"test")), "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+        )
+        self.assertEqual(
+            calculate_checksum(BytesIO(b"test test")),
+            "03ffdf45276dd38ffac79b0e9c6c14d89d9113ad783d5922580f4c66a3305591",
+        )
