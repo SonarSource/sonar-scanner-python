@@ -86,9 +86,18 @@ class Sonar:
 
 
 @dataclass(frozen=True)
+class Environment:
+    java_home: Optional[str] = None
+
+class EnvironmentLoader:
+    pass
+
+@dataclass(frozen=True)
 class Configuration:
     sonar: Sonar = Sonar()
+    environment: Environment = Environment()
 
 
 class ConfigurationLoader:
     pass
+
