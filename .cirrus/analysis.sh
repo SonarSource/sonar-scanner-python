@@ -16,9 +16,9 @@ function run_analysis {
 # This command can fail with "fatal: --unshallow on a complete repository does not make sense"
 # if there are not enough commits in the Git repository
 # For this reason errors are ignored with "|| true"
-git fetch --unshallow || true
+git fetch --unshallow || git fetch --all || true
 
-if [ -n "${GITHUB_BASE_BRANCH}" ]; then
+if [ "${GITHUB_BASE_BRANCH}" != "false" ]; then
   echo '======= Fetch references from github for PR analysis'
   git fetch origin "${GITHUB_BASE_BRANCH}"
 fi
