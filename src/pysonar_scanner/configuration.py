@@ -83,6 +83,7 @@ class Sonar:
     token: str = ""
     host_url: str = ""
     region: str = ""
+    token: str = ""
 
 
 @dataclass(frozen=True)

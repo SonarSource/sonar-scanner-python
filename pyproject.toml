@@ -30,6 +30,8 @@ relative_files = true
 [tool.poetry.dependencies]
 python = '>=3.9'
 toml = '>=0.10.2'
+requests = "^2.32.3"
+responses = "^0.25.6"
 
 [tool.poetry.group]
 [tool.poetry.group.dev]
