@@ -19,19 +19,18 @@
 #
 import unittest
 
-from pysonar_scanner.api import BaseUrls, SonarQubeApi
 from pysonar_scanner.exceptions import SQTooOldException
 from pysonar_scanner.scannerengine import ScannerEngine
 from unittest.mock import Mock
 
-from pysonar_scanner.utils import SQVersion
-from tests import sqapiutils
+from pysonar_scanner.api import SQVersion
+from tests import sq_api_utils
 
 
 class TestScannerEngine(unittest.TestCase):
     def test_version_check(self):
         with self.subTest("SQ:Server is too old"):
-            sq_cloud_api = sqapiutils.get_sq_server()
+            sq_cloud_api = sq_api_utils.get_sq_server()
             sq_cloud_api.get_analysis_version = Mock(return_value=SQVersion.from_str("9.9.9"))
             scannerengine = ScannerEngine(sq_cloud_api)
 
@@ -39,7 +38,7 @@ class TestScannerEngine(unittest.TestCase):
                 scannerengine._ScannerEngine__version_check()
 
         with self.subTest("SQ:Server that is new than 10.6"):
-            sq_cloud_api = sqapiutils.get_sq_server()
+            sq_cloud_api = sq_api_utils.get_sq_server()
             sq_cloud_api.get_analysis_version = Mock(return_value=SQVersion.from_str("10.7"))
             scannerengine = ScannerEngine(sq_cloud_api)
 
@@ -48,7 +47,7 @@ class TestScannerEngine(unittest.TestCase):
             sq_cloud_api.get_analysis_version.assert_called_once()
 
         with self.subTest("SQ:Cloud "):
-            sq_cloud_api = sqapiutils.get_sq_cloud()
+            sq_cloud_api = sq_api_utils.get_sq_cloud()
             sq_cloud_api.get_analysis_version = Mock()
             scannerengine = ScannerEngine(sq_cloud_api)
 

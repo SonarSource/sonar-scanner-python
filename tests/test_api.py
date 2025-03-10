@@ -22,11 +22,35 @@ import unittest
 
 from pysonar_scanner.api import BaseUrls, SonarQubeApi, SonarQubeApiException, get_base_urls
 from pysonar_scanner.configuration import Configuration, Scanner, Sonar
-import responses
 
-from pysonar_scanner.utils import SQVersion
-from tests import sqapiutils
-from tests.sqapiutils import sq_api_mocker
+from pysonar_scanner.api import SQVersion
+from tests import sq_api_utils
+from tests.sq_api_utils import sq_api_mocker
+
+
+class TestSQVersion(unittest.TestCase):
+    def test_does_support_bootstrapping(self):
+        self.assertTrue(SQVersion.from_str("10.6").does_support_bootstrapping())
+        self.assertTrue(SQVersion.from_str("10.6.5").does_support_bootstrapping())
+        self.assertTrue(SQVersion.from_str("10.6.5a").does_support_bootstrapping())
+        self.assertTrue(SQVersion.from_str("10.7").does_support_bootstrapping())
+        self.assertTrue(SQVersion.from_str("11.1").does_support_bootstrapping())
+        self.assertTrue(SQVersion.from_str("11.1.1").does_support_bootstrapping())
+        self.assertTrue(SQVersion.from_str("11").does_support_bootstrapping())
+
+        self.assertFalse(SQVersion.from_str("9.9.9").does_support_bootstrapping())
+        self.assertFalse(SQVersion.from_str("9.9.9a").does_support_bootstrapping())
+        self.assertFalse(SQVersion.from_str("9.9").does_support_bootstrapping())
+        self.assertFalse(SQVersion.from_str("9").does_support_bootstrapping())
+        self.assertFalse(SQVersion.from_str("10.5").does_support_bootstrapping())
+        self.assertFalse(SQVersion.from_str("10").does_support_bootstrapping())
+
+        self.assertFalse(SQVersion.from_str("a").does_support_bootstrapping())
+        self.assertFalse(SQVersion.from_str("1.a").does_support_bootstrapping())
+
+    def test_str(self):
+        self.assertEqual(str(SQVersion.from_str("10.6")), "10.6")
+        self.assertEqual(str(SQVersion.from_str("9.9.9aa")), "9.9.9aa")
 
 
 class TestApi(unittest.TestCase):
@@ -157,7 +181,7 @@ class TestSonarQubeApiWithUnreachableSQServer(unittest.TestCase):
 
 class TestSonarQubeApi(unittest.TestCase):
     def setUp(self):
-        self.sq = sqapiutils.get_sq_server()
+        self.sq = sq_api_utils.get_sq_server()
 
     def test_get_analysis_version(self):
         with self.subTest("/analysis/version returns 200"), sq_api_mocker() as mocker:

@@ -18,6 +18,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 from pysonar_scanner.api import SonarQubeApi
+import pysonar_scanner.api as api
 from pysonar_scanner.exceptions import SQTooOldException
 
 
@@ -30,4 +31,6 @@ class ScannerEngine:
             return
         version = self.api.get_analysis_version()
         if not version.does_support_bootstrapping():
-            raise SQTooOldException(version)
+            raise SQTooOldException(
+                f"Only SonarQube versions >= {api.MIN_SUPPORTED_SQ_VERSION} are supported, but got {version}"
+            )

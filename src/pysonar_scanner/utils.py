@@ -17,35 +17,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-from dataclasses import dataclass
 
 
 def remove_trailing_slash(url: str) -> str:
     return url.rstrip("/ ").lstrip()
-
-
-@dataclass(frozen=True)
-class SQVersion:
-    parts: list[str]
-
-    def does_support_bootstrapping(self) -> bool:
-        if len(self.parts) == 0:
-            return False
-        major_str = self.parts[0]
-        minor_str = self.parts[1] if len(self.parts) > 1 else "0"
-        if not major_str.isdigit() or not minor_str.isdigit():
-            return False
-        major = int(major_str)
-        minor = int(minor_str)
-
-        return major > 10 or (major == 10 and minor >= 6)
-
-    def __str__(self) -> str:
-        return ".".join(self.parts)
-
-    @staticmethod
-    def from_str(version: str) -> "SQVersion":
-        return SQVersion(version.split("."))
-
-
-MIN_SUPPORTED_SQ_VERSION: SQVersion = SQVersion.from_str("10.6")

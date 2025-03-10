@@ -17,12 +17,11 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-from pysonar_scanner.utils import SQVersion
-import pysonar_scanner.utils as utils
+
+
+class SonarQubeApiException(Exception):
+    pass
 
 
 class SQTooOldException(Exception):
-    def __init__(self, version: SQVersion):
-        super().__init__(
-            f"Only SonarQube versions >= {utils.MIN_SUPPORTED_SQ_VERSION} are supported, but got {version}"
-        )
+    pass

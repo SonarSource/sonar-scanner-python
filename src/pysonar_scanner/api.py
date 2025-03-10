@@ -19,8 +19,46 @@
 #
 from dataclasses import dataclass
 from pysonar_scanner.configuration import Configuration
-from pysonar_scanner.utils import SQVersion, remove_trailing_slash
+from pysonar_scanner.exceptions import SonarQubeApiException
+from pysonar_scanner.utils import remove_trailing_slash
 import requests
+
+
+@dataclass(frozen=True)
+class SQVersion:
+    parts: list[str]
+
+    def __get_part(self, index: int) -> int:
+        if index >= len(self.parts):
+            return 0
+        part = self.parts[index]
+        if not part.isdigit():
+            return 0
+        return int(part)
+
+    def major(self) -> int:
+        return self.__get_part(0)
+
+    def minor(self) -> int:
+        return self.__get_part(1)
+
+    def does_support_bootstrapping(self) -> bool:
+        if len(self.parts) == 0:
+            return False
+
+        return self.major() > MIN_SUPPORTED_SQ_VERSION.major() or (
+            self.major() == MIN_SUPPORTED_SQ_VERSION.major() and self.minor() >= MIN_SUPPORTED_SQ_VERSION.minor()
+        )
+
+    def __str__(self) -> str:
+        return ".".join(self.parts)
+
+    @staticmethod
+    def from_str(version: str) -> "SQVersion":
+        return SQVersion(version.split("."))
+
+
+MIN_SUPPORTED_SQ_VERSION: SQVersion = SQVersion.from_str("10.6")
 
 
 @dataclass(frozen=True)
@@ -63,10 +101,6 @@ class BearerAuth(requests.auth.AuthBase):
     def __call__(self, r):
         r.headers["Authorization"] = f"Bearer {self.token}"
         return r
-
-
-class SonarQubeApiException(Exception):
-    pass
 
 
 class SonarQubeApi:
