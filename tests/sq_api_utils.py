@@ -48,13 +48,12 @@ class SQApiMocker:
         self.api_url = f"{base_url}/api/v2"
         self.rsps = rsps or responses
 
-    def mock_analysis_version(self, version: str = "", status: int = 200) -> Self:
-        self.rsps.get(url=f"{self.api_url}/analysis/version", body=version, status=status)
-        return self
+    def mock_analysis_version(self, version: str = "", status: int = 200) -> responses.BaseResponse:
+        return self.rsps.get(url=f"{self.api_url}/analysis/version", body=version, status=status)
 
     def mock_analysis_engine(
         self, filename: Optional[str] = None, sha256: Optional[str] = None, status: int = 200
-    ) -> Self:
+    ) -> responses.BaseResponse:
         def prepare_json_obj() -> dict:
             json_response = {}
             if filename:
@@ -63,29 +62,26 @@ class SQApiMocker:
                 json_response["sha256"] = sha256
             return json_response
 
-        self.rsps.get(
+        return self.rsps.get(
             url=f"{self.api_url}/analysis/engine",
             json=prepare_json_obj(),
             status=status,
             match=[matchers.header_matcher({"Accept": "application/json"})],
         )
-        return self
 
-    def mock_analysis_engine_download(self, body: bytes = b"", status: int = 200) -> Self:
-        self.rsps.get(
+    def mock_analysis_engine_download(self, body: bytes = b"", status: int = 200) -> responses.BaseResponse:
+        return self.rsps.get(
             url=f"{self.api_url}/analysis/engine",
             body=body,
             status=status,
             match=[matchers.header_matcher({"Accept": "application/octet-stream"})],
         )
-        return self
 
-    def mock_server_version(self, version: str = "", status: int = 200) -> Self:
-        self.rsps.get(url=f"{self.base_url}/api/server/version", body=version, status=status)
-        return self
+    def mock_server_version(self, version: str = "", status: int = 200) -> responses.BaseResponse:
+        return self.rsps.get(url=f"{self.base_url}/api/server/version", body=version, status=status)
 
 
 @contextlib.contextmanager
-def sq_api_mocker(base_url: str = "http://sq.home"):
-    with responses.RequestsMock() as rsps:
+def sq_api_mocker(base_url: str = "http://sq.home", assert_all_requests_are_fired: bool = True):
+    with responses.RequestsMock(assert_all_requests_are_fired=assert_all_requests_are_fired) as rsps:
         yield SQApiMocker(base_url=base_url, rsps=rsps)

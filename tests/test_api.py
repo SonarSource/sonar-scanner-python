@@ -191,7 +191,8 @@ class TestSonarQubeApi(unittest.TestCase):
             self.assertEqual(self.sq.get_analysis_version(), SQVersion.from_str("10.7"))
 
         with self.subTest("/analysis/version returns error"), sq_api_mocker() as mocker:
-            mocker.mock_analysis_version(status=404).mock_server_version("10.8")
+            mocker.mock_analysis_version(status=404)
+            mocker.mock_server_version("10.8")
             self.assertEqual(self.sq.get_analysis_version(), SQVersion.from_str("10.8"))
 
         with (
@@ -199,7 +200,8 @@ class TestSonarQubeApi(unittest.TestCase):
             sq_api_mocker() as mocker,
             self.assertRaises(SonarQubeApiException),
         ):
-            mocker.mock_analysis_version(status=404).mock_server_version(status=404)
+            mocker.mock_analysis_version(status=404)
+            mocker.mock_server_version(status=404)
             self.sq.get_analysis_version()
 
         with (
