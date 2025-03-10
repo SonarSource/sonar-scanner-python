@@ -11,12 +11,15 @@ function run_analysis {
   "$@"
 }
 
-# Fetch all commit history so that SonarQube has exact blame information
-# for issue auto-assignment
-# This command can fail with "fatal: --unshallow on a complete repository does not make sense"
-# if there are not enough commits in the Git repository
-# For this reason errors are ignored with "|| true"
-git fetch --unshallow || true
+if $(git rev-parse --is-shallow-repository); then
+  # repository is shallow
+  # If there are not enough commits in the Git repository, this command will fail with "fatal: --unshallow on a complete repository does not make sense"
+  # For this reason errors are ignored with "|| true"
+  git fetch --unshallow || true
+else
+  # repo is not shallow, retrieving all
+  git fetch --all
+fi
 
 if [ "${GITHUB_BASE_BRANCH}" != "false" ]; then
   echo '======= Fetch references from github for PR analysis'
