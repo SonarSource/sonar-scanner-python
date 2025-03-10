@@ -46,6 +46,9 @@ class Scanner:
 
         return process.returncode
 
+    def __unused_private_method_check(self):
+        return "busted"
+
     def execute_command(self) -> Popen:
         cmd = self.compute_command()
         return Popen(cmd, stdout=PIPE, stderr=PIPE)
