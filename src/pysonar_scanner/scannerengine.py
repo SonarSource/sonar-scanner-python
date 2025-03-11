@@ -17,10 +17,10 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-from pysonar_scanner.api import SonarQubeApi
 import pysonar_scanner.api as api
-from pysonar_scanner.exceptions import SQTooOldException, ChecksumException
+from pysonar_scanner.api import SonarQubeApi
 from pysonar_scanner.cache import Cache, CacheFile
+from pysonar_scanner.exceptions import ChecksumException, SQTooOldException
 
 
 class ScannerEngineProvisioner:

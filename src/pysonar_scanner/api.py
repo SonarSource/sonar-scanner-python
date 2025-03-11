@@ -17,13 +17,15 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-from dataclasses import dataclass
 import typing
+from dataclasses import dataclass
+
+import requests
+import requests.auth
+
 from pysonar_scanner.configuration import Configuration
 from pysonar_scanner.exceptions import SonarQubeApiException
 from pysonar_scanner.utils import remove_trailing_slash
-import requests
-import requests.auth
 
 
 @dataclass(frozen=True)

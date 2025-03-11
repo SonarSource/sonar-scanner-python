@@ -18,9 +18,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-from dataclasses import dataclass
-import typing
 import pathlib
+import typing
+from dataclasses import dataclass
+
 from pysonar_scanner import utils
 
 OpenBinaryMode = typing.Literal["rb", "xb"]

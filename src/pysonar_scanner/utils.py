@@ -17,9 +17,9 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-from dataclasses import dataclass
-import typing
 import hashlib
+import typing
+from dataclasses import dataclass
 
 
 def remove_trailing_slash(url: str) -> str:
