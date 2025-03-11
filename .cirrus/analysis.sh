@@ -1,4 +1,5 @@
 #!/bin/bash
+
 function run_analysis {
   # extra analysis parameters are set in the 'sonar-project.properties'
   pysonar-scanner \
@@ -11,6 +12,13 @@ function run_analysis {
   "$@"
 }
 
+# generic environment variables
+export GIT_SHA1=$CIRRUS_CHANGE_IN_REPO
+export GITHUB_BRANCH=$CIRRUS_BRANCH
+export GITHUB_REPO=${CIRRUS_REPO_FULL_NAME}
+export PULL_REQUEST=${CIRRUS_PR:-false}
+export PIPELINE_ID=${CIRRUS_BUILD_ID}
+
 if $(git rev-parse --is-shallow-repository); then
   # repository is shallow
   # If there are not enough commits in the Git repository, this command will fail with "fatal: --unshallow on a complete repository does not make sense"
@@ -21,30 +29,18 @@ else
   git fetch --all
 fi
 
-if [ "${GITHUB_BASE_BRANCH}" != "false" ]; then
-  echo '======= Fetch references from github for PR analysis'
-  git fetch origin "${GITHUB_BASE_BRANCH}"
-fi
-
-if [ -z "$PIPELINE_ID" ]; then
-  PIPELINE_ID=$BUILD_NUMBER
-fi
-
 if [ "${GITHUB_BRANCH}" == "master" ] && [ "$PULL_REQUEST" == "false" ]; then
-  echo '======= Build and analyze master'
-  git fetch origin "${GITHUB_BRANCH}"
+  echo '======= Analyze master'
   run_analysis "$@"
 
 elif [[ "${GITHUB_BRANCH}" == "branch-"* ]] && [ "$PULL_REQUEST" == "false" ]; then
-  echo '======= Build and analyze maintenance branches as long-living branches'
-
-  git fetch origin "${GITHUB_BRANCH}"
+  echo '======= Analyze maintenance branches as long-living branches'
   run_analysis -Dsonar.branch.name="$GITHUB_BRANCH" "$@"
 
 elif [ "$PULL_REQUEST" != "false" ]; then
-  echo '======= Build and analyze pull request'
+  echo '======= Analyze pull request'
   run_analysis -Dsonar.analysis.prNumber="$PULL_REQUEST" "$@"
 
 else
-  echo '======= Build, no analysis'
+  echo '======= No analysis'
 fi
