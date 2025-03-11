@@ -19,6 +19,10 @@
 #
 
 
+class MissingKeyException(Exception):
+    pass
+
+
 class SonarQubeApiException(Exception):
     pass
 

@@ -30,3 +30,7 @@ def calculate_checksum(filehandle: typing.BinaryIO) -> str:
     for byte_block in iter(lambda: filehandle.read(4096), b""):
         sha256_hash.update(byte_block)
     return sha256_hash.hexdigest()
+
+
+def filter_none_values(dictionary: dict) -> dict:
+    return {k: v for k, v in dictionary.items() if v is not None}

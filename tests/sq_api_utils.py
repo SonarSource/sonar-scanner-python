@@ -19,7 +19,8 @@
 #
 import contextlib
 from typing import Optional
-from pysonar_scanner.api import BaseUrls, SonarQubeApi
+from pysonar_scanner import utils
+from pysonar_scanner.api import JRE, BaseUrls, SonarQubeApi
 import responses
 from responses import matchers
 
@@ -75,6 +76,34 @@ class SQApiMocker:
             match=[matchers.header_matcher({"Accept": "application/octet-stream"})],
         )
 
+    def mock_analysis_jres(
+        self,
+        body: Optional[list[dict]] = None,
+        os_matcher: Optional[str] = None,
+        arch_matcher: Optional[str] = None,
+        status: int = 200,
+    ) -> responses.BaseResponse:
+        return self.rsps.get(
+            url=f"{self.api_url}/analysis/jres",
+            json=body,
+            status=status,
+            match=[
+                matchers.header_matcher({"Accept": "application/json"}),
+                matchers.query_param_matcher(utils.filter_none_values({"os": os_matcher, "arch": arch_matcher})),
+            ],
+        )
+
+    def mock_analysis_jre_download(
+        self, id: str, body: bytes = b"", status: int = 200, redirect_url: Optional[str] = None
+    ) -> responses.BaseResponse:
+        return self.rsps.get(
+            url=f"{self.api_url}/analysis/jres/{id}",
+            body=body,
+            headers={"Location": redirect_url} if redirect_url else None,
+            status=status,
+            match=[matchers.header_matcher({"Accept": "application/octet-stream"})],
+        )
+
     def mock_server_version(self, version: str = "", status: int = 200) -> responses.BaseResponse:
         return self.rsps.get(url=f"{self.base_url}/api/server/version", body=version, status=status)
 
@@ -83,3 +112,15 @@ class SQApiMocker:
 def sq_api_mocker(base_url: str = "http://sq.home", assert_all_requests_are_fired: bool = True):
     with responses.RequestsMock(assert_all_requests_are_fired=assert_all_requests_are_fired) as rsps:
         yield SQApiMocker(base_url=base_url, rsps=rsps)
+
+
+def jre_to_dict(jre: JRE) -> dict:
+    return {
+        "id": jre.id,
+        "filename": jre.filename,
+        "sha256": jre.sha256,
+        "javaPath": jre.java_path,
+        "os": jre.os,
+        "arch": jre.arch,
+        "downloadUrl": jre.download_url,
+    }
