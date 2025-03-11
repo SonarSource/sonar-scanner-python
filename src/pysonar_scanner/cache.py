@@ -24,7 +24,7 @@ from dataclasses import dataclass
 
 from pysonar_scanner import utils
 
-OpenBinaryMode = typing.Literal["rb", "xb"]
+OpenBinaryMode = typing.Literal["wb", "xb"]
 
 
 @dataclass(frozen=True)
@@ -41,7 +41,7 @@ class CacheFile:
         except OSError:
             return False
 
-    def open(self, mode: OpenBinaryMode = "rb") -> typing.BinaryIO:
+    def open(self, mode: OpenBinaryMode = "wb") -> typing.BinaryIO:
         return open(self.filepath, mode=mode)
 
 
