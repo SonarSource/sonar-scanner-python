@@ -38,7 +38,7 @@ class CacheFile:
                 calculated_checksum = utils.calculate_checksum(f)
 
             return calculated_checksum == self.checksum
-        except (FileNotFoundError, PermissionError, OSError):
+        except OSError:
             return False
 
     def open(self, mode: OpenBinaryMode = "rb") -> typing.BinaryIO:

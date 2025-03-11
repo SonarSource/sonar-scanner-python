@@ -19,7 +19,6 @@
 #
 import hashlib
 import typing
-from dataclasses import dataclass
 
 
 def remove_trailing_slash(url: str) -> str:

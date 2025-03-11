@@ -18,10 +18,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import contextlib
-from dataclasses import dataclass
 from typing import Optional
-from typing_extensions import Self
-from pysonar_scanner.api import BaseUrls, EngineInfo, SonarQubeApi
+from pysonar_scanner.api import BaseUrls, SonarQubeApi
 import responses
 from responses import matchers
 

@@ -39,7 +39,7 @@ class TestCache(pyfakefs.TestCase):
 
         cache = Cache.create_cache(cache_path)
         self.assertTrue(self.fs.exists(cache_path))
-        self.assertTrue(cache.cache_folder, cache_path)
+        self.assertEqual(cache.cache_folder, cache_path)
 
     def test_cache_constructor(self):
         with self.assertRaises(FileNotFoundError):
