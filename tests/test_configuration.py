@@ -22,24 +22,22 @@ import unittest
 from unittest.mock import patch
 from io import StringIO
 
-from pysonar_scanner.__main__ import initialize_configuration
-from pysonar_scanner.configuration import Configuration, Scanner, Internal, Sonar
+from pysonar_scanner.configuration import ConfigurationLoader, Configuration, Scanner, Internal, Sonar
 
 
 class TestMain(unittest.TestCase):
 
     @patch("sys.argv", ["myscript.py"])
     def test_missing_cli_args(self):
-        with patch("sys.stderr", new=StringIO()) as mock_stderr:
-            with self.assertRaises(SystemExit):
-                initialize_configuration()
+        with patch("sys.stderr", new=StringIO()) as mock_stderr, self.assertRaises(SystemExit):
+            ConfigurationLoader.initialize_configuration()
 
         error_output = mock_stderr.getvalue()
         self.assertIn("the following arguments are required: -t/--token", error_output)
 
     @patch("sys.argv", ["myscript.py", "--token", "myToken"])
     def test_minimal_cli_args(self):
-        configuration = initialize_configuration()
+        configuration = ConfigurationLoader.initialize_configuration()
         expected_internal = Internal()
         expected_scanner = Scanner(internal=expected_internal)
         expected_sonar = Sonar(scanner=expected_scanner, token="myToken")
@@ -47,19 +45,22 @@ class TestMain(unittest.TestCase):
         self.assertEqual(configuration, expected_configuration)
 
     @patch("sys.argv", ["myscript.py", "-t", "myToken", "-v"])
-    def test_short_cli_args(self):
-        configuration = initialize_configuration()
-        expected_internal = Internal()
-        expected_scanner = Scanner(internal=expected_internal)
-        expected_sonar = Sonar(scanner=expected_scanner, token="myToken", verbose=True)
-        expected_configuration = Configuration(sonar=expected_sonar)
-        self.assertEqual(configuration, expected_configuration)
+    def test_alternative_cli_args(self):
+        alternatives = [["-t", "myToken", "-v"], ["--sonar-token", "myToken", "--sonar-verbose"]]
+        for alternative in alternatives:
+            with patch("sys.argv", ["myscript.py", *alternative]), patch("sys.stderr", new=StringIO()):
+                configuration = ConfigurationLoader.initialize_configuration()
+                expected_internal = Internal()
+                expected_scanner = Scanner(internal=expected_internal)
+                expected_sonar = Sonar(scanner=expected_scanner, token="myToken", verbose=True)
+                expected_configuration = Configuration(sonar=expected_sonar)
+                self.assertEqual(configuration, expected_configuration)
 
     @patch("sys.argv", ["myscript.py", "-t", "myToken", "--sonar-scanner-os", "windows2"])
     def test_impossible_os_choice(self):
         with patch("sys.stderr", new=StringIO()) as mock_stderr:
             with self.assertRaises(SystemExit):
-                initialize_configuration()
+                ConfigurationLoader.initialize_configuration()
 
         error_output = mock_stderr.getvalue()
         self.assertIn("""argument --sonar-scanner-os: invalid choice: 'windows2'""", error_output)
@@ -121,7 +122,7 @@ class TestMain(unittest.TestCase):
         ],
     )
     def test_all_cli_args(self):
-        configuration = initialize_configuration()
+        configuration = ConfigurationLoader.initialize_configuration()
         expected_internal = Internal(
             dump_to_file="mySonarScannerInternalDumpToFile", sq_version="mySonarScannerInternalSqVersion"
         )
