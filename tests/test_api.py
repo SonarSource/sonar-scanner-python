@@ -20,7 +20,9 @@
 from typing import TypedDict
 import unittest
 
-from pysonar_scanner.api import BaseUrls, SonarQubeApi, SonarQubeApiException, get_base_urls
+import io
+
+from pysonar_scanner.api import BaseUrls, EngineInfo, SonarQubeApi, SonarQubeApiException, get_base_urls
 from pysonar_scanner.configuration import Configuration, Scanner, Sonar
 
 from pysonar_scanner.api import SQVersion
@@ -189,7 +191,8 @@ class TestSonarQubeApi(unittest.TestCase):
             self.assertEqual(self.sq.get_analysis_version(), SQVersion.from_str("10.7"))
 
         with self.subTest("/analysis/version returns error"), sq_api_mocker() as mocker:
-            mocker.mock_analysis_version(status=404).mock_server_version("10.8")
+            mocker.mock_analysis_version(status=404)
+            mocker.mock_server_version("10.8")
             self.assertEqual(self.sq.get_analysis_version(), SQVersion.from_str("10.8"))
 
         with (
@@ -197,7 +200,8 @@ class TestSonarQubeApi(unittest.TestCase):
             sq_api_mocker() as mocker,
             self.assertRaises(SonarQubeApiException),
         ):
-            mocker.mock_analysis_version(status=404).mock_server_version(status=404)
+            mocker.mock_analysis_version(status=404)
+            mocker.mock_server_version(status=404)
             self.sq.get_analysis_version()
 
         with (
@@ -206,3 +210,51 @@ class TestSonarQubeApi(unittest.TestCase):
             self.assertRaises(SonarQubeApiException),
         ):
             self.sq.get_analysis_version()
+
+    def test_get_analysis_engine(self):
+        with self.subTest("get_analysis_engine works"), sq_api_mocker() as mocker:
+            engine_info = EngineInfo(filename="sonar-scanner-engine-shaded-8.9.0.43852-all.jar", sha256="1234567890")
+            mocker.mock_analysis_engine(filename=engine_info.filename, sha256=engine_info.sha256)
+            self.assertEqual(self.sq.get_analysis_engine(), engine_info)
+
+        with (
+            self.subTest("get_analysis_engine returns error"),
+            sq_api_mocker() as mocker,
+            self.assertRaises(SonarQubeApiException),
+        ):
+            mocker.mock_analysis_engine(status=404)
+            self.sq.get_analysis_engine()
+
+        with (
+            self.subTest("get_analysis_engine response misses sha256"),
+            sq_api_mocker() as mocker,
+            self.assertRaises(SonarQubeApiException),
+        ):
+            mocker.mock_analysis_engine(filename="sonar-scanner-engine-shaded-8.9.0.43852-all.jar")
+            self.sq.get_analysis_engine()
+
+    def test_download_analysis_engine(self):
+        with self.subTest("download_analysis_engine works"), sq_api_mocker() as mocker:
+            file_content = b"fake_engine_binary"
+            mocker.mock_analysis_engine_download(body=file_content)
+            fake_file = io.BytesIO()
+
+            self.sq.download_analysis_engine(fake_file)
+
+            self.assertEqual(fake_file.getvalue(), file_content)
+
+        with (
+            self.subTest("download_analysis_engine returns 404"),
+            sq_api_mocker() as mocker,
+            self.assertRaises(SonarQubeApiException),
+        ):
+            mocker.mock_analysis_engine_download(status=404)
+            self.sq.download_analysis_engine(io.BytesIO())
+
+        with (
+            self.subTest("download_analysis_engine: requests throws exception"),
+            sq_api_mocker() as mocker,
+            self.assertRaises(SonarQubeApiException),
+        ):
+            # since the api is not mocked, requests will throw an exception
+            self.sq.download_analysis_engine(io.BytesIO())
