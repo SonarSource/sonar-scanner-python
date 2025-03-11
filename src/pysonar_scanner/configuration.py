@@ -18,7 +18,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import time
-import json 
+import json
 import argparse
 from dataclasses import dataclass
 from enum import Enum
@@ -90,7 +90,7 @@ class Sonar:
 class Configuration:
     sonar: Sonar = Sonar()
 
-    def __to_dict(self) -> Dict: 
+    def __to_dict(self) -> Dict:
         scanner = self.sonar.scanner
         sonar = self.sonar
 
@@ -133,6 +133,7 @@ class Configuration:
 
     def to_json(self) -> str:
         return json.dumps(self.__to_dict(), indent=2)
+
 
 class ConfigurationLoader:
 
