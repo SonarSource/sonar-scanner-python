@@ -18,10 +18,11 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import time
+import json 
 import argparse
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
+from typing import Optional, Dict
 
 
 class JRECacheStatus(Enum):
@@ -89,6 +90,49 @@ class Sonar:
 class Configuration:
     sonar: Sonar = Sonar()
 
+    def __to_dict(self) -> Dict: 
+        scanner = self.sonar.scanner
+        sonar = self.sonar
+
+        properties = [
+            {"key": "sonar.scanner.app", "value": scanner.app},
+            {"key": "sonar.scanner.appVersion", "value": scanner.app_version},
+            {"key": "sonar.token", "value": sonar.token},
+        ]
+
+        optional_properties = [
+            ("sonar.region", sonar.region),
+            ("sonar.host.url", sonar.host_url),
+            ("sonar.projectBaseDir", sonar.project_base_dir),
+            ("sonar.verbose", sonar.verbose),
+            ("sonar.userHome", sonar.user_home),
+            ("sonar.scanner.apiBaseUrl", scanner.api_base_url),
+            ("sonar.scanner.bootstrapStartTime", scanner.bootstrap_start_time),
+            ("sonar.scanner.os", scanner.os),
+            ("sonar.scanner.arch", scanner.arch),
+            ("sonar.scanner.connectTimeout", scanner.connect_timeout),
+            ("sonar.scanner.socketTimeout", scanner.socket_timeout),
+            ("sonar.scanner.responseTimeout", scanner.response_timeout),
+            ("sonar.scanner.truststorePath", scanner.truststore_path),
+            ("sonar.scanner.truststorePassword", scanner.truststore_password),
+            ("sonar.scanner.keystorePath", scanner.keystore_path),
+            ("sonar.scanner.keystorePassword", scanner.keystore_password),
+            ("sonar.scanner.proxyHost", scanner.proxy_host),
+            ("sonar.scanner.proxyPort", scanner.proxy_port),
+            ("sonar.scanner.proxyUser", scanner.proxy_user),
+            ("sonar.scanner.proxyPassword", scanner.proxy_password),
+            ("sonar.scanner.wasJreCacheHit", scanner.was_jre_cache_hit.name if scanner.was_jre_cache_hit else None),
+            ("sonar.scanner.wasEngineCacheHit", scanner.was_engine_cache_hit),
+        ]
+
+        for key, value in optional_properties:
+            if value is not None and value != "":
+                properties.append({"key": key, "value": value})
+
+        return {"scannerProperties": properties}
+
+    def to_json(self) -> str:
+        return json.dumps(self.__to_dict(), indent=2)
 
 class ConfigurationLoader:
 
