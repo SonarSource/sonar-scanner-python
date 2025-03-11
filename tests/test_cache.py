@@ -52,4 +52,12 @@ class TestCache(pyfakefs.TestCase):
         self.assertEqual(cache_file.checksum, "123")
 
     def test_get_default(self):
-        self.assertEqual(cache.get_default().cache_folder, pathlib.Path.home() / ".sonar-scanner")
+        self.assertEqual(cache.get_default().cache_folder, pathlib.Path.home() / ".sonar-scanner/cache")
+
+    def test_exists(self):
+        cache = Cache.create_cache(pathlib.Path("/folder1/folder2/"))
+        cache_file = cache.get_file("test", "123")
+        self.assertFalse(cache_file.exists())
+
+        cache_file.filepath.touch()
+        self.assertTrue(cache_file.exists())

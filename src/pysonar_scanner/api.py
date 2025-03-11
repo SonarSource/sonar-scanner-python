@@ -26,7 +26,7 @@ import requests.auth
 from typing import Optional
 from pysonar_scanner.configuration import Configuration
 from pysonar_scanner.exceptions import MissingKeyException, SonarQubeApiException
-from pysonar_scanner.utils import remove_trailing_slash
+from pysonar_scanner.utils import Os, Arch, remove_trailing_slash
 
 
 @dataclass(frozen=True)
@@ -188,7 +188,7 @@ class SonarQubeApi:
         except requests.RequestException as e:
             raise SonarQubeApiException("Error while fetching the analysis engine") from e
 
-    def get_analysis_jres(self, os: Optional[str] = None, arch: Optional[str] = None) -> list[JRE]:
+    def get_analysis_jres(self, os: Optional[Os] = None, arch: Optional[Arch] = None) -> list[JRE]:
         try:
             params = {
                 "os": os.value if os else None,

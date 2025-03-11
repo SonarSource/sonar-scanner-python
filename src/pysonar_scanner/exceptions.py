@@ -33,3 +33,11 @@ class SQTooOldException(Exception):
 
 class ChecksumException(Exception):
     pass
+
+
+class NoJreAvailableException(Exception):
+    pass
+
+
+class UnsupportedArchiveFormat(Exception):
+    pass
