@@ -93,8 +93,8 @@ class Configuration:
 class ConfigurationLoader:
 
     @classmethod
-    def initialize_configuration(cls):
-        args = cls.parse_cli_args()
+    def initialize_configuration(cls) -> Configuration:
+        args = cls.__parse_cli_args()
 
         internal = Internal(args.sonar_scanner_internal_dump_to_file, args.sonar_scanner_internal_sq_version)
 
@@ -133,7 +133,7 @@ class ConfigurationLoader:
         return Configuration(sonar)
 
     @classmethod
-    def parse_cli_args(cls):
+    def __parse_cli_args(cls) -> argparse.Namespace:
         parser = argparse.ArgumentParser(description="Sonar scanner CLI for python")
 
         parser.add_argument(

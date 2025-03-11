@@ -18,7 +18,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 from typing import TypedDict
-import unittest
 
 import io
 
@@ -28,6 +27,8 @@ from pysonar_scanner.configuration import Configuration, Scanner, Sonar
 from pysonar_scanner.api import SQVersion
 from tests import sq_api_utils
 from tests.sq_api_utils import sq_api_mocker
+
+import unittest
 
 
 class TestSQVersion(unittest.TestCase):
