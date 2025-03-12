@@ -93,7 +93,7 @@ class TestScanner(unittest.TestCase):
         scanner.execute_command()
 
         scanner.compute_command.assert_called_once()
-        mock_popen.assert_called_once_with(command, stdout=PIPE, stderr=PIPE)
+        mock_popen.assert_called_once_with(command, stdout=PIPE, stderr=PIPE, shell=True)
 
     def test_log_output(self):
         scanner = Scanner(Configuration())

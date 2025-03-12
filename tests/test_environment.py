@@ -17,6 +17,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+import os
 import unittest
 from unittest.mock import patch, Mock
 from urllib.error import HTTPError
@@ -32,7 +33,7 @@ class TestEnvironment(unittest.TestCase):
         environment = Environment(cfg, scanner_base_url="http://scanner.com/download")
         mock_urlopen.return_value = bytes()
 
-        expected_destination = "destination/scanner.zip"
+        expected_destination = os.path.join("destination", "scanner.zip")
         destination = environment._download_scanner_binaries("destination", "test_version", "os_name", "aarch64")
 
         mock_urlopen.assert_called_once_with("http://scanner.com/download-test_version-os_name-aarch64.zip")
@@ -109,7 +110,6 @@ class TestEnvironment(unittest.TestCase):
         mock_systems.get = Mock(return_value=system_name)
         environment._is_sonar_scanner_on_path = Mock(return_value=False)
         environment._install_scanner = Mock()
-        expected_path = "path/sonar-scanner-4.1.2-test-arch-test/bin/sonar-scanner"
 
         environment.setup()
 
@@ -118,6 +118,7 @@ class TestEnvironment(unittest.TestCase):
         environment._get_platform_arch.assert_called_once()
         environment._install_scanner.assert_called_once_with(system_name, arch_name)
 
+        expected_path = os.path.join("path", "sonar-scanner-4.1.2-test-arch-test", "bin", "sonar-scanner")
         assert cfg.sonar_scanner_executable_path == expected_path
 
     @patch("pysonar_scanner.environment.os.path")
