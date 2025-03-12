@@ -99,27 +99,30 @@ class TestEnvironment(unittest.TestCase):
 
     @patch("pysonar_scanner.environment.systems")
     def test_setup_when_scanner_is_not_on_path(self, mock_systems):
-        cfg = Configuration()
-        cfg.sonar_scanner_path = "path"
-        cfg.sonar_scanner_version = "4.1.2"
-        environment = Environment(cfg)
-        environment.cleanup = Mock()
-        system_name = "test"
-        arch_name = "arch-test"
-        environment._get_platform_arch = Mock(return_value=arch_name)
-        mock_systems.get = Mock(return_value=system_name)
-        environment._is_sonar_scanner_on_path = Mock(return_value=False)
-        environment._install_scanner = Mock()
+        system_names = ["linux", "windows", "darwin", "test"]
+        for system_name in system_names:
+            cfg = Configuration()
+            cfg.sonar_scanner_path = "path"
+            cfg.sonar_scanner_version = "4.1.2"
+            environment = Environment(cfg)
+            environment.cleanup = Mock()
+            arch_name = "arch-test"
+            environment._get_platform_arch = Mock(return_value=arch_name)
+            mock_systems.get = Mock(return_value=system_name)
+            environment._is_sonar_scanner_on_path = Mock(return_value=False)
+            environment._install_scanner = Mock()
 
-        environment.setup()
+            environment.setup()
 
-        environment.cleanup.assert_called_once()
-        mock_systems.get.assert_called_once()
-        environment._get_platform_arch.assert_called_once()
-        environment._install_scanner.assert_called_once_with(system_name, arch_name)
+            environment.cleanup.assert_called_once()
+            mock_systems.get.assert_called_once()
+            environment._get_platform_arch.assert_called_once()
+            environment._install_scanner.assert_called_once_with(system_name, arch_name)
 
-        expected_path = os.path.join("path", "sonar-scanner-4.1.2-test-arch-test", "bin", "sonar-scanner")
-        assert cfg.sonar_scanner_executable_path == expected_path
+            expected_path = os.path.join("path", f"sonar-scanner-4.1.2-{system_name}-arch-test", "bin", "sonar-scanner")
+            if system_name == "windows":
+                expected_path += ".bat"
+            assert cfg.sonar_scanner_executable_path == expected_path
 
     @patch("pysonar_scanner.environment.os.path")
     @patch("pysonar_scanner.environment.shutil")
