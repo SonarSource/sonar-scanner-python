@@ -30,7 +30,10 @@ from pysonar_scanner.api import SQVersion
 from tests import sq_api_utils
 
 
-class TestScannerEngine(unittest.TestCase):
+class TestScannerEngine(pyfakefs.TestCase):
+    def setUp(self):
+        self.setUpPyfakefs()
+
     def test_version_check(self):
         with self.subTest("SQ:Server is too old"):
             sq_cloud_api = sq_api_utils.get_sq_server()

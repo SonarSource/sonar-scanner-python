@@ -35,9 +35,13 @@ class ChecksumException(Exception):
     pass
 
 
-class NoJreAvailableException(Exception):
+class JreProvisioningException(Exception):
     pass
 
 
-class UnsupportedArchiveFormat(Exception):
+class NoJreAvailableException(JreProvisioningException):
+    pass
+
+
+class UnsupportedArchiveFormat(JreProvisioningException):
     pass

@@ -19,7 +19,6 @@
 #
 import io
 import pathlib
-from tarfile import TarFile
 import tarfile
 from unittest.mock import Mock, patch
 from typing_extensions import TypedDict
@@ -113,7 +112,7 @@ class TestJREProvisioner(pyfakefs.TestCase):
         self.assertEqual(utils.get_os(), utils.Os.LINUX)
         self.assertEqual(utils.get_arch(), utils.Arch.AARCH64)
 
-    def test_happy_path(self, get_os_mock, get_arch_mock):
+    def test_successfully_downloading_jre(self, get_os_mock, get_arch_mock):
         class JRETestCase(TypedDict):
             jre: JRE
             bytes: bytes
