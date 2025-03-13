@@ -17,8 +17,11 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+import hashlib
 import pathlib
 import platform
+import re
+import typing
 
 #
 # Sonar Scanner Python
@@ -40,9 +43,6 @@ import platform
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 from enum import Enum
-import hashlib
-import re
-import typing
 
 
 def remove_trailing_slash(url: str) -> str:

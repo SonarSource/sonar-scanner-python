@@ -19,14 +19,14 @@
 #
 import typing
 from dataclasses import dataclass
+from typing import Optional
 
 import requests
 import requests.auth
 
-from typing import Optional
 from pysonar_scanner.configuration import Configuration
 from pysonar_scanner.exceptions import MissingKeyException, SonarQubeApiException
-from pysonar_scanner.utils import Os, Arch, remove_trailing_slash
+from pysonar_scanner.utils import Arch, Os, remove_trailing_slash
 
 
 @dataclass(frozen=True)
