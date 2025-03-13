@@ -1,9 +1,11 @@
 name: Releasability status
-'on':
+
+on:
   check_suite:
     types:
       - completed
   workflow_dispatch:
+  push:
 
 jobs:
   update_releasability_status:
@@ -14,6 +16,7 @@ jobs:
           statuses: write
           contents: read
       if: >-
+        github.event_name == 'push' ||
         github.event_name == 'workflow_dispatch' ||
         ((contains(fromJSON('["main", "master"]'),
         github.event.check_suite.head_branch) ||
@@ -27,4 +30,3 @@ jobs:
             optional_checks: "Jira"
           env:
             GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-
