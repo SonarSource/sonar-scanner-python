@@ -19,13 +19,14 @@
 #
 import typing
 from dataclasses import dataclass
+from typing import Optional
 
 import requests
 import requests.auth
 
 from pysonar_scanner.configuration import Configuration
-from pysonar_scanner.exceptions import SonarQubeApiException
-from pysonar_scanner.utils import remove_trailing_slash
+from pysonar_scanner.exceptions import MissingKeyException, SonarQubeApiException
+from pysonar_scanner.utils import Arch, Os, remove_trailing_slash
 
 
 @dataclass(frozen=True)
@@ -74,6 +75,32 @@ class BaseUrls:
     def __post_init__(self):
         object.__setattr__(self, "base_url", remove_trailing_slash(self.base_url))
         object.__setattr__(self, "api_base_url", remove_trailing_slash(self.api_base_url))
+
+
+@dataclass(frozen=True)
+class JRE:
+    id: str
+    filename: str
+    sha256: str
+    java_path: str
+    os: str
+    arch: str
+    download_url: Optional[str]
+
+    @staticmethod
+    def from_dict(dict: dict) -> "JRE":
+        try:
+            return JRE(
+                id=dict["id"],
+                filename=dict["filename"],
+                sha256=dict["sha256"],
+                java_path=dict["javaPath"],
+                os=dict["os"],
+                arch=dict["arch"],
+                download_url=dict.get("downloadUrl", None),
+            )
+        except KeyError as e:
+            raise MissingKeyException(f"Missing key in dictionary {dict}") from e
 
 
 def get_base_urls(config: Configuration) -> BaseUrls:
@@ -151,21 +178,51 @@ class SonarQubeApi:
         Alternative, if the file IO fails, an IOError or OSError can be raised.
         """
 
-        def fetch_response():
+        try:
             res = requests.get(
                 f"{self.base_urls.api_base_url}/analysis/engine",
                 headers={"Accept": "application/octet-stream"},
                 auth=self.auth,
             )
-            res.raise_for_status()
-            return res
+            self.__download_file(res, handle)
+        except requests.RequestException as e:
+            raise SonarQubeApiException("Error while fetching the analysis engine") from e
 
-        def download_file(handle: typing.BinaryIO, requests: requests.Response):
-            for chunk in requests.iter_content(chunk_size=128):
-                handle.write(chunk)
+    def get_analysis_jres(self, os: Optional[Os] = None, arch: Optional[Arch] = None) -> list[JRE]:
+        try:
+            params = {
+                "os": os.value if os else None,
+                "arch": arch.value if arch else None,
+            }
+            res = requests.get(
+                f"{self.base_urls.api_base_url}/analysis/jres",
+                auth=self.auth,
+                headers={"Accept": "application/json"},
+                params=params,
+            )
+            res.raise_for_status()
+            json_array = res.json()
+            return [JRE.from_dict(jre) for jre in json_array]
+        except (requests.RequestException, MissingKeyException) as e:
+            raise SonarQubeApiException("Error while fetching the analysis version") from e
+
+    def download_analysis_jre(self, id: str, handle: typing.BinaryIO) -> None:
+        """
+        This method can raise a SonarQubeApiException if the server doesn't respond successfully.
+        Alternative, if the file IO fails, an IOError or OSError can be raised.
+        """
 
         try:
-            res = fetch_response()
-            download_file(handle, res)
+            res = requests.get(
+                f"{self.base_urls.api_base_url}/analysis/jres/{id}",
+                headers={"Accept": "application/octet-stream"},
+                auth=self.auth,
+            )
+            self.__download_file(res, handle)
         except requests.RequestException as e:
-            raise SonarQubeApiException("Error while fetching the analysis engine information") from e
+            raise SonarQubeApiException("Error while fetching the JRE") from e
+
+    def __download_file(self, res: requests.Response, handle: typing.BinaryIO) -> None:
+        res.raise_for_status()
+        for chunk in res.iter_content(chunk_size=128):
+            handle.write(chunk)
