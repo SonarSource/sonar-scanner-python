@@ -57,15 +57,15 @@ class JREProvisioner:
         return self.__unpack_jre(jre, resolved_path)
 
     def __attempt_provisioning_jre_with_retry(self) -> tuple[JRE, pathlib.Path]:
-        resolved_path = self.__attempt_provisioning_jre()
-        if resolved_path is None:
-            resolved_path = self.__attempt_provisioning_jre()
-        if resolved_path is None:
+        jre_and_resolved_path = self.__attempt_provisioning_jre()
+        if jre_and_resolved_path is None:
+            jre_and_resolved_path = self.__attempt_provisioning_jre()
+        if jre_and_resolved_path is None:
             raise ChecksumException(
                 f"Failed to download and verify JRE for {utils.get_os().value} and {utils.get_arch().value}"
             )
 
-        return resolved_path
+        return jre_and_resolved_path
 
     def __attempt_provisioning_jre(self) -> Optional[tuple[JRE, pathlib.Path]]:
         jre = self.__get_available_jre()

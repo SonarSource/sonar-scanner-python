@@ -44,7 +44,7 @@ class CacheFile:
         except OSError:
             return False
 
-    def open(self, mode: OpenBinaryMode = "wb") -> typing.BinaryIO:
+    def open(self, mode: OpenBinaryMode) -> typing.BinaryIO:
         return open(self.filepath, mode=mode)
 
 
