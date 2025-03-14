@@ -24,13 +24,16 @@ from dataclasses import dataclass
 
 from pysonar_scanner import utils
 
-OpenBinaryMode = typing.Literal["rb", "xb"]
+OpenBinaryMode = typing.Literal["wb", "xb"]
 
 
 @dataclass(frozen=True)
 class CacheFile:
     filepath: pathlib.Path
     checksum: str
+
+    def exists(self) -> bool:
+        return self.filepath.exists()
 
     def is_valid(self) -> bool:
         try:
@@ -41,7 +44,7 @@ class CacheFile:
         except OSError:
             return False
 
-    def open(self, mode: OpenBinaryMode = "rb") -> typing.BinaryIO:
+    def open(self, mode: OpenBinaryMode) -> typing.BinaryIO:
         return open(self.filepath, mode=mode)
 
 
@@ -55,6 +58,9 @@ class Cache:
         path = self.cache_folder / filename
         return CacheFile(path, checksum)
 
+    def get_file_path(self, filename: str) -> pathlib.Path:
+        return self.cache_folder / filename
+
     @staticmethod
     def create_cache(cache_folder: pathlib.Path):
         if not cache_folder.exists():
@@ -63,4 +69,4 @@ class Cache:
 
 
 def get_default() -> Cache:
-    return Cache.create_cache(pathlib.Path.home() / ".sonar-scanner")
+    return Cache.create_cache(pathlib.Path.home() / ".sonar-scanner/cache")

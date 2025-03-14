@@ -21,7 +21,7 @@ from typing import TypedDict
 
 import io
 
-from pysonar_scanner.api import BaseUrls, EngineInfo, SonarQubeApi, SonarQubeApiException, get_base_urls
+from pysonar_scanner.api import JRE, BaseUrls, EngineInfo, SonarQubeApi, SonarQubeApiException, get_base_urls
 from pysonar_scanner.configuration import Configuration, Scanner, Sonar
 
 from pysonar_scanner.api import SQVersion
@@ -259,3 +259,85 @@ class TestSonarQubeApi(unittest.TestCase):
         ):
             # since the api is not mocked, requests will throw an exception
             self.sq.download_analysis_engine(io.BytesIO())
+
+    def test_get_analysis_jres(self):
+        expected_jres: list[JRE] = [
+            JRE(
+                id="jre1",
+                filename="jre1.tar.gz",
+                sha256="dummysha256value1",
+                java_path="/path/to/jre1/bin/java",
+                os="linux",
+                arch="x64",
+                download_url="https://example.com/jre1.tar.gz",
+            ),
+            JRE(
+                id="jre2",
+                filename="jre2.tar.gz",
+                sha256="dummysha256value2",
+                java_path="/path/to/jre2/bin/java",
+                os="windows",
+                arch="x64",
+                download_url=None,
+            ),
+        ]
+
+        with self.subTest("get_analysis_jres works"), sq_api_mocker() as mocker:
+            mocker.mock_analysis_jres([sq_api_utils.jre_to_dict(jre) for jre in expected_jres])
+
+            actual_jres = self.sq.get_analysis_jres()
+            self.assertEqual(actual_jres, expected_jres)
+
+        with (
+            self.subTest("get_analysis_jres returns error"),
+            sq_api_mocker() as mocker,
+            self.assertRaises(SonarQubeApiException),
+        ):
+            mocker.mock_analysis_jres(status=404)
+            self.sq.get_analysis_jres()
+
+        with (
+            self.subTest("get_analysis_jres returns error when keys are missing"),
+            sq_api_mocker() as mocker,
+            self.assertRaises(SonarQubeApiException),
+        ):
+            mocker.mock_analysis_jres([{"id": "jre1"}])
+            self.sq.get_analysis_jres()
+
+    def test_download_analysis_jre(self):
+        jre_id = "jre1"
+        jre_file_content = b"fake_jre_binary"
+        with self.subTest("download_analysis_jre works"), sq_api_mocker() as mocker:
+            mocker.mock_analysis_jre_download(id=jre_id, body=jre_file_content)
+            fake_file = io.BytesIO()
+
+            self.sq.download_analysis_jre(jre_id, fake_file)
+
+            self.assertEqual(fake_file.getvalue(), jre_file_content)
+
+        with self.subTest("download_analysis_jre works with redirect"), sq_api_mocker() as mocker:
+            mocker.mock_analysis_jre_download(
+                id=jre_id, status=302, redirect_url="/api/v2/analysis/jres/redirected-jre"
+            )
+            mocker.mock_analysis_jre_download(id="redirected-jre", body=jre_file_content)
+            fake_file = io.BytesIO()
+
+            self.sq.download_analysis_jre(jre_id, fake_file)
+
+            self.assertEqual(fake_file.getvalue(), jre_file_content)
+
+        with (
+            self.subTest("download_analysis_jre returns 404"),
+            sq_api_mocker() as mocker,
+            self.assertRaises(SonarQubeApiException),
+        ):
+            mocker.mock_analysis_jre_download(id=jre_id, status=404)
+            self.sq.download_analysis_jre(jre_id, io.BytesIO())
+
+        with (
+            self.subTest("download_analysis_jre: requests throws exception"),
+            sq_api_mocker() as mocker,
+            self.assertRaises(SonarQubeApiException),
+        ):
+            # since the api is not mocked, requests will throw an exception
+            self.sq.download_analysis_jre(jre_id, io.BytesIO())

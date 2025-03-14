@@ -1,0 +1,142 @@
+#
+# Sonar Scanner Python
+# Copyright (C) 2011-2024 SonarSource SA.
+# mailto:info AT sonarsource DOT com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+# This program is distributed in the hope that it will be useful,
+#
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+import pathlib
+import shutil
+import tarfile
+import zipfile
+from dataclasses import dataclass
+from typing import Optional
+
+from pysonar_scanner import utils
+from pysonar_scanner.api import JRE, SonarQubeApi
+from pysonar_scanner.cache import Cache
+from pysonar_scanner.configuration import Configuration
+from pysonar_scanner.exceptions import (
+    ChecksumException,
+    NoJreAvailableException,
+    UnsupportedArchiveFormat,
+)
+from pysonar_scanner.exceptions import JreProvisioningException
+
+
+@dataclass(frozen=True)
+class JREResolvedPath:
+    path: pathlib.Path
+
+    @staticmethod
+    def from_string(path: str) -> "JREResolvedPath":
+        if not path:
+            raise ValueError("JRE path cannot be empty")
+        return JREResolvedPath(pathlib.Path(path))
+
+
+class JREProvisioner:
+    def __init__(self, api: SonarQubeApi, cache: Cache):
+        self.api = api
+        self.cache = cache
+
+    def provision(self) -> JREResolvedPath:
+        jre, resolved_path = self.__attempt_provisioning_jre_with_retry()
+        return self.__unpack_jre(jre, resolved_path)
+
+    def __attempt_provisioning_jre_with_retry(self) -> tuple[JRE, pathlib.Path]:
+        jre_and_resolved_path = self.__attempt_provisioning_jre()
+        if jre_and_resolved_path is None:
+            jre_and_resolved_path = self.__attempt_provisioning_jre()
+        if jre_and_resolved_path is None:
+            raise ChecksumException(
+                f"Failed to download and verify JRE for {utils.get_os().value} and {utils.get_arch().value}"
+            )
+
+        return jre_and_resolved_path
+
+    def __attempt_provisioning_jre(self) -> Optional[tuple[JRE, pathlib.Path]]:
+        jre = self.__get_available_jre()
+
+        jre_path = self.__get_jre_from_cache(jre)
+        if jre_path is not None:
+            return (jre, jre_path)
+
+        jre_path = self.__download_jre(jre)
+        return (jre, jre_path) if jre_path is not None else None
+
+    def __get_available_jre(self) -> JRE:
+        jres = self.api.get_analysis_jres(os=utils.get_os(), arch=utils.get_arch())
+        if len(jres) == 0:
+            raise NoJreAvailableException(
+                f"No JREs are available for {utils.get_os().value} and {utils.get_arch().value}"
+            )
+        return jres[0]
+
+    def __get_jre_from_cache(self, jre: JRE) -> Optional[pathlib.Path]:
+        cache_file = self.cache.get_file(jre.filename, jre.sha256)
+        return cache_file.filepath if cache_file.is_valid() else None
+
+    def __download_jre(self, jre: JRE) -> Optional[pathlib.Path]:
+        cache_file = self.cache.get_file(jre.filename, jre.sha256)
+        cache_file.filepath.unlink(missing_ok=True)
+
+        with cache_file.open(mode="wb") as f:
+            self.api.download_analysis_jre(jre.id, f)
+
+        return cache_file.filepath if cache_file.is_valid() else None
+
+    def __unpack_jre(self, jre: JRE, file_path: pathlib.Path) -> JREResolvedPath:
+        unzip_dir = self.__prepare_unzip_dir(file_path)
+        self.__extract_jre(file_path, unzip_dir)
+        return JREResolvedPath(unzip_dir / jre.java_path)
+
+    def __prepare_unzip_dir(self, file_path: pathlib.Path) -> pathlib.Path:
+        unzip_dir = self.cache.get_file_path(f"{file_path}_unzip")
+        try:
+            if unzip_dir.exists():
+                shutil.rmtree(unzip_dir)
+            unzip_dir.mkdir(parents=True)
+            return unzip_dir
+        except OSError as e:
+            raise JreProvisioningException(f"Failed to prepare unzip directory: {unzip_dir}") from e
+
+    def __extract_jre(self, file_path: pathlib.Path, unzip_dir: pathlib.Path):
+        if file_path.suffix == ".zip":
+            with zipfile.ZipFile(file_path, "r") as zip_ref:
+                zip_ref.extractall(unzip_dir)
+        elif file_path.suffix in [".gz", ".tgz"]:
+            with tarfile.open(file_path, "r:gz") as tar_ref:
+                tar_ref.extractall(unzip_dir, filter="data")
+        else:
+            raise UnsupportedArchiveFormat(f"Unsupported archive format: {file_path.suffix}")
+
+
+class JREResolver:
+    def __init__(self, configuration: Configuration, jre_provisioner: JREProvisioner):
+        self.configuration = configuration
+        self.jre_provisioner = jre_provisioner
+
+    def resolve_jre(self) -> JREResolvedPath:
+        exe_suffix = ".exe" if self.configuration.sonar.scanner.os == "windows" else ""
+        if self.configuration.sonar.scanner.java_exe_path:
+            return JREResolvedPath(pathlib.Path(self.configuration.sonar.scanner.java_exe_path))
+        if not self.configuration.sonar.scanner.skip_jre_provisioning:
+            return self.__provision_jre()
+        java_path = pathlib.Path(f"java{exe_suffix}")
+        return JREResolvedPath(java_path)
+
+    def __provision_jre(self) -> JREResolvedPath:
+        return self.jre_provisioner.provision()

@@ -18,7 +18,11 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import hashlib
+import pathlib
+import platform
+import re
 import typing
+from enum import Enum
 
 
 def remove_trailing_slash(url: str) -> str:
@@ -30,3 +34,56 @@ def calculate_checksum(filehandle: typing.BinaryIO) -> str:
     for byte_block in iter(lambda: filehandle.read(4096), b""):
         sha256_hash.update(byte_block)
     return sha256_hash.hexdigest()
+
+
+class Os(Enum):
+    WINDOWS = "windows"
+    LINUX = "linux"
+    MACOS = "mac"
+    ALPINE = "alpine"
+    OTHER = "other"
+
+
+def get_os() -> Os:
+    def is_alpine() -> bool:
+        try:
+            os_release = pathlib.Path("/etc/os-release")
+            if not os_release.exists():
+                os_release = pathlib.Path("/usr/lib/os-release")
+            if not os_release.exists():
+                return False
+            os_release_str = os_release.read_text()
+            return "ID=alpine" in os_release_str or 'ID="alpine"' in os_release_str
+        except OSError:
+            return False
+
+    os_name = platform.system()
+    if os_name == "Windows":
+        return Os.WINDOWS
+    elif os_name == "Darwin":
+        return Os.MACOS
+    elif os_name == "Linux":
+        if is_alpine():
+            return Os.ALPINE
+        else:
+            return Os.LINUX
+    return Os.OTHER
+
+
+class Arch(Enum):
+    X64 = "x64"
+    AARCH64 = "aarch64"
+    OTHER = "other"
+
+
+def get_arch() -> Arch:
+    machine = platform.machine().lower()
+    if machine in ["amd64", "x86_64"]:
+        return Arch.X64
+    elif machine == "arm64":
+        return Arch.AARCH64
+    return Arch.OTHER
+
+
+def filter_none_values(dictionary: dict) -> dict:
+    return {k: v for k, v in dictionary.items() if v is not None}

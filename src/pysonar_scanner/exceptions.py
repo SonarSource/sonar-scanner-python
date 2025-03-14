@@ -19,6 +19,10 @@
 #
 
 
+class MissingKeyException(Exception):
+    pass
+
+
 class SonarQubeApiException(Exception):
     pass
 
@@ -28,4 +32,16 @@ class SQTooOldException(Exception):
 
 
 class ChecksumException(Exception):
+    pass
+
+
+class JreProvisioningException(Exception):
+    pass
+
+
+class NoJreAvailableException(JreProvisioningException):
+    pass
+
+
+class UnsupportedArchiveFormat(JreProvisioningException):
     pass
