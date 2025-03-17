@@ -27,7 +27,6 @@ from typing import Optional
 from pysonar_scanner import utils
 from pysonar_scanner.api import JRE, SonarQubeApi
 from pysonar_scanner.cache import Cache
-from pysonar_scanner.configuration import Configuration
 from pysonar_scanner.exceptions import (
     ChecksumException,
     NoJreAvailableException,

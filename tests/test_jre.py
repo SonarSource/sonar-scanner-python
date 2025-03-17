@@ -27,7 +27,6 @@ import pyfakefs.fake_filesystem_unittest as pyfakefs
 
 from pysonar_scanner import cache, utils
 from pysonar_scanner.api import JRE
-from pysonar_scanner.configuration import Configuration, Scanner, Sonar
 from pysonar_scanner.exceptions import ChecksumException, NoJreAvailableException, UnsupportedArchiveFormat
 from pysonar_scanner.jre import JREProvisioner, JREResolvedPath, JREResolver, JREResolverConfiguration
 from tests import sq_api_utils

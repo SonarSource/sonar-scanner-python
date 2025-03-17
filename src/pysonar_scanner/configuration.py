@@ -22,163 +22,216 @@ import json
 import argparse
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, Dict
+from typing import Callable, Optional, Dict
+
+from pysonar_scanner import utils
+from pysonar_scanner.api import BaseUrls
+from pysonar_scanner.utils import filter_none_values
 
 
-class JRECacheStatus(Enum):
-    HIT = 1
-    MISS = 2
-    DISABLE = 3
+@dataclass
+class Property:
+    name: str
+    """name in the format of `sonar.scanner.appVersion`"""
+
+    default_value: Optional[any]
+    """default value for the property; if None, no default value is set"""
+
+    cli_getter: Optional[Callable[[argparse.Namespace], any]] = None
+    """function to get the value from the CLI arguments namespace. If None, the property is not settable via CLI"""
 
 
-@dataclass(frozen=True)
-class Internal:
-    dump_to_file: Optional[str] = None  # File path to dump the input to the scanner engine
-    sq_version: Optional[str] = None
+# fmt: off
+PROPERTIES: list[Property] = [
+    Property(
+        name="sonar.scanner.app", 
+        default_value="python", 
+        cli_getter=None
+    ),
+    Property(
+        name="sonar.scanner.appVersion", 
+        default_value="1.0", 
+        cli_getter=None
+    ),
+    Property(
+        name="sonar.scanner.bootstrapStartTime",
+        default_value=int(time.time() * 1000),
+        cli_getter=None
+    ),
+    Property(
+        name="sonar.scanner.wasJreCacheHit", 
+        default_value=None, 
+        cli_getter=None
+    ),
+    Property(
+        name="sonar.scanner.wasEngineCacheHit", 
+        default_value=None, 
+        cli_getter=None
+    ),
+    Property(
+        name="sonar.verbose", 
+        default_value=False, 
+        cli_getter=lambda args: args.verbose
+    ),
+    Property(
+        name="sonar.host.url", 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_host_url
+    ),  
+    Property(
+        name="sonar.region", 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_region
+    ),
+    Property(
+        name="sonar.scanner.sonarcloudUrl",
+        default_value=None,
+        cli_getter=lambda args: args.sonar_scanner_cloud_url
+    ),  
+    Property(
+        name="sonar.scanner.apiBaseUrl", 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_scanner_api_url
+    ),  
+    Property(
+        name="sonar.token", 
+        default_value=None, 
+        cli_getter=lambda args: args.token
+    ),
+    Property(
+        name="sonar.scanner.os", 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_scanner_os
+    ),
+    Property(
+        name="sonar.scanner.arch", 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_scanner_arch
+    ),
+    Property(
+        name="sonar.scanner.skipJreProvisioning",
+        default_value=False,
+        cli_getter=lambda args: args.skip_jre_provisioning
+    ),
+    Property(
+        name="sonar.userHome", 
+        default_value="~/.sonar", 
+        cli_getter=lambda args: args.sonar_user_home
+    ),  
+    Property(
+        name="sonar.scanner.javaExePath", 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_scanner_java_exe_path
+    ),
+    Property(
+        name="sonar.scanner.internal.dumpToFile",
+        default_value=None,
+        cli_getter=lambda args: args.sonar_scanner_internal_dump_to_file
+    ),
+    Property(
+        name="sonar.scanner.internal.sqVersion",
+        default_value=None,
+        cli_getter=lambda args: args.sonar_scanner_internal_sq_version
+    ),
+    Property(
+        name="sonar.scanner.connectTimeout",
+        default_value=5,
+        cli_getter=lambda args: args.sonar_scanner_connect_timeout
+    ),
+    Property(
+        name="sonar.scanner.socketTimeout",
+        default_value=60,
+        cli_getter=lambda args: args.sonar_scanner_socket_timeout
+    ),
+    Property(
+        name="sonar.scanner.responseTimeout",
+        default_value=0,
+        cli_getter=lambda args: args.sonar_scanner_response_timeout
+    ),
+    Property(
+        name="sonar.scanner.truststorePath",
+        default_value=None,  
+        cli_getter=lambda args: args.sonar_scanner_truststore_path
+    ),
+    Property(
+        name="sonar.scanner.truststorePassword",
+        default_value="changeit",  
+        cli_getter=lambda args: args.sonar_scanner_truststore_password
+    ),
+    Property(
+        name="sonar.scanner.keystorePath",
+        default_value=None,
+        cli_getter=lambda args: args.sonar_scanner_keystore_path
+    ),  
+    Property(
+        name="sonar.scanner.keystorePassword",
+        default_value="changeit",  
+        cli_getter=lambda args: args.sonar_scanner_keystore_password
+    ),
+    Property(
+        name="sonar.scanner.proxyHost", 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_scanner_proxy_host
+    ),
+    Property(
+        name="sonar.scanner.proxyPort", 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_scanner_proxy_port
+    ),  
+    Property(
+        name="sonar.scanner.proxyUser", 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_scanner_proxy_user
+    ),
+    Property(
+        name="sonar.scanner.proxyPassword",
+        default_value=None,
+        cli_getter=lambda args: args.sonar_scanner_proxy_password
+    ),
+    Property(
+        name="sonar.projectBaseDir", 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_project_base_dir
+    ),  
+    Property(
+        name="sonar.scanner.javaOpts", 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_scanner_java_opts
+    ),
+    Property(
+        name="sonar.projectKey", 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_project_key
+    ),
+]
+# fmt: on
 
 
-@dataclass(frozen=True)
-class Scanner:
-    app: str = "python"
-    app_version: str = "1.0"
-    bootstrap_start_time: int = int(time.time() * 1000)
-
-    os: Optional[str] = None
-    arch: Optional[str] = None
-
-    connect_timeout: Optional[int] = None
-    socket_timeout: Optional[int] = None
-    response_timeout: Optional[int] = None
-
-    truststore_path: Optional[str] = None
-    truststore_password: Optional[str] = None
-    keystore_path: Optional[str] = None
-    keystore_password: Optional[str] = None
-
-    proxy_host: Optional[str] = None
-    proxy_port: Optional[int] = None
-    proxy_user: Optional[str] = None
-    proxy_password: Optional[str] = None
-
-    was_jre_cache_hit: Optional[JRECacheStatus] = None
-    was_engine_cache_hit: Optional[bool] = None
-    skip_jre_provisioning: bool = False
-    java_exe_path: Optional[str] = None
-    java_opts: Optional[str] = None
-
-    sonarcloud_url: str = ""
-    api_base_url: str = ""
-
-    internal: Internal = Internal()
-
-
-@dataclass(frozen=True)
-class Sonar:
-    scanner: Scanner = Scanner()
-
-    verbose: bool = False
-
-    project_base_dir: Optional[str] = None
-    user_home: Optional[str] = None
-
-    token: str = ""
-    project_key: str = ""
-    host_url: str = ""
-    region: str = ""
-
-
-@dataclass(frozen=True)
-class Configuration:
-    sonar: Sonar = Sonar()
-
-    def __to_dict(self) -> Dict:
-        scanner = self.sonar.scanner
-        sonar = self.sonar
-
-        properties = [
-            {"key": "sonar.scanner.app", "value": scanner.app},
-            {"key": "sonar.scanner.appVersion", "value": scanner.app_version},
-            {"key": "sonar.token", "value": sonar.token},
-            {"key": "sonar.projectKey", "value": sonar.project_key},
-        ]
-
-        optional_properties = [
-            ("sonar.region", sonar.region),
-            ("sonar.host.url", sonar.host_url),
-            ("sonar.projectBaseDir", sonar.project_base_dir),
-            ("sonar.verbose", sonar.verbose),
-            ("sonar.userHome", sonar.user_home),
-            ("sonar.scanner.apiBaseUrl", scanner.api_base_url),
-            ("sonar.scanner.bootstrapStartTime", scanner.bootstrap_start_time),
-            ("sonar.scanner.os", scanner.os),
-            ("sonar.scanner.arch", scanner.arch),
-            ("sonar.scanner.connectTimeout", scanner.connect_timeout),
-            ("sonar.scanner.socketTimeout", scanner.socket_timeout),
-            ("sonar.scanner.responseTimeout", scanner.response_timeout),
-            ("sonar.scanner.truststorePath", scanner.truststore_path),
-            ("sonar.scanner.truststorePassword", scanner.truststore_password),
-            ("sonar.scanner.keystorePath", scanner.keystore_path),
-            ("sonar.scanner.keystorePassword", scanner.keystore_password),
-            ("sonar.scanner.proxyHost", scanner.proxy_host),
-            ("sonar.scanner.proxyPort", scanner.proxy_port),
-            ("sonar.scanner.proxyUser", scanner.proxy_user),
-            ("sonar.scanner.proxyPassword", scanner.proxy_password),
-            ("sonar.scanner.wasJreCacheHit", scanner.was_jre_cache_hit.name if scanner.was_jre_cache_hit else None),
-            ("sonar.scanner.wasEngineCacheHit", scanner.was_engine_cache_hit),
-        ]
-
-        for key, value in optional_properties:
-            if value is not None and value != "":
-                properties.append({"key": key, "value": value})
-
-        return {"scannerProperties": properties}
-
-    def to_json(self) -> str:
-        return json.dumps(self.__to_dict(), indent=2)
+def get_static_default_properties() -> dict[str, any]:
+    return {prop.name: prop.default_value for prop in PROPERTIES if prop.default_value is not None}
 
 
 class ConfigurationLoader:
+    def load(self) -> dict[str, any]:
+        return {
+            **get_static_default_properties(),
+            **filter_none_values(CliConfigurationLoader.load()),
+        }
+
+
+class CliConfigurationLoader:
 
     @classmethod
-    def initialize_configuration(cls) -> Configuration:
+    def load(cls) -> dict[str, any]:
         args = cls.__parse_cli_args()
 
-        internal = Internal(args.sonar_scanner_internal_dump_to_file, args.sonar_scanner_internal_sq_version)
+        configuration = {}
+        for prop in PROPERTIES:
+            if prop.cli_getter is not None:
+                value = prop.cli_getter(args)
+                configuration[prop.name] = value
 
-        scanner = Scanner(
-            os=args.sonar_scanner_os,
-            arch=args.sonar_scanner_arch,
-            connect_timeout=args.sonar_scanner_connect_timeout,
-            socket_timeout=args.sonar_scanner_socket_timeout,
-            response_timeout=args.sonar_scanner_response_timeout,
-            truststore_path=args.sonar_scanner_truststore_path,
-            truststore_password=args.sonar_scanner_truststore_password,
-            keystore_path=args.sonar_scanner_keystore_path,
-            keystore_password=args.sonar_scanner_keystore_password,
-            proxy_host=args.sonar_scanner_proxy_host,
-            proxy_port=args.sonar_scanner_proxy_port,
-            proxy_user=args.sonar_scanner_proxy_user,
-            proxy_password=args.sonar_scanner_proxy_password,
-            skip_jre_provisioning=args.skip_jre_provisioning,
-            java_exe_path=args.sonar_scanner_java_exe_path,
-            java_opts=args.sonar_scanner_java_opts,
-            sonarcloud_url=args.sonar_scanner_cloud_url,
-            api_base_url=args.sonar_scanner_api_url,
-            internal=internal,
-        )
-
-        sonar = Sonar(
-            scanner=scanner,
-            verbose=args.verbose,
-            project_base_dir=args.sonar_project_base_dir,
-            user_home=args.sonar_user_home,
-            token=args.token,
-            project_key=args.sonar_project_key,
-            host_url=args.sonar_host_url,
-            region=args.sonar_region,
-        )
-
-        return Configuration(sonar)
+        return {k: v for k, v in configuration.items() if v is not None}
 
     @classmethod
     def __parse_cli_args(cls) -> argparse.Namespace:
@@ -200,19 +253,17 @@ class ConfigurationLoader:
         )
 
         parser.add_argument(
-            "-v", "--verbose", "--sonar-verbose", action="store_true", default=False, help="Increase output verbosity"
+            "-v", "--verbose", "--sonar-verbose", action="store_true", default=None, help="Increase output verbosity"
         )
 
         parser.add_argument(
             "--sonar-host-url",
             type=str,
-            default="",
             help="SonarQube Server base URL. For example, http://localhost:9000 for a local instance of SonarQube Server",
         )
         parser.add_argument(
             "--sonar-region",
             type=str,
-            default="",
             choices=["us"],
             help="The region to contact, only for SonarQube Cloud",
         )
@@ -221,13 +272,11 @@ class ConfigurationLoader:
         parser.add_argument(
             "--sonar-scanner-cloud-url",
             type=str,
-            default="",
             help="SonarQube Cloud base URL, https://sonarcloud.io for example",
         )
         parser.add_argument(
             "--sonar-scanner-api-url",
             type=str,
-            default="",
             help="Base URL for all REST-compliant API calls, https://api.sonarcloud.io for example",
         )
         parser.add_argument(
@@ -246,6 +295,7 @@ class ConfigurationLoader:
         parser.add_argument(
             "--skip-jre-provisioning",
             action="store_true",
+            default=None,
             help="If provided, the provisioning of the JRE will be skipped",
         )
         parser.add_argument(
