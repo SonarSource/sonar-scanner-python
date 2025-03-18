@@ -63,13 +63,14 @@ class ScannerEngine:
     def __init__(self, api: SonarQubeApi, cache: Cache):
         self.api = api
         self.cache = cache
-        self.scanner_file = self.fetch_scanner_engine()
+        self.scanner_file = None
 
-    def fetch_scanner_engine(self) -> CacheFile:
-        self.__version_check()
-        return ScannerEngineProvisioner(self.api, self.cache).provision()
+    def fetch_scanner_engine(self) -> None:
+        self.scanner_file = ScannerEngineProvisioner(self.api, self.cache).provision()
 
     def run(self, jre_path: JREResolvedPath, configuration: Configuration):
+        self.__version_check()
+        
         cmd = self.__build_command(jre_path)
         popen = Popen(cmd, stdout=PIPE, stderr=PIPE, stdin=PIPE)
         outs, _ = popen.communicate(configuration.to_json().encode())
