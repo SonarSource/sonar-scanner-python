@@ -29,7 +29,7 @@ from pysonar_scanner import cache, utils
 from pysonar_scanner.api import JRE
 from pysonar_scanner.configuration import Configuration, Scanner, Sonar
 from pysonar_scanner.exceptions import ChecksumException, NoJreAvailableException, UnsupportedArchiveFormat
-from pysonar_scanner.jre import JREProvisioner, JREResolvedPath, JREResolver
+from pysonar_scanner.jre import JREProvisioner, JREResolvedPath, JREResolver, JREResolverConfiguration
 from tests import sq_api_utils
 
 import zipfile
@@ -265,11 +265,33 @@ class TestJREResolvedPath(unittest.TestCase):
         self.assertEqual(resolved_path.path, path)
 
 
+class TestJREResolverConfiguration(unittest.TestCase):
+    def test_default(self):
+        config = JREResolverConfiguration.from_dict({})
+
+        self.assertIsNone(config.sonar_scanner_java_exe_path)
+        self.assertFalse(config.sonar_scanner_skip_jre_provisioning)
+        self.assertIsNone(config.sonar_scanner_os)
+
+    def test(self):
+        config = JREResolverConfiguration.from_dict(
+            {
+                "sonar.scanner.javaExePath": "a/b",
+                "sonar.scanner.skipJreProvisioning": True,
+                "sonar.scanner.os": "windows",
+            }
+        )
+
+        self.assertEqual(config.sonar_scanner_java_exe_path, "a/b")
+        self.assertTrue(config.sonar_scanner_skip_jre_provisioning)
+        self.assertEqual(config.sonar_scanner_os, "windows")
+
+
 class TestJREResolver(unittest.TestCase):
     def test_resolve_jre(self):
         class TestCaseDict(TypedDict):
             name: str
-            config: Configuration
+            config: JREResolverConfiguration
             expected: JREResolvedPath
 
         provisioner = Mock()
@@ -280,33 +302,46 @@ class TestJREResolver(unittest.TestCase):
         cases: list[TestCaseDict] = [
             {
                 "name": "if java exe path is set return it",
-                "config": Configuration(Sonar(Scanner(java_exe_path="a/b"))),
+                "config": JREResolverConfiguration(
+                    sonar_scanner_java_exe_path="a/b", sonar_scanner_skip_jre_provisioning=False, sonar_scanner_os=None
+                ),
                 "expected": JREResolvedPath.from_string("a/b"),
             },
-            # Default value of skip_jre_provisioning is False
             {
                 "name": "if java_exe_path is not set provision jre",
-                "config": Configuration(Sonar(Scanner(java_exe_path=None))),
+                "config": JREResolverConfiguration(
+                    sonar_scanner_java_exe_path=None, sonar_scanner_skip_jre_provisioning=False, sonar_scanner_os=None
+                ),
                 "expected": provisioner_jre_path,
             },
             {
                 "name": "if java_exe_path is an empty string provision jre",
-                "config": Configuration(Sonar(Scanner(java_exe_path=""))),
+                "config": JREResolverConfiguration(
+                    sonar_scanner_java_exe_path="", sonar_scanner_skip_jre_provisioning=False, sonar_scanner_os=None
+                ),
                 "expected": provisioner_jre_path,
             },
             {
                 "name": "if skip_jre_provisioning is false provision jre",
-                "config": Configuration(Sonar(Scanner(skip_jre_provisioning=False))),
+                "config": JREResolverConfiguration(
+                    sonar_scanner_skip_jre_provisioning=False, sonar_scanner_java_exe_path=None, sonar_scanner_os=None
+                ),
                 "expected": provisioner_jre_path,
             },
             {
                 "name": "if skip_jre_provisioning is True and java_home is not set return the default",
-                "config": Configuration(Sonar(Scanner(skip_jre_provisioning=True))),
+                "config": JREResolverConfiguration(
+                    sonar_scanner_skip_jre_provisioning=True, sonar_scanner_java_exe_path=None, sonar_scanner_os=None
+                ),
                 "expected": JREResolvedPath.from_string("java"),
             },
             {
                 "name": "if skip_jre_provisioning is True and java_home is not set return the default for windows",
-                "config": Configuration(Sonar(Scanner(os="windows", skip_jre_provisioning=True))),
+                "config": JREResolverConfiguration(
+                    sonar_scanner_os="windows",
+                    sonar_scanner_skip_jre_provisioning=True,
+                    sonar_scanner_java_exe_path=None,
+                ),
                 "expected": JREResolvedPath.from_string("java.exe"),
             },
         ]
