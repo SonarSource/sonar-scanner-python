@@ -82,6 +82,7 @@ class Sonar:
     user_home: Optional[str] = None
 
     token: str = ""
+    project_key: str = ""
     host_url: str = ""
     region: str = ""
 
@@ -98,6 +99,7 @@ class Configuration:
             {"key": "sonar.scanner.app", "value": scanner.app},
             {"key": "sonar.scanner.appVersion", "value": scanner.app_version},
             {"key": "sonar.token", "value": sonar.token},
+            {"key": "sonar.projectKey", "value": sonar.project_key},
         ]
 
         optional_properties = [
@@ -171,6 +173,7 @@ class ConfigurationLoader:
             project_base_dir=args.sonar_project_base_dir,
             user_home=args.sonar_user_home,
             token=args.token,
+            project_key=args.sonar_project_key,
             host_url=args.sonar_host_url,
             region=args.sonar_region,
         )
@@ -189,6 +192,13 @@ class ConfigurationLoader:
             required=True,
             help="Token used to authenticate against the SonarQube Server or SonarQube cloud",
         )
+        parser.add_argument(
+            "--sonar-project-key",
+            type=str,
+            required=True,
+            help="Key of the project that usually corresponds to the project name in SonarQube",
+        )
+
         parser.add_argument(
             "-v", "--verbose", "--sonar-verbose", action="store_true", default=False, help="Increase output verbosity"
         )
