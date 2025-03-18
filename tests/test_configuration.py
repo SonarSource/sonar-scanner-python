@@ -37,28 +37,35 @@ class TestMain(unittest.TestCase):
         error_output = mock_stderr.getvalue()
         self.assertIn("the following arguments are required: -t/--token", error_output)
 
-    @patch("sys.argv", ["myscript.py", "--token", "myToken"])
+    @patch("sys.argv", ["myscript.py", "--token", "myToken", "--sonar-project-key", "myProjectKey"])
     def test_minimal_cli_args(self):
         configuration = ConfigurationLoader.initialize_configuration()
         expected_internal = Internal()
         expected_scanner = Scanner(internal=expected_internal)
-        expected_sonar = Sonar(scanner=expected_scanner, token="myToken")
+        expected_sonar = Sonar(scanner=expected_scanner, token="myToken", project_key="myProjectKey")
         expected_configuration = Configuration(sonar=expected_sonar)
         self.assertEqual(configuration, expected_configuration)
 
-    @patch("sys.argv", ["myscript.py", "-t", "myToken", "-v"])
     def test_alternative_cli_args(self):
-        alternatives = [["-t", "myToken", "-v"], ["--sonar-token", "myToken", "--sonar-verbose"]]
+        alternatives = [
+            ["-t", "myToken", "-v", "--sonar-project-key", "myProjectKey"],
+            ["--sonar-token", "myToken", "--sonar-verbose", "--sonar-project-key", "myProjectKey"],
+        ]
         for alternative in alternatives:
             with patch("sys.argv", ["myscript.py", *alternative]), patch("sys.stderr", new=StringIO()):
                 configuration = ConfigurationLoader.initialize_configuration()
                 expected_internal = Internal()
                 expected_scanner = Scanner(internal=expected_internal)
-                expected_sonar = Sonar(scanner=expected_scanner, token="myToken", verbose=True)
+                expected_sonar = Sonar(
+                    scanner=expected_scanner, token="myToken", project_key="myProjectKey", verbose=True
+                )
                 expected_configuration = Configuration(sonar=expected_sonar)
                 self.assertEqual(configuration, expected_configuration)
 
-    @patch("sys.argv", ["myscript.py", "-t", "myToken", "--sonar-scanner-os", "windows2"])
+    @patch(
+        "sys.argv",
+        ["myscript.py", "-t", "myToken", "--sonar-project-key", "myProjectKey", "--sonar-scanner-os", "windows2"],
+    )
     def test_impossible_os_choice(self):
         with patch("sys.stderr", new=StringIO()) as mock_stderr:
             with self.assertRaises(SystemExit):
@@ -73,6 +80,8 @@ class TestMain(unittest.TestCase):
             "myscript.py",
             "-t",
             "myToken",
+            "--sonar-project-key",
+            "myProjectKey",
             "-v",
             "--sonar-host-url",
             "mySonarHostUrl",
@@ -154,6 +163,7 @@ class TestMain(unittest.TestCase):
         expected_sonar = Sonar(
             scanner=expected_scanner,
             token="myToken",
+            project_key="myProjectKey",
             verbose=True,
             host_url="mySonarHostUrl",
             region="us",
@@ -165,7 +175,7 @@ class TestMain(unittest.TestCase):
         self.assertEqual(configuration, expected_configuration)
 
     def test_minimal_json(self):
-        minimal_json = Configuration(sonar=Sonar(token="MyToken")).to_json()
+        minimal_json = Configuration(sonar=Sonar(token="myToken", project_key="myProjectKey")).to_json()
 
         minimal_dict = json.loads(minimal_json)
         self.assertIn("scannerProperties", minimal_dict)
@@ -184,7 +194,8 @@ class TestMain(unittest.TestCase):
                 "scannerProperties": [
                     {"key": "sonar.scanner.app", "value": "python"},
                     {"key": "sonar.scanner.appVersion", "value": "1.0"},
-                    {"key": "sonar.token", "value": "MyToken"},
+                    {"key": "sonar.token", "value": "myToken"},
+                    {"key": "sonar.projectKey", "value": "myProjectKey"},
                     {"key": "sonar.verbose", "value": False},
                     {"key": "sonar.scanner.bootstrapStartTime", "value": bootstrap_start_time},
                 ]
@@ -224,7 +235,8 @@ class TestMain(unittest.TestCase):
 
         sonar = Sonar(
             scanner=scanner,
-            token="MyToken",
+            token="myToken",
+            project_key="myProjectKey",
             verbose=True,
             host_url="mySonarHostUrl",
             region="us",
@@ -252,7 +264,8 @@ class TestMain(unittest.TestCase):
                 "scannerProperties": [
                     {"key": "sonar.scanner.app", "value": "python"},
                     {"key": "sonar.scanner.appVersion", "value": "1.0"},
-                    {"key": "sonar.token", "value": "MyToken"},
+                    {"key": "sonar.token", "value": "myToken"},
+                    {"key": "sonar.projectKey", "value": "myProjectKey"},
                     {"key": "sonar.region", "value": "us"},
                     {"key": "sonar.host.url", "value": "mySonarHostUrl"},
                     {"key": "sonar.projectBaseDir", "value": "mySonarProjectBaseDir"},
