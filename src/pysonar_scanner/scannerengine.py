@@ -70,7 +70,7 @@ class ScannerEngine:
 
     def run(self, jre_path: JREResolvedPath, configuration: Configuration):
         self.__version_check()
-        
+
         cmd = self.__build_command(jre_path)
         popen = Popen(cmd, stdout=PIPE, stderr=PIPE, stdin=PIPE)
         outs, _ = popen.communicate(configuration.to_json().encode())
