@@ -104,7 +104,7 @@ class JREProvisioner:
         return JREResolvedPath(unzip_dir / jre.java_path)
 
     def __prepare_unzip_dir(self, file_path: pathlib.Path) -> pathlib.Path:
-        unzip_dir = self.cache.get_file_path(f"{file_path}_unzip")
+        unzip_dir = self.cache.get_file_path(f"{file_path.name}_unzip")
         try:
             if unzip_dir.exists():
                 shutil.rmtree(unzip_dir)
