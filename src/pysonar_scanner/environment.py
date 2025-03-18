@@ -62,7 +62,8 @@ class Environment:
                 f"sonar-scanner-{self.cfg.sonar_scanner_version}-{system_name}-{arch_name}",
             )
             self.cfg.sonar_scanner_executable_path = os.path.join(sonar_scanner_home, "bin", "sonar-scanner")
-
+            if system_name == "windows":  # For windows compatibility
+                self.cfg.sonar_scanner_executable_path += ".bat"
         self.log.info("Sonar Scanner for Python")
 
     def _get_release(self) -> str:
