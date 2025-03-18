@@ -21,6 +21,9 @@ import pysonar_scanner.api as api
 from pysonar_scanner.api import SonarQubeApi
 from pysonar_scanner.cache import Cache, CacheFile
 from pysonar_scanner.exceptions import ChecksumException, SQTooOldException
+from pysonar_scanner.configuration import Configuration
+from pysonar_scanner.jre import JREResolvedPath
+from subprocess import Popen, PIPE
 
 
 class ScannerEngineProvisioner:
@@ -54,7 +57,7 @@ class ScannerEngine:
         self.api = api
         self.cache = cache
 
-    def __version_check(self):
+    def version_check(self):
         if self.api.is_sonar_qube_cloud():
             return
         version = self.api.get_analysis_version()
@@ -63,5 +66,20 @@ class ScannerEngine:
                 f"Only SonarQube versions >= {api.MIN_SUPPORTED_SQ_VERSION} are supported, but got {version}"
             )
 
-    def __fetch_scanner_engine(self):
+    def fetch_scanner_engine(self):
         ScannerEngineProvisioner(self.api, self.cache).provision()
+
+    def run(self, jre_path: JREResolvedPath, configuration: Configuration):
+        print(str(jre_path))
+        popen = Popen(["/home/thomas.serre/Projects/sonar-scanner-python/sonar_cache/sonar_cache/OpenJDK17U-jre_x64_linux_hotspot_17.0.13_11.tar.gz_unzip/jdk-17.0.13+11-jre/bin/java", "-jar", "/home/thomas.serre/Projects/sonar-scanner-python/sonar_cache/scanner-enterprise-2025.1.1.104738-all.jar"], stdout=PIPE, stderr=PIPE, stdin=PIPE)
+        outs, errs = popen.communicate(configuration.to_json().encode())
+
+        exitcode = popen.wait() # 0 means success
+        print(exitcode)
+        print(outs)
+        print(errs)
+        
+import logging
+def log_subprocess_output(pipe):
+    for line in iter(pipe.readline, b''): # b'\n'-separated lines
+        logging.info('got line from subprocess: %r', line)
