@@ -47,17 +47,25 @@ class TestMain(unittest.TestCase):
         self.assertEqual(configuration, expected_configuration)
 
     def test_alternative_cli_args(self):
-        alternatives = [ ["-t", "myToken", "-v", "--sonar-project-key", "myProjectKey"], ["--sonar-token", "myToken", "--sonar-verbose", "--sonar-project-key", "myProjectKey"]]
+        alternatives = [
+            ["-t", "myToken", "-v", "--sonar-project-key", "myProjectKey"],
+            ["--sonar-token", "myToken", "--sonar-verbose", "--sonar-project-key", "myProjectKey"],
+        ]
         for alternative in alternatives:
             with patch("sys.argv", ["myscript.py", *alternative]), patch("sys.stderr", new=StringIO()):
                 configuration = ConfigurationLoader.initialize_configuration()
                 expected_internal = Internal()
                 expected_scanner = Scanner(internal=expected_internal)
-                expected_sonar = Sonar(scanner=expected_scanner, token="myToken", project_key="myProjectKey", verbose=True)
+                expected_sonar = Sonar(
+                    scanner=expected_scanner, token="myToken", project_key="myProjectKey", verbose=True
+                )
                 expected_configuration = Configuration(sonar=expected_sonar)
                 self.assertEqual(configuration, expected_configuration)
 
-    @patch("sys.argv", ["myscript.py", "-t", "myToken", "--sonar-project-key", "myProjectKey", "--sonar-scanner-os", "windows2"])
+    @patch(
+        "sys.argv",
+        ["myscript.py", "-t", "myToken", "--sonar-project-key", "myProjectKey", "--sonar-scanner-os", "windows2"],
+    )
     def test_impossible_os_choice(self):
         with patch("sys.stderr", new=StringIO()) as mock_stderr:
             with self.assertRaises(SystemExit):

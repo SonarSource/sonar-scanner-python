@@ -99,7 +99,7 @@ class Configuration:
             {"key": "sonar.scanner.app", "value": scanner.app},
             {"key": "sonar.scanner.appVersion", "value": scanner.app_version},
             {"key": "sonar.token", "value": sonar.token},
-            {"key": "sonar.projectKey", "value": sonar.project_key}
+            {"key": "sonar.projectKey", "value": sonar.project_key},
         ]
 
         optional_properties = [
@@ -198,7 +198,7 @@ class ConfigurationLoader:
             required=True,
             help="Key of the project that usually corresponds to the project name in SonarQube",
         )
-        
+
         parser.add_argument(
             "-v", "--verbose", "--sonar-verbose", action="store_true", default=False, help="Increase output verbosity"
         )
