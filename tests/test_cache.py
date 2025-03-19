@@ -61,3 +61,8 @@ class TestCache(pyfakefs.TestCase):
 
         cache_file.filepath.touch()
         self.assertTrue(cache_file.exists())
+
+    def test__str__(self):
+        cache = Cache.create_cache(pathlib.Path("/folder1/folder2/"))
+        cache_file = cache.get_file("test", "123")
+        self.assertEqual(str(cache_file), "/folder1/folder2/test")

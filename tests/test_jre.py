@@ -264,6 +264,10 @@ class TestJREResolvedPath(unittest.TestCase):
         resolved_path = JREResolvedPath(path)
         self.assertEqual(resolved_path.path, path)
 
+    def test_str_(self):
+        resolved_path = JREResolvedPath.from_string("test")
+        self.assertEqual(str(resolved_path), "test")
+
 
 class TestJREResolver(unittest.TestCase):
     def test_resolve_jre(self):
