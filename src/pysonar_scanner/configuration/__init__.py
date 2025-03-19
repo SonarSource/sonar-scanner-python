@@ -21,6 +21,8 @@
 from pysonar_scanner.configuration import properties
 from pysonar_scanner.configuration.cli import CliConfigurationLoader
 
+from pysonar_scanner.exceptions import MissingKeyException
+
 
 def get_static_default_properties() -> dict[str, any]:
     return {prop.name: prop.default_value for prop in properties.PROPERTIES if prop.default_value is not None}
@@ -36,3 +38,9 @@ class ConfigurationLoader:
             **get_static_default_properties(),
             **CliConfigurationLoader.load(),
         }
+
+
+def get_token(config: dict[str, any]) -> str:
+    if "sonar.token" not in config:
+        raise MissingKeyException('Missing property "sonar.token"')
+    return config["sonar.token"]

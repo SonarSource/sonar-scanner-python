@@ -21,8 +21,10 @@ import unittest
 from unittest import mock
 from unittest.mock import patch
 
+from pysonar_scanner.exceptions import MissingKeyException
 from pysonar_scanner.jre import JRE, JREResolvedPath
 from pysonar_scanner.__main__ import scan
+from pysonar_scanner import __main__ as main
 from pysonar_scanner.scannerengine import ScannerEngine
 
 

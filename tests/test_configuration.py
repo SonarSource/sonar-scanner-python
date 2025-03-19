@@ -22,6 +22,8 @@ import unittest
 from unittest.mock import patch
 
 from pysonar_scanner.configuration import ConfigurationLoader
+from pysonar_scanner import configuration
+from pysonar_scanner.exceptions import MissingKeyException
 
 
 class TestConfigurationLoader(unittest.TestCase):
@@ -53,3 +55,10 @@ class TestConfigurationLoader(unittest.TestCase):
     def test_no_defaults_in_configuration_loaders(self, get_static_default_properties_mock):
         config = ConfigurationLoader().load()
         self.assertDictEqual(config, {})
+
+    def test_get_token(self):
+        with self.subTest("Token is present"):
+            self.assertEqual(configuration.get_token({"sonar.token": "myToken"}), "myToken")
+
+        with self.subTest("Token is absent"), self.assertRaises(MissingKeyException):
+            configuration.get_token({})
