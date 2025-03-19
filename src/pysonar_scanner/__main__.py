@@ -18,29 +18,22 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
+from pysonar_scanner import cache
 from pysonar_scanner.configuration import Configuration, ConfigurationLoader
 from pysonar_scanner.api import get_base_urls, SonarQubeApi
 from pysonar_scanner.scannerengine import ScannerEngine
-from pysonar_scanner.cache import Cache, get_default
+from pysonar_scanner.cache import Cache
 from pysonar_scanner.jre import JREProvisioner, JREResolvedPath, JREResolver
 
 
 def scan():
     configuration = ConfigurationLoader().initialize_configuration()
-    cache = get_default()
+    cache_manager = cache.get_default()
     api = __build_api(configuration)
-    jre_resolved_path = __resolve_jre(api, cache, configuration)
-    scanner = ScannerEngine(api, cache)
-    scanner.fetch_scanner_engine()
-    return scanner.run(jre_resolved_path, configuration)
+    scanner = ScannerEngine(api, cache_manager)
+    return scanner.run(configuration)
 
 
 def __build_api(configuration) -> SonarQubeApi:
     base_urls = get_base_urls(configuration)
     return SonarQubeApi(base_urls, configuration.sonar.token)
-
-
-def __resolve_jre(api: SonarQubeApi, cache: Cache, configuration: Configuration) -> JREResolvedPath:
-    jre_provisionner = JREProvisioner(api, cache)
-    jre_resolver = JREResolver(configuration, jre_provisionner)
-    return jre_resolver.resolve_jre()

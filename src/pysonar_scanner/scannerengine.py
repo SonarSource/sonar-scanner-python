@@ -18,6 +18,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import json
+import pathlib
 from typing import Optional
 
 import pysonar_scanner.api as api
@@ -26,7 +27,7 @@ from pysonar_scanner.api import SonarQubeApi
 from pysonar_scanner.cache import Cache, CacheFile
 from pysonar_scanner.exceptions import ChecksumException, SQTooOldException
 from pysonar_scanner.configuration import Configuration
-from pysonar_scanner.jre import JREResolvedPath
+from pysonar_scanner.jre import JREProvisioner, JREResolvedPath, JREResolver
 from subprocess import Popen, PIPE
 
 
@@ -35,14 +36,14 @@ class ScannerEngineProvisioner:
         self.api = api
         self.cache = cache
 
-    def provision(self) -> CacheFile:
+    def provision(self) -> pathlib.Path:
         scanner_file = self.__download_and_verify()
         if scanner_file is not None:
-            return scanner_file
+            return scanner_file.filepath
         # Retry once in case the checksum failed due to the scanner engine being updated between getting the checksum and downloading the jar
         scanner_file = self.__download_and_verify()
         if scanner_file is not None:
-            return scanner_file
+            return scanner_file.filepath
         else:
             raise ChecksumException("Failed to download and verify scanner engine")
 
@@ -62,15 +63,25 @@ class ScannerEngine:
     def __init__(self, api: SonarQubeApi, cache: Cache):
         self.api = api
         self.cache = cache
-        self.scanner_file = None
 
-    def fetch_scanner_engine(self) -> None:
-        self.scanner_file = ScannerEngineProvisioner(self.api, self.cache).provision()
+    def __fetch_scanner_engine(self) -> pathlib.Path:
+        return ScannerEngineProvisioner(self.api, self.cache).provision()
 
-    def run(self, jre_path: JREResolvedPath, configuration: Configuration):
+    def run(self, configuration: Configuration):
         self.__version_check()
-        cmd = self.__build_command(jre_path)
-        print(cmd)
+        jre_path = self.__resolve_jre(configuration)
+        scanner_engine_path = self.__fetch_scanner_engine()
+        cmd = self.__build_command(jre_path, scanner_engine_path)
+        return self.__execute_scanner_engine(configuration, cmd)
+
+    def __build_command(self, jre_path: JREResolvedPath, scanner_engine_path: pathlib.Path) -> list[str]:
+        cmd = []
+        cmd.append(jre_path.path)
+        cmd.append("-jar")
+        cmd.append(scanner_engine_path)
+        return cmd
+
+    def __execute_scanner_engine(self, configuration: Configuration, cmd: list[str]) -> int:
         popen = Popen(cmd, stdout=PIPE, stderr=PIPE, stdin=PIPE)
         outs, _ = popen.communicate(configuration.to_json().encode())
         exitcode = popen.wait()  # 0 means success
@@ -83,25 +94,15 @@ class ScannerEngine:
         try:
             errors = []
             for line in outs.decode("utf-8").split("\n"):
-                print(line)
                 if line.strip() == "":
                     continue
                 out_json = json.loads(line)
                 if out_json["level"] == "ERROR":
-                    print(line)
                     errors.append(out_json["message"])
             return errors
         except Exception as e:
             print(e)
-            print("hello")
             return []
-
-    def __build_command(self, jre_path: JREResolvedPath) -> list[str]:
-        cmd = []
-        cmd.append(str(jre_path))
-        cmd.append("-jar")
-        cmd.append(str(self.scanner_file))
-        return cmd
 
     def __version_check(self):
         if self.api.is_sonar_qube_cloud():
@@ -111,3 +112,8 @@ class ScannerEngine:
             raise SQTooOldException(
                 f"Only SonarQube versions >= {api.MIN_SUPPORTED_SQ_VERSION} are supported, but got {version}"
             )
+
+    def __resolve_jre(self, configuration: Configuration) -> JREResolvedPath:
+        jre_provisionner = JREProvisioner(self.api, self.cache)
+        jre_resolver = JREResolver(configuration, jre_provisionner)
+        return jre_resolver.resolve_jre()

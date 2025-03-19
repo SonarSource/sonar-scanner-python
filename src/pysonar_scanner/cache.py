@@ -47,9 +47,6 @@ class CacheFile:
     def open(self, mode: OpenBinaryMode) -> typing.BinaryIO:
         return open(self.filepath, mode=mode)
 
-    def __str__(self):
-        return str(self.filepath)
-
 
 class Cache:
     def __init__(self, cache_folder: pathlib.Path):

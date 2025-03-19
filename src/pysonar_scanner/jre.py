@@ -46,9 +46,6 @@ class JREResolvedPath:
             raise ValueError("JRE path cannot be empty")
         return JREResolvedPath(pathlib.Path(path))
 
-    def __str__(self):
-        return str(self.path)
-
 
 class JREProvisioner:
     def __init__(self, api: SonarQubeApi, cache: Cache):
