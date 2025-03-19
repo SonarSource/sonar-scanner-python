@@ -29,14 +29,6 @@ class TestCliConfigurationLoader(unittest.TestCase):
     def setUp(self):
         self.maxDiff = None
 
-    @patch("sys.argv", ["myscript.py"])
-    def test_missing_cli_args(self):
-        with patch("sys.stderr", new=StringIO()) as mock_stderr, self.assertRaises(SystemExit):
-            CliConfigurationLoader.load()
-
-        error_output = mock_stderr.getvalue()
-        self.assertIn("the following arguments are required: -t/--token", error_output)
-
     @patch("sys.argv", ["myscript.py", "--token", "myToken", "--sonar-project-key", "myProjectKey"])
     def test_minimal_cli_args(self):
         configuration = CliConfigurationLoader.load()
@@ -59,6 +51,19 @@ class TestCliConfigurationLoader(unittest.TestCase):
                     "sonar.token": "myToken",
                     "sonar.verbose": True,
                     "sonar.projectKey": "myProjectKey",
+                }
+                self.assertDictEqual(configuration, expected_configuration)
+
+    def test_multiple_alias_cli_args(self):
+        alternatives = [
+            ["-t", "overwrittenToken", "--sonar-token", "sonarToken"],
+            ["--sonar-token", "overwrittenToken", "-t", "sonarToken"],
+        ]
+        for alternative in alternatives:
+            with patch("sys.argv", ["myscript.py", *alternative]), patch("sys.stderr", new=StringIO()):
+                configuration = CliConfigurationLoader.load()
+                expected_configuration = {
+                    "sonar.token": "sonarToken",
                 }
                 self.assertDictEqual(configuration, expected_configuration)
 

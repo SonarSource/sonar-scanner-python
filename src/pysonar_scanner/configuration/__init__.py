@@ -20,7 +20,6 @@
 
 from pysonar_scanner.configuration import properties
 from pysonar_scanner.configuration.cli import CliConfigurationLoader
-from pysonar_scanner.utils import filter_none_values
 
 
 def get_static_default_properties() -> dict[str, any]:
@@ -29,7 +28,11 @@ def get_static_default_properties() -> dict[str, any]:
 
 class ConfigurationLoader:
     def load(self) -> dict[str, any]:
+        # each property loader is required to return NO default values.
+        # E.g. if no property has been set, an empty dict must be returned.
+        # Default values should be set through the get_static_default_properties() method
+
         return {
             **get_static_default_properties(),
-            **filter_none_values(CliConfigurationLoader.load()),
+            **CliConfigurationLoader.load(),
         }

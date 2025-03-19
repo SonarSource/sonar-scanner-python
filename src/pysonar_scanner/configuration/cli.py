@@ -38,20 +38,18 @@ class CliConfigurationLoader:
 
     @classmethod
     def __parse_cli_args(cls) -> argparse.Namespace:
-        parser = argparse.ArgumentParser(description="Sonar scanner CLI for python")
+        parser = argparse.ArgumentParser(description="Sonar scanner CLI for Python")
 
         parser.add_argument(
             "-t",
             "--token",
             "--sonar-token",
             type=str,
-            required=True,
-            help="Token used to authenticate against the SonarQube Server or SonarQube cloud",
+            help="Token used to authenticate against the SonarQube Server or SonarQube Cloud",
         )
         parser.add_argument(
             "--sonar-project-key",
             type=str,
-            required=True,
             help="Key of the project that usually corresponds to the project name in SonarQube",
         )
 

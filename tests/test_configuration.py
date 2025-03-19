@@ -47,3 +47,9 @@ class TestConfigurationLoader(unittest.TestCase):
             "sonar.scanner.truststorePassword": "changeit",
         }
         self.assertDictEqual(configuration, expected_configuration)
+
+    @patch("pysonar_scanner.configuration.get_static_default_properties", result={})
+    @patch("sys.argv", ["myscript.py"])
+    def test_no_defaults_in_configuration_loaders(self, get_static_default_properties_mock):
+        config = ConfigurationLoader().load()
+        self.assertDictEqual(config, {})
