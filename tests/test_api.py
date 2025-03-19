@@ -21,15 +21,7 @@ from typing import TypedDict
 
 import io
 
-from pysonar_scanner.api import (
-    JRE,
-    BaseUrls,
-    EngineInfo,
-    SonarQubeApi,
-    SonarQubeApiException,
-    get_base_urls,
-    ApiConfiguration,
-)
+from pysonar_scanner.api import JRE, BaseUrls, EngineInfo, SonarQubeApi, SonarQubeApiException, get_base_urls
 
 from pysonar_scanner.api import SQVersion
 from tests import sq_api_utils
@@ -73,49 +65,55 @@ class TestApi(unittest.TestCase):
     def test_get_base_urls(self):
         class TestCaseDict(TypedDict):
             name: str
-            config: ApiConfiguration
+            config: dict[str, any]
             expected: BaseUrls
 
         cases: list[TestCaseDict] = [
             # SQ:Cloud tests
             {
                 "name": "default configuration defaults to SQ:cloud base urls",
-                "config": ApiConfiguration(
-                    sonar_host_url="", sonar_scanner_sonarcloud_url="", sonar_scanner_api_base_url="", sonar_region=""
-                ),
+                "config": {
+                    "sonar.host.url": "",
+                    "sonar.scanner.sonarcloudUrl": "",
+                    "sonar.scanner.apiBaseUrl": "",
+                    "sonar.region": "",
+                },
                 "expected": BaseUrls(
                     base_url="https://sonarcloud.io", api_base_url="https://api.sonarcloud.io", is_sonar_qube_cloud=True
                 ),
             },
             {
                 "name": "sonar.host.url with whitespaces uses the SQ:cloud base urls",
-                "config": ApiConfiguration(
-                    sonar_host_url="  ", sonar_scanner_sonarcloud_url="", sonar_scanner_api_base_url="", sonar_region=""
-                ),
+                "config": {
+                    "sonar.host.url": "  ",
+                    "sonar.scanner.sonarcloudUrl": "",
+                    "sonar.scanner.apiBaseUrl": "",
+                    "sonar.region": "",
+                },
                 "expected": BaseUrls(
                     base_url="https://sonarcloud.io", api_base_url="https://api.sonarcloud.io", is_sonar_qube_cloud=True
                 ),
             },
             {
                 "name": "when host_url is set to SQ:cloud, use SQ:cloud base urls",
-                "config": ApiConfiguration(
-                    sonar_host_url="https://sonarcloud.io",
-                    sonar_scanner_sonarcloud_url="",
-                    sonar_scanner_api_base_url="",
-                    sonar_region="",
-                ),
+                "config": {
+                    "sonar.host.url": "https://sonarcloud.io",
+                    "sonar.scanner.sonarcloudUrl": "",
+                    "sonar.scanner.apiBaseUrl": "",
+                    "sonar.region": "",
+                },
                 "expected": BaseUrls(
                     base_url="https://sonarcloud.io", api_base_url="https://api.sonarcloud.io", is_sonar_qube_cloud=True
                 ),
             },
             {
                 "name": "When both host_url and sonarcloud_url are set, use sonarcloud_url to check if host is SQ:cloud",
-                "config": ApiConfiguration(
-                    sonar_host_url="https://sonarcloud.io",
-                    sonar_scanner_sonarcloud_url="https://custom-sq-cloud.io",
-                    sonar_scanner_api_base_url="",
-                    sonar_region="",
-                ),
+                "config": {
+                    "sonar.host.url": "https://sonarcloud.io",
+                    "sonar.scanner.sonarcloudUrl": "https://custom-sq-cloud.io",
+                    "sonar.scanner.apiBaseUrl": "",
+                    "sonar.region": "",
+                },
                 "expected": BaseUrls(
                     base_url="https://sonarcloud.io",
                     api_base_url="https://sonarcloud.io/api/v2",
@@ -124,12 +122,12 @@ class TestApi(unittest.TestCase):
             },
             {
                 "name": "when host_url with trailing slash is set to SQ:cloud, use SQ:cloud base urls",
-                "config": ApiConfiguration(
-                    sonar_host_url="https://sonarcloud.io/",
-                    sonar_scanner_sonarcloud_url="",
-                    sonar_scanner_api_base_url="",
-                    sonar_region="",
-                ),
+                "config": {
+                    "sonar.host.url": "https://sonarcloud.io/",
+                    "sonar.scanner.sonarcloudUrl": "",
+                    "sonar.scanner.apiBaseUrl": "",
+                    "sonar.region": "",
+                },
                 "expected": BaseUrls(
                     base_url="https://sonarcloud.io", api_base_url="https://api.sonarcloud.io", is_sonar_qube_cloud=True
                 ),
@@ -137,12 +135,12 @@ class TestApi(unittest.TestCase):
             # SQ:Cloud region tests
             {
                 "name": "When region is set, use region in base urls",
-                "config": ApiConfiguration(
-                    sonar_host_url="https://sonarcloud.io",
-                    sonar_scanner_sonarcloud_url="",
-                    sonar_scanner_api_base_url="",
-                    sonar_region="us",
-                ),
+                "config": {
+                    "sonar.host.url": "https://sonarcloud.io",
+                    "sonar.scanner.sonarcloudUrl": "",
+                    "sonar.scanner.apiBaseUrl": "",
+                    "sonar.region": "us",
+                },
                 "expected": BaseUrls(
                     base_url="https://us.sonarcloud.io",
                     api_base_url="https://api.us.sonarcloud.io",
@@ -151,12 +149,12 @@ class TestApi(unittest.TestCase):
             },
             {
                 "name": "Ignore region when sonarcloud_url and api_base_url is set",
-                "config": ApiConfiguration(
-                    sonar_host_url="https://custom-sq-cloud.io",
-                    sonar_scanner_sonarcloud_url="https://custom-sq-cloud.io",
-                    sonar_scanner_api_base_url="https://other-api.custom-sq-cloud.io",
-                    sonar_region="us",
-                ),
+                "config": {
+                    "sonar.host.url": "https://custom-sq-cloud.io",
+                    "sonar.scanner.sonarcloudUrl": "https://custom-sq-cloud.io",
+                    "sonar.scanner.apiBaseUrl": "https://other-api.custom-sq-cloud.io",
+                    "sonar.region": "us",
+                },
                 "expected": BaseUrls(
                     base_url="https://custom-sq-cloud.io",
                     api_base_url="https://other-api.custom-sq-cloud.io",
@@ -166,24 +164,24 @@ class TestApi(unittest.TestCase):
             # SQ:Server tests
             {
                 "name": "When host_url is set to SQ:server, use SQ:server base urls",
-                "config": ApiConfiguration(
-                    sonar_host_url="https://sq.home",
-                    sonar_scanner_sonarcloud_url="",
-                    sonar_scanner_api_base_url="",
-                    sonar_region="",
-                ),
+                "config": {
+                    "sonar.host.url": "https://sq.home",
+                    "sonar.scanner.sonarcloudUrl": "",
+                    "sonar.scanner.apiBaseUrl": "",
+                    "sonar.region": "",
+                },
                 "expected": BaseUrls(
                     base_url="https://sq.home", api_base_url="https://sq.home/api/v2", is_sonar_qube_cloud=False
                 ),
             },
             {
                 "name": "When host_url with trailing slash is set to SQ:server, use SQ:server base urls",
-                "config": ApiConfiguration(
-                    sonar_host_url="https://sq.home/",
-                    sonar_scanner_sonarcloud_url="",
-                    sonar_scanner_api_base_url="",
-                    sonar_region="",
-                ),
+                "config": {
+                    "sonar.host.url": "https://sq.home/",
+                    "sonar.scanner.sonarcloudUrl": "",
+                    "sonar.scanner.apiBaseUrl": "",
+                    "sonar.region": "",
+                },
                 "expected": BaseUrls(
                     base_url="https://sq.home", api_base_url="https://sq.home/api/v2", is_sonar_qube_cloud=False
                 ),
@@ -371,26 +369,3 @@ class TestSonarQubeApi(unittest.TestCase):
         ):
             # since the api is not mocked, requests will throw an exception
             self.sq.download_analysis_jre(jre_id, io.BytesIO())
-
-
-class TestApiConfiguration(unittest.TestCase):
-    def test_from_dict_defaults(self):
-        config = ApiConfiguration.from_dict({})
-        self.assertEqual(config.sonar_host_url, "")
-        self.assertEqual(config.sonar_scanner_sonarcloud_url, "")
-        self.assertEqual(config.sonar_scanner_api_base_url, "")
-        self.assertEqual(config.sonar_region, "")
-
-    def test_from_dict(self):
-        config = ApiConfiguration.from_dict(
-            {
-                "sonar.host.url": "https://sq.home",
-                "sonar.scanner.sonarcloudUrl": "https://sonarcloud.io",
-                "sonar.scanner.apiBaseUrl": "https://api.sonarcloud.io",
-                "sonar.region": "us",
-            }
-        )
-        self.assertEqual(config.sonar_host_url, "https://sq.home")
-        self.assertEqual(config.sonar_scanner_sonarcloud_url, "https://sonarcloud.io")
-        self.assertEqual(config.sonar_scanner_api_base_url, "https://api.sonarcloud.io")
-        self.assertEqual(config.sonar_region, "us")
