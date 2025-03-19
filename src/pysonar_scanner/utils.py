@@ -20,7 +20,6 @@
 import hashlib
 import pathlib
 import platform
-import re
 import typing
 from enum import Enum
 
