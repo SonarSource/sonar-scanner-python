@@ -264,6 +264,7 @@ class TestJREResolvedPath(unittest.TestCase):
         resolved_path = JREResolvedPath(path)
         self.assertEqual(resolved_path.path, path)
 
+
 class TestJREResolver(unittest.TestCase):
     def test_resolve_jre(self):
         class TestCaseDict(TypedDict):
