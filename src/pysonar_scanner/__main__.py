@@ -34,11 +34,13 @@ def scan():
     scanner.fetch_scanner_engine()
     return scanner.run(jre_resolved_path, configuration)
 
+
 def __build_api(configuration) -> SonarQubeApi:
     base_urls = get_base_urls(configuration)
     return SonarQubeApi(base_urls, configuration.sonar.token)
 
-def __resolve_jre(api : SonarQubeApi, cache:Cache, configuration:Configuration) -> JREResolvedPath:
+
+def __resolve_jre(api: SonarQubeApi, cache: Cache, configuration: Configuration) -> JREResolvedPath:
     jre_provisionner = JREProvisioner(api, cache)
     jre_resolver = JREResolver(configuration, jre_provisionner)
     return jre_resolver.resolve_jre()

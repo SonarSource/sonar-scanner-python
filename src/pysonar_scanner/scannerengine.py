@@ -78,7 +78,7 @@ class ScannerEngine:
             errors = self.__extract_errors_from_log(outs)
             raise RuntimeError(f"Scan failed with exit code {exitcode}", errors)
         return exitcode
-    
+
     def __extract_errors_from_log(self, outs: str) -> list[str]:
         try:
             errors = []
