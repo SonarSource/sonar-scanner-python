@@ -18,25 +18,27 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-import pathlib
-
-from pysonar_scanner.configuration import ConfigurationLoader
+from pysonar_scanner.configuration import Configuration, ConfigurationLoader
 from pysonar_scanner.api import get_base_urls, SonarQubeApi
 from pysonar_scanner.scannerengine import ScannerEngine
-from pysonar_scanner.cache import get_default
-from pysonar_scanner.jre import JREProvisioner, JREResolver
+from pysonar_scanner.cache import Cache, get_default
+from pysonar_scanner.jre import JREProvisioner, JREResolvedPath, JREResolver
 
 
 def scan():
     configuration = ConfigurationLoader().initialize_configuration()
     cache = get_default()
+    api = __build_api(configuration)
+    jre_resolved_path = __resolve_jre(api, cache, configuration)
+    scanner = ScannerEngine(api, cache)
+    scanner.fetch_scanner_engine()
+    return scanner.run(jre_resolved_path, configuration)
 
+def __build_api(configuration) -> SonarQubeApi:
     base_urls = get_base_urls(configuration)
-    api = SonarQubeApi(base_urls, configuration.sonar.token)
+    return SonarQubeApi(base_urls, configuration.sonar.token)
 
+def __resolve_jre(api : SonarQubeApi, cache:Cache, configuration:Configuration) -> JREResolvedPath:
     jre_provisionner = JREProvisioner(api, cache)
     jre_resolver = JREResolver(configuration, jre_provisionner)
-    jre_resolved_path = jre_resolver.resolve_jre()
-
-    scanner = ScannerEngine(api, cache)
-    scanner.run(jre_resolved_path, configuration)
+    return jre_resolver.resolve_jre()

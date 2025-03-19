@@ -18,7 +18,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import json
-import subprocess
 from typing import Optional
 
 import pysonar_scanner.api as api
@@ -70,17 +69,17 @@ class ScannerEngine:
 
     def run(self, jre_path: JREResolvedPath, configuration: Configuration):
         self.__version_check()
-
         cmd = self.__build_command(jre_path)
+        print(cmd)
         popen = Popen(cmd, stdout=PIPE, stderr=PIPE, stdin=PIPE)
         outs, _ = popen.communicate(configuration.to_json().encode())
-
         exitcode = popen.wait()  # 0 means success
         if exitcode != 0:
             errors = self.__extract_errors_from_log(outs)
             raise RuntimeError(f"Scan failed with exit code {exitcode}", errors)
-
-    def __extract_errors_from_log(self, log: str) -> list[str]:
+        return exitcode
+    
+    def __extract_errors_from_log(self, outs: str) -> list[str]:
         try:
             errors = []
             for line in outs.decode("utf-8").split("\n"):
