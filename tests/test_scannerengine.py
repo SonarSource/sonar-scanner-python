@@ -17,8 +17,8 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-import pathlib
 import unittest
+import pathlib
 import pyfakefs.fake_filesystem_unittest as pyfakefs
 
 from pysonar_scanner import cache
@@ -30,7 +30,35 @@ from pysonar_scanner.api import SQVersion
 from tests import sq_api_utils
 
 
-class TestScannerEngine(pyfakefs.TestCase):
+class TestScannerEngine(unittest.TestCase):
+
+    def test_error_log_extraction(self):
+        log_failure_example = b"""{"level":"INFO","message":"CPD Executor CPD calculation finished (done) | time=15ms"}\n
+            {"level":"INFO","message":"SCM revision ID \'a53e6a3193a049d0f77fc2ff16cf52e7a66c7adb\'"}\n
+            {"level":"INFO","message":"Analysis report generated in 152ms, dir size=760.6 kB"}\n
+            {"level":"INFO","message":"Analysis report compressed in 83ms, zip size=321.7 kB"}\n
+            {"level":"ERROR","message":"You\'re not authorized to analyze this project or the project doesn\'t exist on SonarQube and you\'re not authorized to create it. Please contact an administrator."}\n"""
+
+        scanner = ScannerEngine(None, None)
+        expected = "You're not authorized to analyze this project or the project doesn't exist on SonarQube and you're not authorized to create it. Please contact an administrator."
+        errors = scanner._ScannerEngine__extract_errors_from_log(log_failure_example)
+        print(errors)
+        self.assertEqual(
+            errors,
+            [expected],
+        )
+
+    def test_exception_in_error_log_extraction(self):
+        unexpected_log_failure_example = b"""unexpected log format'"""
+        scanner = ScannerEngine(None, None)
+        errors = scanner._ScannerEngine__extract_errors_from_log(unexpected_log_failure_example)
+        self.assertEqual(
+            errors,
+            [],
+        )
+
+
+class TestScannerEngineWithFake(pyfakefs.TestCase):
     def setUp(self):
         self.setUpPyfakefs()
 

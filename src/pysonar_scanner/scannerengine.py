@@ -83,13 +83,17 @@ class ScannerEngine:
         try:
             errors = []
             for line in outs.decode("utf-8").split("\n"):
+                print(line)
                 if line.strip() == "":
                     continue
                 out_json = json.loads(line)
                 if out_json["level"] == "ERROR":
+                    print(line)
                     errors.append(out_json["message"])
             return errors
-        except Exception:
+        except Exception as e:
+            print(e)
+            print("hello")
             return []
 
     def __build_command(self, jre_path: JREResolvedPath) -> list[str]:

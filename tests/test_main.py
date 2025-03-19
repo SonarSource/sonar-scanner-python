@@ -26,14 +26,6 @@ from pysonar_scanner.jre import JRE
 from pysonar_scanner.__main__ import scan
 from pysonar_scanner.scannerengine import ScannerEngine
 
-LOG_FAILURE_EXAMPLE = """
-{"level":"INFO","message":"CPD Executor CPD calculation finished (done) | time=15ms"}\n
-{"level":"INFO","message":"SCM revision ID \'a53e6a3193a049d0f77fc2ff16cf52e7a66c7adb\'"}\n
-{"level":"INFO","message":"Analysis report generated in 152ms, dir size=760.6 kB"}\n
-{"level":"INFO","message":"Analysis report compressed in 83ms, zip size=321.7 kB"}\n
-{"level":"ERROR","message":"You\'re not authorized to analyze this project or the project doesn\'t exist on SonarQube and you\'re not authorized to create it. Please contact an administrator."}\n'
-"""
-
 
 class TestMain(unittest.TestCase):
 
@@ -66,7 +58,7 @@ class TestMain(unittest.TestCase):
         mock_resolve_jre.return_value = JRE("", "", "", "", "", "", None)
         mock_fetch_scanner_engine.return_value = None
         process_mock = mock.Mock()
-        attrs = {"communicate.return_value": (LOG_FAILURE_EXAMPLE, "error"), "wait.return_value": 2}
+        attrs = {"communicate.return_value": ("output", "error"), "wait.return_value": 2}
         process_mock.configure_mock(**attrs)
         mock_popen.return_value = process_mock
         with self.assertRaises(RuntimeError) as error:
