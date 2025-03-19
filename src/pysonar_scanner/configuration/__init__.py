@@ -29,7 +29,8 @@ def get_static_default_properties() -> dict[str, any]:
 
 
 class ConfigurationLoader:
-    def load(self) -> dict[str, any]:
+    @staticmethod
+    def load() -> dict[str, any]:
         # each property loader is required to return NO default values.
         # E.g. if no property has been set, an empty dict must be returned.
         # Default values should be set through the get_static_default_properties() method

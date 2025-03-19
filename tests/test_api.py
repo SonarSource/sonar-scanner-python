@@ -21,6 +21,7 @@ from typing import TypedDict
 
 import io
 
+from pysonar_scanner import api
 from pysonar_scanner.api import JRE, BaseUrls, EngineInfo, SonarQubeApi, SonarQubeApiException, get_base_urls
 
 from pysonar_scanner.api import SQVersion
@@ -369,3 +370,22 @@ class TestSonarQubeApi(unittest.TestCase):
         ):
             # since the api is not mocked, requests will throw an exception
             self.sq.download_analysis_jre(jre_id, io.BytesIO())
+
+    def test_to_api_configuration(self):
+        with self.subTest("Missing keys"):
+            expected = {
+                "sonar.host.url": "",
+                "sonar.scanner.sonarcloudUrl": "",
+                "sonar.scanner.apiBaseUrl": "",
+                "sonar.region": "",
+            }
+            self.assertEqual(expected, api.to_api_configuration({}))
+
+        with self.subTest("All keys"):
+            expected = {
+                "sonar.host.url": "https://sonarcloud.io",
+                "sonar.scanner.sonarcloudUrl": "https://sonarcloud.io",
+                "sonar.scanner.apiBaseUrl": "https://api.sonarcloud.io",
+                "sonar.region": "us",
+            }
+            self.assertEqual(expected, api.to_api_configuration(expected))

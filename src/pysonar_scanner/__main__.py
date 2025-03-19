@@ -18,16 +18,15 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-from pysonar_scanner import cache, configuration
+from pysonar_scanner import cache
+from pysonar_scanner import configuration
 from pysonar_scanner.api import get_base_urls, SonarQubeApi
-from pysonar_scanner.exceptions import MissingKeyException
+from pysonar_scanner.configuration import ConfigurationLoader
 from pysonar_scanner.scannerengine import ScannerEngine
-from pysonar_scanner.cache import Cache
-from pysonar_scanner.jre import JREProvisioner, JREResolvedPath, JREResolver
 
 
 def scan():
-    config = configuration.load()
+    config = ConfigurationLoader.load()
     cache_manager = cache.get_default()
     api = __build_api(config)
     scanner = ScannerEngine(api, cache_manager)

@@ -32,7 +32,7 @@ class TestConfigurationLoader(unittest.TestCase):
 
     @patch("sys.argv", ["myscript.py", "--token", "myToken", "--sonar-project-key", "myProjectKey"])
     def test_defaults(self):
-        configuration = ConfigurationLoader().load()
+        configuration = ConfigurationLoader.load()
         expected_configuration = {
             "sonar.token": "myToken",
             "sonar.projectKey": "myProjectKey",
@@ -53,7 +53,7 @@ class TestConfigurationLoader(unittest.TestCase):
     @patch("pysonar_scanner.configuration.get_static_default_properties", result={})
     @patch("sys.argv", ["myscript.py"])
     def test_no_defaults_in_configuration_loaders(self, get_static_default_properties_mock):
-        config = ConfigurationLoader().load()
+        config = ConfigurationLoader.load()
         self.assertDictEqual(config, {})
 
     def test_get_token(self):
