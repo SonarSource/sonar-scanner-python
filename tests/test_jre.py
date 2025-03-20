@@ -27,6 +27,11 @@ import pyfakefs.fake_filesystem_unittest as pyfakefs
 
 from pysonar_scanner import cache, utils
 from pysonar_scanner.api import JRE
+from pysonar_scanner.configuration.properties import (
+    SONAR_SCANNER_JAVA_EXE_PATH,
+    SONAR_SCANNER_OS,
+    SONAR_SCANNER_SKIP_JRE_PROVISIONING,
+)
 from pysonar_scanner.exceptions import ChecksumException, NoJreAvailableException, UnsupportedArchiveFormat
 from pysonar_scanner.jre import JREProvisioner, JREResolvedPath, JREResolver, JREResolverConfiguration
 from tests import sq_api_utils
@@ -275,9 +280,9 @@ class TestJREResolverConfiguration(unittest.TestCase):
     def test(self):
         config = JREResolverConfiguration.from_dict(
             {
-                "sonar.scanner.javaExePath": "a/b",
-                "sonar.scanner.skipJreProvisioning": True,
-                "sonar.scanner.os": "windows",
+                SONAR_SCANNER_JAVA_EXE_PATH: "a/b",
+                SONAR_SCANNER_SKIP_JRE_PROVISIONING: True,
+                SONAR_SCANNER_OS: "windows",
             }
         )
 

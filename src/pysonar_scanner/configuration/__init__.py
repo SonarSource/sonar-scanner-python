@@ -20,6 +20,7 @@
 
 from pysonar_scanner.configuration import properties
 from pysonar_scanner.configuration.cli import CliConfigurationLoader
+from pysonar_scanner.configuration.properties import SONAR_TOKEN
 
 from pysonar_scanner.exceptions import MissingKeyException
 
@@ -42,6 +43,6 @@ class ConfigurationLoader:
 
 
 def get_token(config: dict[str, any]) -> str:
-    if "sonar.token" not in config:
-        raise MissingKeyException('Missing property "sonar.token"')
-    return config["sonar.token"]
+    if SONAR_TOKEN not in config:
+        raise MissingKeyException(f'Missing property "{SONAR_TOKEN}"')
+    return config[SONAR_TOKEN]
