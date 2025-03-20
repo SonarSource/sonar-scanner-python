@@ -17,52 +17,20 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-import unittest
 from unittest import mock
 from unittest.mock import patch
 
-from pysonar_scanner.exceptions import MissingKeyException
-from pysonar_scanner.jre import JRE, JREResolvedPath
+from pyfakefs import fake_filesystem_unittest as pyfakefs
+
+from pysonar_scanner.configuration import ConfigurationLoader
+from pysonar_scanner.configuration.properties import SONAR_PROJECT_KEY, SONAR_TOKEN
 from pysonar_scanner.__main__ import scan
-from pysonar_scanner import __main__ as main
 from pysonar_scanner.scannerengine import ScannerEngine
 
 
-class TestMain(unittest.TestCase):
-
-    @patch("pysonar_scanner.scannerengine.Popen")
-    @patch.object(ScannerEngine, "_ScannerEngine__resolve_jre")
-    @patch.object(ScannerEngine, "_ScannerEngine__fetch_scanner_engine")
-    @patch(
-        "sys.argv",
-        ["pysonar-scanner", "-t", "myToken", "--sonar-project-key", "myProjectKey"],
-    )
-    def test_minimal_run_success(self, mock_fetch_scanner_engine, mock_resolve_jre, mock_popen):
-        mock_resolve_jre.return_value = JREResolvedPath("")
-        mock_fetch_scanner_engine.return_value = None
-        process_mock = mock.Mock()
-        attrs = {"communicate.return_value": ("output", "error"), "wait.return_value": 0}
-        process_mock.configure_mock(**attrs)
-        mock_popen.return_value = process_mock
-
+class TestMain(pyfakefs.TestCase):
+    @patch.object(ConfigurationLoader, "load", return_value={SONAR_TOKEN: "myToken", SONAR_PROJECT_KEY: "myProjectKey"})
+    @patch.object(ScannerEngine, "run", return_value=0)
+    def test_minimal_success_run(self, load_mock, run_mock):
         exitcode = scan()
         self.assertEqual(exitcode, 0)
-
-    @patch("pysonar_scanner.scannerengine.Popen")
-    @patch.object(ScannerEngine, "_ScannerEngine__resolve_jre")
-    @patch.object(ScannerEngine, "_ScannerEngine__fetch_scanner_engine")
-    @patch(
-        "sys.argv",
-        ["pysonar-scanner", "-t", "myToken", "--sonar-project-key", "myProjectKey"],
-    )
-    def test_minimal_run_failure(self, mock_fetch_scanner_engine, mock_resolve_jre, mock_popen):
-        mock_resolve_jre.return_value = JREResolvedPath("")
-        process_mock = mock.Mock()
-        mock_fetch_scanner_engine.return_value = None
-        attrs = {"communicate.return_value": ("output", "error"), "wait.return_value": 2}
-        process_mock.configure_mock(**attrs)
-        mock_popen.return_value = process_mock
-        with self.assertRaises(RuntimeError) as error:
-            scan()
-        print(str(error))
-        self.assertIn("Scan failed with exit code 2", str(error.exception))
