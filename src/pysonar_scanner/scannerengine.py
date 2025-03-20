@@ -26,8 +26,7 @@ import pysonar_scanner.api as api
 from pysonar_scanner.api import SonarQubeApi
 from pysonar_scanner.cache import Cache, CacheFile
 from pysonar_scanner.exceptions import ChecksumException, SQTooOldException
-from pysonar_scanner.configuration import Configuration
-from pysonar_scanner.jre import JREProvisioner, JREResolvedPath, JREResolver
+from pysonar_scanner.jre import JREProvisioner, JREResolvedPath, JREResolver, JREResolverConfiguration
 from subprocess import Popen, PIPE
 
 
@@ -67,12 +66,12 @@ class ScannerEngine:
     def __fetch_scanner_engine(self) -> pathlib.Path:
         return ScannerEngineProvisioner(self.api, self.cache).provision()
 
-    def run(self, configuration: Configuration):
+    def run(self, config: dict[str, any]):
         self.__version_check()
-        jre_path = self.__resolve_jre(configuration)
+        jre_path = self.__resolve_jre(config)
         scanner_engine_path = self.__fetch_scanner_engine()
         cmd = self.__build_command(jre_path, scanner_engine_path)
-        return self.__execute_scanner_engine(configuration, cmd)
+        return self.__execute_scanner_engine(config, cmd)
 
     def __build_command(self, jre_path: JREResolvedPath, scanner_engine_path: pathlib.Path) -> list[str]:
         cmd = []
@@ -81,14 +80,19 @@ class ScannerEngine:
         cmd.append(scanner_engine_path)
         return cmd
 
-    def __execute_scanner_engine(self, configuration: Configuration, cmd: list[str]) -> int:
+    def __execute_scanner_engine(self, config: dict[str, any], cmd: list[str]) -> int:
         popen = Popen(cmd, stdout=PIPE, stderr=PIPE, stdin=PIPE)
-        outs, _ = popen.communicate(configuration.to_json().encode())
+        outs, _ = popen.communicate(self.__config_to_json(config).encode())
         exitcode = popen.wait()  # 0 means success
+        self.__extract_errors_from_log(outs)
         if exitcode != 0:
             errors = self.__extract_errors_from_log(outs)
             raise RuntimeError(f"Scan failed with exit code {exitcode}", errors)
         return exitcode
+
+    def __config_to_json(self, config: dict[str, any]) -> str:
+        scanner_properties = [{"key": k, "value": v} for k, v in config.items()]
+        return json.dumps({"scannerProperties": scanner_properties})
 
     def __extract_errors_from_log(self, outs: str) -> list[str]:
         try:
@@ -99,6 +103,7 @@ class ScannerEngine:
                 out_json = json.loads(line)
                 if out_json["level"] == "ERROR":
                     errors.append(out_json["message"])
+                print(f"{out_json['level']}: {out_json['message']}")
             return errors
         except Exception as e:
             print(e)
@@ -113,7 +118,7 @@ class ScannerEngine:
                 f"Only SonarQube versions >= {api.MIN_SUPPORTED_SQ_VERSION} are supported, but got {version}"
             )
 
-    def __resolve_jre(self, configuration: Configuration) -> JREResolvedPath:
+    def __resolve_jre(self, config: dict[str, any]) -> JREResolvedPath:
         jre_provisionner = JREProvisioner(self.api, self.cache)
-        jre_resolver = JREResolver(configuration, jre_provisionner)
+        jre_resolver = JREResolver(JREResolverConfiguration.from_dict(config), jre_provisionner)
         return jre_resolver.resolve_jre()

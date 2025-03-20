@@ -27,7 +27,6 @@ from typing import Optional
 from pysonar_scanner import utils
 from pysonar_scanner.api import JRE, SonarQubeApi
 from pysonar_scanner.cache import Cache
-from pysonar_scanner.configuration import Configuration
 from pysonar_scanner.exceptions import (
     ChecksumException,
     NoJreAvailableException,
@@ -124,16 +123,31 @@ class JREProvisioner:
             raise UnsupportedArchiveFormat(f"Unsupported archive format: {file_path.suffix}")
 
 
+@dataclass(frozen=True)
+class JREResolverConfiguration:
+    sonar_scanner_java_exe_path: Optional[str]
+    sonar_scanner_skip_jre_provisioning: bool
+    sonar_scanner_os: Optional[str]
+
+    @staticmethod
+    def from_dict(config_dict: dict[str, any]) -> "JREResolverConfiguration":
+        return JREResolverConfiguration(
+            sonar_scanner_java_exe_path=config_dict.get("sonar.scanner.javaExePath", None),
+            sonar_scanner_skip_jre_provisioning=config_dict.get("sonar.scanner.skipJreProvisioning", False),
+            sonar_scanner_os=config_dict.get("sonar.scanner.os", None),
+        )
+
+
 class JREResolver:
-    def __init__(self, configuration: Configuration, jre_provisioner: JREProvisioner):
+    def __init__(self, configuration: JREResolverConfiguration, jre_provisioner: JREProvisioner):
         self.configuration = configuration
         self.jre_provisioner = jre_provisioner
 
     def resolve_jre(self) -> JREResolvedPath:
-        exe_suffix = ".exe" if self.configuration.sonar.scanner.os == "windows" else ""
-        if self.configuration.sonar.scanner.java_exe_path:
-            return JREResolvedPath(pathlib.Path(self.configuration.sonar.scanner.java_exe_path))
-        if not self.configuration.sonar.scanner.skip_jre_provisioning:
+        exe_suffix = ".exe" if self.configuration.sonar_scanner_os == "windows" else ""
+        if self.configuration.sonar_scanner_java_exe_path:
+            return JREResolvedPath(pathlib.Path(self.configuration.sonar_scanner_java_exe_path))
+        if not self.configuration.sonar_scanner_skip_jre_provisioning:
             return self.__provision_jre()
         java_path = pathlib.Path(f"java{exe_suffix}")
         return JREResolvedPath(java_path)
