@@ -23,6 +23,35 @@ from unittest.mock import patch
 from io import StringIO
 
 from pysonar_scanner.configuration import CliConfigurationLoader
+from pysonar_scanner.configuration.properties import (
+    SONAR_HOST_URL,
+    SONAR_REGION,
+    SONAR_SCANNER_API_BASE_URL,
+    SONAR_SCANNER_ARCH,
+    SONAR_SCANNER_CONNECT_TIMEOUT,
+    SONAR_SCANNER_INTERNAL_DUMP_TO_FILE,
+    SONAR_SCANNER_INTERNAL_SQ_VERSION,
+    SONAR_SCANNER_JAVA_EXE_PATH,
+    SONAR_SCANNER_JAVA_OPTS,
+    SONAR_SCANNER_KEYSTORE_PASSWORD,
+    SONAR_SCANNER_KEYSTORE_PATH,
+    SONAR_SCANNER_OS,
+    SONAR_SCANNER_PROXY_HOST,
+    SONAR_SCANNER_PROXY_PASSWORD,
+    SONAR_SCANNER_PROXY_PORT,
+    SONAR_SCANNER_PROXY_USER,
+    SONAR_SCANNER_RESPONSE_TIMEOUT,
+    SONAR_SCANNER_SKIP_JRE_PROVISIONING,
+    SONAR_SCANNER_SOCKET_TIMEOUT,
+    SONAR_SCANNER_SONARCLOUD_URL,
+    SONAR_SCANNER_TRUSTSTORE_PASSWORD,
+    SONAR_SCANNER_TRUSTSTORE_PATH,
+    SONAR_PROJECT_BASE_DIR,
+    SONAR_PROJECT_KEY,
+    SONAR_TOKEN,
+    SONAR_USER_HOME,
+    SONAR_VERBOSE,
+)
 
 
 class TestCliConfigurationLoader(unittest.TestCase):
@@ -34,8 +63,8 @@ class TestCliConfigurationLoader(unittest.TestCase):
         configuration = CliConfigurationLoader.load()
 
         expected_configuration = {
-            "sonar.token": "myToken",
-            "sonar.projectKey": "myProjectKey",
+            SONAR_TOKEN: "myToken",
+            SONAR_PROJECT_KEY: "myProjectKey",
         }
         self.assertDictEqual(configuration, expected_configuration)
 
@@ -48,9 +77,9 @@ class TestCliConfigurationLoader(unittest.TestCase):
             with patch("sys.argv", ["myscript.py", *alternative]), patch("sys.stderr", new=StringIO()):
                 configuration = CliConfigurationLoader.load()
                 expected_configuration = {
-                    "sonar.token": "myToken",
-                    "sonar.verbose": True,
-                    "sonar.projectKey": "myProjectKey",
+                    SONAR_TOKEN: "myToken",
+                    SONAR_VERBOSE: True,
+                    SONAR_PROJECT_KEY: "myProjectKey",
                 }
                 self.assertDictEqual(configuration, expected_configuration)
 
@@ -63,7 +92,7 @@ class TestCliConfigurationLoader(unittest.TestCase):
             with patch("sys.argv", ["myscript.py", *alternative]), patch("sys.stderr", new=StringIO()):
                 configuration = CliConfigurationLoader.load()
                 expected_configuration = {
-                    "sonar.token": "sonarToken",
+                    SONAR_TOKEN: "sonarToken",
                 }
                 self.assertDictEqual(configuration, expected_configuration)
 
@@ -140,33 +169,33 @@ class TestCliConfigurationLoader(unittest.TestCase):
     def test_all_cli_args(self):
         configuration = CliConfigurationLoader.load()
         expected_configuration = {
-            "sonar.token": "myToken",
-            "sonar.projectKey": "myProjectKey",
-            "sonar.verbose": True,
-            "sonar.host.url": "mySonarHostUrl",
-            "sonar.scanner.sonarcloudUrl": "mySonarScannerCloudUrl",
-            "sonar.scanner.apiBaseUrl": "mySonarScannerApiUrl",
-            "sonar.scanner.os": "windows",
-            "sonar.scanner.arch": "x64",
-            "sonar.scanner.connectTimeout": 42,
-            "sonar.scanner.internal.dumpToFile": "mySonarScannerInternalDumpToFile",
-            "sonar.scanner.internal.sqVersion": "mySonarScannerInternalSqVersion",
-            "sonar.scanner.socketTimeout": 43,
-            "sonar.scanner.responseTimeout": 44,
-            "sonar.scanner.truststorePath": "mySonarScannerTruststorePath",
-            "sonar.scanner.truststorePassword": "mySonarScannerTruststorePassword",
-            "sonar.scanner.keystorePath": "mySonarScannerKeystorePath",
-            "sonar.scanner.keystorePassword": "mySonarScannerKeystorePassword",
-            "sonar.scanner.proxyHost": "mySonarScannerProxyHost",
-            "sonar.scanner.proxyPort": 45,
-            "sonar.scanner.proxyUser": "mySonarScannerProxyUser",
-            "sonar.scanner.proxyPassword": "mySonarScannerProxyPassword",
-            "sonar.scanner.skipJreProvisioning": True,
-            "sonar.scanner.javaExePath": "mySonarScannerJavaExePath",
-            "sonar.scanner.javaOpts": "mySonarScannerJavaOpts",
-            "sonar.region": "us",
-            "sonar.userHome": "mySonarUserHome",
-            "sonar.projectBaseDir": "mySonarProjectBaseDir",
+            SONAR_TOKEN: "myToken",
+            SONAR_PROJECT_KEY: "myProjectKey",
+            SONAR_VERBOSE: True,
+            SONAR_HOST_URL: "mySonarHostUrl",
+            SONAR_SCANNER_SONARCLOUD_URL: "mySonarScannerCloudUrl",
+            SONAR_SCANNER_API_BASE_URL: "mySonarScannerApiUrl",
+            SONAR_SCANNER_OS: "windows",
+            SONAR_SCANNER_ARCH: "x64",
+            SONAR_SCANNER_CONNECT_TIMEOUT: 42,
+            SONAR_SCANNER_INTERNAL_DUMP_TO_FILE: "mySonarScannerInternalDumpToFile",
+            SONAR_SCANNER_INTERNAL_SQ_VERSION: "mySonarScannerInternalSqVersion",
+            SONAR_SCANNER_SOCKET_TIMEOUT: 43,
+            SONAR_SCANNER_RESPONSE_TIMEOUT: 44,
+            SONAR_SCANNER_TRUSTSTORE_PATH: "mySonarScannerTruststorePath",
+            SONAR_SCANNER_TRUSTSTORE_PASSWORD: "mySonarScannerTruststorePassword",
+            SONAR_SCANNER_KEYSTORE_PATH: "mySonarScannerKeystorePath",
+            SONAR_SCANNER_KEYSTORE_PASSWORD: "mySonarScannerKeystorePassword",
+            SONAR_SCANNER_PROXY_HOST: "mySonarScannerProxyHost",
+            SONAR_SCANNER_PROXY_PORT: 45,
+            SONAR_SCANNER_PROXY_USER: "mySonarScannerProxyUser",
+            SONAR_SCANNER_PROXY_PASSWORD: "mySonarScannerProxyPassword",
+            SONAR_SCANNER_SKIP_JRE_PROVISIONING: True,
+            SONAR_SCANNER_JAVA_EXE_PATH: "mySonarScannerJavaExePath",
+            SONAR_SCANNER_JAVA_OPTS: "mySonarScannerJavaOpts",
+            SONAR_REGION: "us",
+            SONAR_USER_HOME: "mySonarUserHome",
+            SONAR_PROJECT_BASE_DIR: "mySonarProjectBaseDir",
         }
 
         self.assertEqual(configuration, expected_configuration)
