@@ -17,9 +17,18 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-import unittest
+from typing import Dict
+import os
+from jproperties import Properties
 
 
-class DummyTest(unittest.TestCase):
-    def test_dummy(self):
-        self.assertTrue(True)
+def load(base_dir: str = "") -> Dict[str, str]:
+    filepath = os.path.join(base_dir, "sonar-project.properties")
+    if not os.path.isfile(filepath):
+        return {}
+
+    props = Properties()
+    with open(filepath, "rb") as f:
+        props.load(f)
+
+    return {key: value.data for key, value in props.items() if value.data is not None}
