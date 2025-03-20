@@ -77,7 +77,7 @@ class TestCliConfigurationLoader(unittest.TestCase):
                 CliConfigurationLoader.load()
 
         error_output = mock_stderr.getvalue()
-        self.assertIn("""argument --sonar-scanner-os: invalid choice: 'windows2'""", error_output)
+        self.assertIn("""invalid choice: 'windows2'""", error_output)
 
     @patch(
         "sys.argv",
@@ -169,4 +169,72 @@ class TestCliConfigurationLoader(unittest.TestCase):
             "sonar.projectBaseDir": "mySonarProjectBaseDir",
         }
 
+        self.assertEqual(configuration, expected_configuration)
+
+    @patch(
+        "sys.argv",
+        [
+            "myscript.py",
+            "-Dsonar.token=myToken",
+            "-Dsonar.projectKey=myProjectKey",
+            "-Dsonar.verbose",
+            "-Dsonar.host.url=mySonarHostUrl",
+            "-Dsonar.scanner.cloudUrl=mySonarScannerCloudUrl",
+            "-Dsonar.scanner.apiUrl=mySonarScannerApiUrl",
+            "-Dsonar.scanner.os=windows",
+            "-Dsonar.scanner.arch=x64",
+            "-Dsonar.scanner.connectTimeout=42",
+            "-Dsonar.scanner.internal.dumpToFile=mySonarScannerInternalDumpToFile",
+            "-Dsonar.scanner.internal.sqVersion=mySonarScannerInternalSqVersion",
+            "-Dsonar.scanner.socketTimeout=43",
+            "-Dsonar.scanner.responseTimeout=44",
+            "-Dsonar.scanner.truststorePath=mySonarScannerTruststorePath",
+            "-Dsonar.scanner.truststorePassword=mySonarScannerTruststorePassword",
+            "-Dsonar.scanner.keystorePath=mySonarScannerKeystorePath",
+            "-Dsonar.scanner.keystorePassword=mySonarScannerKeystorePassword",
+            "-Dsonar.scanner.proxyHost=mySonarScannerProxyHost",
+            "-Dsonar.scanner.proxyPort=45",
+            "-Dsonar.scanner.proxyUser=mySonarScannerProxyUser",
+            "-Dsonar.scanner.proxyPassword=mySonarScannerProxyPassword",
+            "-Dsonar.scanner.skipJreProvisioning",
+            "-Dsonar.scanner.javaExePath=mySonarScannerJavaExePath",
+            "-Dsonar.scanner.javaOpts=mySonarScannerJavaOpts",
+            "-Dsonar.region=us",
+            "-Dsonar.userHome=mySonarUserHome",
+            "-Dsonar.projectBaseDir=mySonarProjectBaseDir",
+        ],
+    )
+    def test_jvm_style_cli_args(self):
+        configuration = CliConfigurationLoader.load()
+        expected_configuration = {
+            "sonar.token": "myToken",
+            "sonar.projectKey": "myProjectKey",
+            "sonar.verbose": True,
+            "sonar.host.url": "mySonarHostUrl",
+            "sonar.scanner.sonarcloudUrl": "mySonarScannerCloudUrl",
+            "sonar.scanner.apiBaseUrl": "mySonarScannerApiUrl",
+            "sonar.scanner.os": "windows",
+            "sonar.scanner.arch": "x64",
+            "sonar.scanner.connectTimeout": 42,
+            "sonar.scanner.internal.dumpToFile": "mySonarScannerInternalDumpToFile",
+            "sonar.scanner.internal.sqVersion": "mySonarScannerInternalSqVersion",
+            "sonar.scanner.socketTimeout": 43,
+            "sonar.scanner.responseTimeout": 44,
+            "sonar.scanner.truststorePath": "mySonarScannerTruststorePath",
+            "sonar.scanner.truststorePassword": "mySonarScannerTruststorePassword",
+            "sonar.scanner.keystorePath": "mySonarScannerKeystorePath",
+            "sonar.scanner.keystorePassword": "mySonarScannerKeystorePassword",
+            "sonar.scanner.proxyHost": "mySonarScannerProxyHost",
+            "sonar.scanner.proxyPort": 45,
+            "sonar.scanner.proxyUser": "mySonarScannerProxyUser",
+            "sonar.scanner.proxyPassword": "mySonarScannerProxyPassword",
+            "sonar.scanner.skipJreProvisioning": True,
+            "sonar.scanner.javaExePath": "mySonarScannerJavaExePath",
+            "sonar.scanner.javaOpts": "mySonarScannerJavaOpts",
+            "sonar.region": "us",
+            "sonar.userHome": "mySonarUserHome",
+            "sonar.projectBaseDir": "mySonarProjectBaseDir",
+        }
+        for key in expected_configuration:
+            self.assertEqual(configuration[key], expected_configuration[key])
         self.assertEqual(configuration, expected_configuration)
