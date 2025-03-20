@@ -18,19 +18,28 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-from pysonar_scanner import cache
+from pysonar_scanner import app_logging, cache
 from pysonar_scanner import configuration
 from pysonar_scanner.api import get_base_urls, SonarQubeApi
 from pysonar_scanner.configuration import ConfigurationLoader
+from pysonar_scanner.configuration.properties import SONAR_VERBOSE
 from pysonar_scanner.scannerengine import ScannerEngine
 
 
 def scan():
+    app_logging.setup()
+
     config = ConfigurationLoader.load()
+    set_logging_options(config)
+
     cache_manager = cache.get_default()
     api = __build_api(config)
     scanner = ScannerEngine(api, cache_manager)
     return scanner.run(config)
+
+
+def set_logging_options(config):
+    app_logging.set_debug(config.get(SONAR_VERBOSE, False))
 
 
 def __build_api(config: dict[str, any]) -> SonarQubeApi:
