@@ -29,6 +29,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_SCANNER_SONARCLOUD_URL,
     SONAR_SCANNER_API_BASE_URL,
     SONAR_REGION,
+    Key,
 )
 from pysonar_scanner.exceptions import MissingKeyException, SonarQubeApiException
 from pysonar_scanner.utils import Arch, Os, remove_trailing_slash
@@ -114,7 +115,7 @@ ApiConfiguration = TypedDict(
 )
 
 
-def to_api_configuration(config_dict: dict[str, any]) -> ApiConfiguration:
+def to_api_configuration(config_dict: dict[Key, any]) -> ApiConfiguration:
     return {
         SONAR_HOST_URL: config_dict.get(SONAR_HOST_URL, ""),
         SONAR_SCANNER_SONARCLOUD_URL: config_dict.get(SONAR_SCANNER_SONARCLOUD_URL, ""),
@@ -123,7 +124,7 @@ def to_api_configuration(config_dict: dict[str, any]) -> ApiConfiguration:
     }
 
 
-def get_base_urls(config_dict: dict[str, any]) -> BaseUrls:
+def get_base_urls(config_dict: dict[Key, any]) -> BaseUrls:
     def is_sq_cloud_url(api_config: ApiConfiguration, sonar_host_url: str) -> bool:
         sq_cloud_url = api_config[SONAR_SCANNER_SONARCLOUD_URL] or "https://sonarcloud.io"
         return remove_trailing_slash(sonar_host_url) == remove_trailing_slash(sq_cloud_url)

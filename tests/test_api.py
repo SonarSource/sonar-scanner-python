@@ -24,6 +24,7 @@ import io
 from pysonar_scanner import api
 from pysonar_scanner.api import JRE, BaseUrls, EngineInfo, SonarQubeApi, SonarQubeApiException, get_base_urls
 from pysonar_scanner.configuration.properties import (
+    Key,
     SONAR_HOST_URL,
     SONAR_REGION,
     SONAR_SCANNER_API_BASE_URL,
@@ -71,7 +72,7 @@ class TestApi(unittest.TestCase):
     def test_get_base_urls(self):
         class TestCaseDict(TypedDict):
             name: str
-            config: dict[str, any]
+            config: dict[Key, any]
             expected: BaseUrls
 
         cases: list[TestCaseDict] = [
