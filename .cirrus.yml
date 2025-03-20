@@ -26,14 +26,13 @@ linux_container_definition: &LINUX_CONTAINER_DEFINITION
   cpu: 3
   memory: 8G
 
+only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && ($CIRRUS_PR != "" || $CIRRUS_BRANCH == 'master' || $CIRRUS_BRANCH =~ "branch-.*")
 win_container_definition: &WINDOWS_CONTAINER_DEFINITION
-  ec2_instance:
-    experimental: true # see https://github.com/cirruslabs/cirrus-ci-docs/issues/1051
-    image: base-windows-jdk17-v*
-    platform: windows
-    region: eu-central-1
-    type: c5.2xlarge
-    use_ssd: true
+  experimental: true # see https://github.com/cirruslabs/cirrus-ci-docs/issues/1051
+  platform: windows
+  region: eu-central-1
+  type: c5.4xlarge # 3.6 GHz (3.9GHz single core) Intel Xeon Scalable Processor, 16 vCPU, 32 GiB Memory
+
 
 poetry_cache_template: &POETRY_CACHE
   poetry_cache:
@@ -48,12 +47,6 @@ poetry_cache_template: &POETRY_CACHE
     - jfrog config add repox --artifactory-url "$ARTIFACTORY_URL" --access-token "$ARTIFACTORY_PRIVATE_ACCESS_TOKEN"
     - jfrog poetry-config --server-id-resolve repox --repo-resolve sonarsource-pypi
     - jfrog poetry install --build-name="$CIRRUS_REPO_NAME" --build-number="$CI_BUILD_NUMBER"
-
-
-.poetry_windows_template: &POETRY_WINDOWS_TEMPLATE
-  <<: *POETRY_TEMPLATE
-  eks_container:
-    <<: *WINDOWS_CONTAINER_DEFINITION
 
 .poetry_linux_template: &POETRY_LINUX_TEMPLATE
   <<: *POETRY_TEMPLATE
@@ -94,24 +87,8 @@ formatting_task:
     - poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d its/ -x its/sources/**.py
     - git diff --name-only --exit-code ./src ./tests ./its
 
-analysis_task:
+analysis_linux_task:
   <<: *POETRY_LINUX_TEMPLATE
-  alias: analysis
-  name: "NEXT Analysis"
-  analysis_script:
-    - poetry run pytest --cov-report=xml:coverage.xml --cov-config=pyproject.toml --cov=src --cov-branch tests
-    - uv venv
-    - source .venv/bin/activate
-    - uv pip install pysonar-scanner
-    - . .cirrus/analysis.sh
-  always:
-    pytest_artifacts:
-      path: "coverage.xml"
-      format: junit
-      type: text/xml
-
-analysis_task:
-  <<: *POETRY_WINDOWS_TEMPLATE
   alias: analysis
   name: "NEXT Analysis"
   analysis_script:
@@ -153,6 +130,25 @@ qa_task:
   qa_script:
     - poetry run pytest tests/
 
+qa_windows_task:
+  name: "Test Windows"
+  ec2_instance:
+    image: base-windows-jdk22-v*
+    <<: *WINDOWS_CONTAINER_DEFINITION
+  alias: qa_windows
+  poetry_cache:
+    folder: ~/.cache/poetry/
+    fingerprint_script: cat poetry.lock its/poetry.lock
+  poetry_install_script:
+    - set_poetry_build_version "$CI_BUILD_NUMBER"
+    - echo "PROJECT_VERSION=$PROJECT_VERSION" >> $CIRRUS_ENV
+    - jfrog config add repox --artifactory-url "$ARTIFACTORY_URL" --access-token "$ARTIFACTORY_PRIVATE_ACCESS_TOKEN"
+    - jfrog poetry-config --server-id-resolve repox --repo-resolve sonarsource-pypi
+    - jfrog poetry install --build-name="$CIRRUS_REPO_NAME" --build-number="$CI_BUILD_NUMBER"
+  qa_script:
+    - poetry run pytest tests/
+
+
 build_task:
   <<: *POETRY_LINUX_TEMPLATE
   alias: build
@@ -184,6 +180,7 @@ promote_task:
     - formatting
     - analysis
     - qa
+    - qa_windows
     - build
     - its
   env:
