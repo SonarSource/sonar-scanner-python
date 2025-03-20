@@ -108,7 +108,7 @@ ApiConfiguration = TypedDict(
 )
 
 
-def to_api_configuration(config_dict: dict[str, any]) -> "ApiConfiguration":
+def to_api_configuration(config_dict: dict[str, any]) -> ApiConfiguration:
     return {
         "sonar.host.url": config_dict.get("sonar.host.url", ""),
         "sonar.scanner.sonarcloudUrl": config_dict.get("sonar.scanner.sonarcloudUrl", ""),
