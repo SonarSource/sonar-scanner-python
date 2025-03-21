@@ -19,9 +19,9 @@
 #
 
 from pysonar_scanner import cache
-from pysonar_scanner import configuration
 from pysonar_scanner.api import get_base_urls, SonarQubeApi
-from pysonar_scanner.configuration import ConfigurationLoader
+from pysonar_scanner.configuration import configuration_loader
+from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader
 from pysonar_scanner.scannerengine import ScannerEngine
 
 
@@ -34,6 +34,6 @@ def scan():
 
 
 def __build_api(config: dict[str, any]) -> SonarQubeApi:
-    token = configuration.get_token(config)
+    token = configuration_loader.get_token(config)
     base_urls = get_base_urls(config)
     return SonarQubeApi(base_urls, token)
