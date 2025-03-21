@@ -56,7 +56,7 @@ class TestPropertiesFile(pyfakefs.TestCase):
         self.assertEqual(properties.get("sonar.projectName"), "My Project")
 
     def test_load_missing_file(self):
-        properties = sonar_project_properties.load(Path("."))
+        properties = sonar_project_properties.load(Path("custom/path"))
         self.assertEqual(len(properties), 0)
 
     def test_load_empty_file(self):

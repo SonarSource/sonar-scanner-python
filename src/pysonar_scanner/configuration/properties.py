@@ -61,6 +61,9 @@ SONAR_SOURCES: Key = "sonar.sources"
 SONAR_EXCLUSIONS: Key = "sonar.exclusions"
 SONAR_TESTS: Key = "sonar.tests"
 
+# pysonar scanner specific properties
+TOML_PATH: Key = "toml-path"
+
 
 @dataclass
 class Property:
@@ -72,6 +75,15 @@ class Property:
 
     cli_getter: Optional[Callable[[argparse.Namespace], any]] = None
     """function to get the value from the CLI arguments namespace. If None, the property is not settable via CLI"""
+
+    def python_name(self) -> str:
+        """Convert Java-style camel case name to Python-style kebab-case name."""
+        result = []
+        for i, char in enumerate(self.name):
+            if char.isupper() and i > 0:
+                result.append("-")
+            result.append(char.lower())
+        return "".join(result)
 
 
 # fmt: off
@@ -123,7 +135,7 @@ PROPERTIES: list[Property] = [
     ),  
     Property(
         name=SONAR_SCANNER_API_BASE_URL, 
-        default_value=None, 
+        default_value=None,
         cli_getter=lambda args: args.sonar_scanner_api_url
     ),  
     Property(
@@ -240,6 +252,11 @@ PROPERTIES: list[Property] = [
             name=SONAR_PROJECT_NAME,
             default_value=None,
             cli_getter=lambda args: args.sonar_project_name
+    ),
+    Property(
+            name=TOML_PATH,
+            default_value=None,
+            cli_getter=lambda args: args.toml_path
     ),
 ]
 # fmt: on
