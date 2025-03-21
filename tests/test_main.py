@@ -17,14 +17,13 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-from unittest import mock
 from unittest.mock import patch
 
 from pyfakefs import fake_filesystem_unittest as pyfakefs
 
-from pysonar_scanner.configuration import ConfigurationLoader
-from pysonar_scanner.configuration.properties import SONAR_PROJECT_KEY, SONAR_TOKEN
 from pysonar_scanner.__main__ import scan
+from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader
+from pysonar_scanner.configuration.properties import SONAR_PROJECT_KEY, SONAR_TOKEN
 from pysonar_scanner.scannerengine import ScannerEngine
 
 
