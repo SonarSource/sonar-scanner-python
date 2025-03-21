@@ -56,6 +56,10 @@ SONAR_SCANNER_PROXY_PASSWORD: Key = "sonar.scanner.proxyPassword"
 SONAR_PROJECT_BASE_DIR: Key = "sonar.projectBaseDir"
 SONAR_SCANNER_JAVA_OPTS: Key = "sonar.scanner.javaOpts"
 SONAR_PROJECT_KEY: Key = "sonar.projectKey"
+SONAR_PROJECT_NAME: Key = "sonar.projectName"
+SONAR_SOURCES: Key = "sonar.sources"
+SONAR_EXCLUSIONS: Key = "sonar.exclusions"
+SONAR_TESTS: Key = "sonar.tests"
 
 
 @dataclass

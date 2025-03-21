@@ -17,10 +17,12 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+from pathlib import Path
 
 from pysonar_scanner.configuration import properties
 from pysonar_scanner.configuration.cli import CliConfigurationLoader
-from pysonar_scanner.configuration.properties import SONAR_TOKEN, Key
+from pysonar_scanner.configuration.properties import SONAR_TOKEN, SONAR_PROJECT_BASE_DIR, Key
+from pysonar_scanner.configuration import properties, sonar_project_properties
 
 from pysonar_scanner.exceptions import MissingKeyException
 
@@ -35,11 +37,14 @@ class ConfigurationLoader:
         # each property loader is required to return NO default values.
         # E.g. if no property has been set, an empty dict must be returned.
         # Default values should be set through the get_static_default_properties() method
-
-        return {
-            **get_static_default_properties(),
-            **CliConfigurationLoader.load(),
-        }
+        resolved_properties = get_static_default_properties()
+        cli_properties = CliConfigurationLoader.load()
+        # CLI properties have a higher priority than properties file,
+        # but we need to resolve them first to load the properties file
+        base_dir = Path(cli_properties.get(SONAR_PROJECT_BASE_DIR, "."))
+        resolved_properties.update(sonar_project_properties.load(base_dir))
+        resolved_properties.update(cli_properties)
+        return resolved_properties
 
 
 def get_token(config: dict[Key, any]) -> str:
