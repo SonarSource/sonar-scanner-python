@@ -54,6 +54,12 @@ class CliConfigurationLoader:
             type=str,
             help="Key of the project that usually corresponds to the project name in SonarQube",
         )
+        parser.add_argument(
+            "--sonar-project-name",
+            "-Dsonar.projectName",
+            type=str,
+            help="Name of the project in SonarQube",
+        )
 
         parser.add_argument(
             "-v",
@@ -199,6 +205,12 @@ class CliConfigurationLoader:
             "-Dsonar.projectBaseDir",
             type=str,
             help="Directory containing the project to be analyzed. Default is the current directory",
+        )
+
+        parser.add_argument(
+            "--toml-path",
+            type=str,
+            help="Path to the pyproject.toml file. If not provided, it will look in the SONAR_PROJECT_BASE_DIR",
         )
 
         return parser.parse_args()
