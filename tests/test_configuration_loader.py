@@ -42,6 +42,8 @@ from pysonar_scanner.configuration.properties import (
     SONAR_USER_HOME,
     SONAR_VERBOSE,
     TOML_PATH,
+    SONAR_PROJECT_DESCRIPTION,
+    SONAR_PYTHON_VERSION,
 )
 from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader, SONAR_PROJECT_BASE_DIR
 from pysonar_scanner.exceptions import MissingKeyException
@@ -292,6 +294,10 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             "pyproject.toml",
             contents=(
                 """
+                [project]
+                name = "My Overridden Project Name"
+                description = "My Project Description"
+                requires-python = ["3.6", "3.7", "3.8"]
                 [tool.sonar]
                 projectKey = "toml-project-key"
                 project-name = "TOML Project"
@@ -303,11 +309,17 @@ class TestConfigurationLoader(pyfakefs.TestCase):
 
         configuration = ConfigurationLoader.load()
 
-        # TOML values have priority over sonar-project.properties
+        # Generic pyproject.toml properties are retrieved when no other source is available
+        self.assertEqual(configuration[SONAR_PROJECT_DESCRIPTION], "My Project Description")
+        self.assertEqual(configuration[SONAR_PYTHON_VERSION], "3.6,3.7,3.8")
+
+        # sonar-project.properties values have priority over generic properties from pyproject.toml
         self.assertEqual(configuration[SONAR_PROJECT_NAME], "TOML Project")
+
+        # Sonar pyproject.toml values have priority over sonar-project.properties
         self.assertEqual(configuration[SONAR_SOURCES], "src/toml")
-        self.assertEqual(configuration[SONAR_TESTS], "test/properties")
         self.assertEqual(configuration[SONAR_EXCLUSIONS], "toml-exclusions/**/*")
 
         # CLI args still have highest priority
         self.assertEqual(configuration[SONAR_PROJECT_KEY], "ProjectKeyFromCLI")
+        self.assertEqual(configuration[SONAR_TESTS], "test/properties")

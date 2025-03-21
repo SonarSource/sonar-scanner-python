@@ -213,4 +213,25 @@ class CliConfigurationLoader:
             help="Path to the pyproject.toml file. If not provided, it will look in the SONAR_PROJECT_BASE_DIR",
         )
 
+        parser.add_argument(
+            "--sonar-project-version",
+            "-Dsonar.projectVersion",
+            type=str,
+            help="Version of the project",
+        )
+
+        parser.add_argument(
+            "--sonar-project-description",
+            "-Dsonar.projectDescription",
+            type=str,
+            help="Description of the project",
+        )
+
+        parser.add_argument(
+            "--sonar-python-version",
+            "-Dsonar.python.version",
+            type=str,
+            help="Python version used for the project",
+        )
+
         return parser.parse_args()

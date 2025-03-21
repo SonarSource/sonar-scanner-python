@@ -42,12 +42,14 @@ class ConfigurationLoader:
         # CLI properties have a higher priority than properties file,
         # but we need to resolve them first to load the properties file
         base_dir = Path(cli_properties.get(SONAR_PROJECT_BASE_DIR, "."))
-        resolved_properties.update(sonar_project_properties.load(base_dir))
 
         toml_path_property = cli_properties.get("toml-path", ".")
         toml_dir = Path(toml_path_property) if "toml-path" in cli_properties else base_dir
-        resolved_properties.update(pyproject_toml.load(toml_dir))
+        toml_properties = pyproject_toml.load(toml_dir)
 
+        resolved_properties.update(toml_properties.project_properties)
+        resolved_properties.update(sonar_project_properties.load(base_dir))
+        resolved_properties.update(toml_properties.sonar_properties)
         resolved_properties.update(cli_properties)
         return resolved_properties
 

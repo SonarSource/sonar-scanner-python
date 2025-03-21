@@ -40,10 +40,12 @@ class TestTomlFile(TestCase):
         )
         properties = pyproject_toml.load(Path("."))
 
-        self.assertEqual(properties.get("sonar.projectKey"), "my-project")
-        self.assertEqual(properties.get("sonar.projectName"), "My Project")
-        self.assertEqual(properties.get("sonar.sources"), "src")
-        self.assertEqual(properties.get("sonar.exclusions"), "**/generated/**/*,**/deprecated/**/*,**/testdata/**/*")
+        self.assertEqual(properties.sonar_properties.get("sonar.projectKey"), "my-project")
+        self.assertEqual(properties.sonar_properties.get("sonar.projectName"), "My Project")
+        self.assertEqual(properties.sonar_properties.get("sonar.sources"), "src")
+        self.assertEqual(
+            properties.sonar_properties.get("sonar.exclusions"), "**/generated/**/*,**/deprecated/**/*,**/testdata/**/*"
+        )
 
     def test_load_toml_file_kebab_case(self):
         self.fs.create_file(
@@ -56,8 +58,8 @@ class TestTomlFile(TestCase):
         )
         properties = pyproject_toml.load(Path("."))
 
-        self.assertEqual(properties.get("sonar.projectKey"), "my-project")
-        self.assertEqual(properties.get("sonar.projectName"), "My Project")
+        self.assertEqual(properties.sonar_properties.get("sonar.projectKey"), "my-project")
+        self.assertEqual(properties.sonar_properties.get("sonar.projectName"), "My Project")
 
     def test_load_toml_file_without_sonar_section(self):
         self.fs.create_file(
@@ -73,17 +75,17 @@ class TestTomlFile(TestCase):
         )
         properties = pyproject_toml.load(Path("."))
 
-        self.assertEqual(len(properties), 0)
+        self.assertEqual(len(properties.sonar_properties), 0)
 
     def test_load_missing_file(self):
         properties = pyproject_toml.load(Path("."))
-        self.assertEqual(len(properties), 0)
+        self.assertEqual(len(properties.sonar_properties), 0)
 
     def test_load_empty_file(self):
         self.fs.create_file("pyproject.toml", contents="")
         properties = pyproject_toml.load(Path("."))
 
-        self.assertEqual(len(properties), 0)
+        self.assertEqual(len(properties.sonar_properties), 0)
 
     def test_load_malformed_toml_file(self):
         self.fs.create_file(
@@ -95,7 +97,7 @@ class TestTomlFile(TestCase):
         )
         properties = pyproject_toml.load(Path("."))
 
-        self.assertEqual(len(properties), 0)
+        self.assertEqual(len(properties.sonar_properties), 0)
 
     def test_load_toml_with_nested_values(self):
         self.fs.create_file(
@@ -111,9 +113,9 @@ class TestTomlFile(TestCase):
         )
         properties = pyproject_toml.load(Path("."))
 
-        self.assertEqual(properties.get("sonar.projectKey"), "my-project")
-        self.assertEqual(properties.get("sonar.python.version"), "3.9,3.10,3.11,3.12,3.13")
-        self.assertEqual(properties.get("sonar.python.coverage.reportPaths"), "coverage.xml")
+        self.assertEqual(properties.sonar_properties.get("sonar.projectKey"), "my-project")
+        self.assertEqual(properties.sonar_properties.get("sonar.python.version"), "3.9,3.10,3.11,3.12,3.13")
+        self.assertEqual(properties.sonar_properties.get("sonar.python.coverage.reportPaths"), "coverage.xml")
 
     def test_load_toml_file_from_custom_dir(self):
         self.fs.create_dir("custom/path")
@@ -127,5 +129,28 @@ class TestTomlFile(TestCase):
         )
         properties = pyproject_toml.load(Path("custom/path"))
 
-        self.assertEqual(properties.get("sonar.projectKey"), "custom-path-project")
-        self.assertEqual(properties.get("sonar.projectName"), "Custom Path Project")
+        self.assertEqual(properties.sonar_properties.get("sonar.projectKey"), "custom-path-project")
+        self.assertEqual(properties.sonar_properties.get("sonar.projectName"), "Custom Path Project")
+
+    def test_load_toml_file_project_content(self):
+        self.fs.create_file(
+            "pyproject.toml",
+            contents=(
+                """
+                [project]
+                name = "My Overridden Project Name"
+                description = "My Project Description"
+                requires-python = ["3.6", "3.7", "3.8"]
+                [tool.sonar]
+                project-key = "my-project"
+                project-name = "My Project"
+                """
+            ),
+        )
+        properties = pyproject_toml.load(Path("."))
+
+        self.assertEqual(properties.sonar_properties.get("sonar.projectKey"), "my-project")
+        self.assertEqual(properties.sonar_properties.get("sonar.projectName"), "My Project")
+        self.assertEqual(properties.project_properties.get("sonar.projectName"), "My Overridden Project Name")
+        self.assertEqual(properties.project_properties.get("sonar.projectDescription"), "My Project Description")
+        self.assertEqual(properties.project_properties.get("sonar.python.version"), "3.6,3.7,3.8")
