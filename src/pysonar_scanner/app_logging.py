@@ -24,5 +24,5 @@ def setup() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 
-def set_debug(debug: bool) -> None:
-    logging.getLogger().setLevel(logging.DEBUG if debug else logging.INFO)
+def configure_logging_level(verbose: bool) -> None:
+    logging.getLogger().setLevel(logging.DEBUG if verbose else logging.INFO)

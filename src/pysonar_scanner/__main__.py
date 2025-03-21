@@ -39,7 +39,7 @@ def scan():
 
 
 def set_logging_options(config):
-    app_logging.set_debug(config.get(SONAR_VERBOSE, False))
+    app_logging.configure_logging_level(verbose=config.get(SONAR_VERBOSE, False))
 
 
 def __build_api(config: dict[str, any]) -> SonarQubeApi:

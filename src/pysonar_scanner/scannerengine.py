@@ -25,7 +25,7 @@ import pathlib
 from threading import Thread
 from typing import IO, Callable, Optional
 
-from attr import dataclass
+from dataclasses import dataclass
 
 import pysonar_scanner.api as api
 
