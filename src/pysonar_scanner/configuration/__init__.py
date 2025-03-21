@@ -17,11 +17,12 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+from pathlib import Path
 
 from pysonar_scanner.configuration import properties
 from pysonar_scanner.configuration.cli import CliConfigurationLoader
 from pysonar_scanner.configuration.properties import SONAR_TOKEN, SONAR_PROJECT_BASE_DIR, Key
-from pysonar_scanner.configuration import properties, properties_file
+from pysonar_scanner.configuration import properties, sonar_project_properties
 
 from pysonar_scanner.exceptions import MissingKeyException
 
@@ -40,7 +41,8 @@ class ConfigurationLoader:
         cli_properties = CliConfigurationLoader.load()
         # CLI properties have a higher priority than properties file,
         # but we need to resolve them first to load the properties file
-        resolved_properties.update(properties_file.load(cli_properties.get(SONAR_PROJECT_BASE_DIR, "")))
+        base_dir = Path(cli_properties.get(SONAR_PROJECT_BASE_DIR, "."))
+        resolved_properties.update(sonar_project_properties.load(base_dir))
         resolved_properties.update(cli_properties)
         return resolved_properties
 

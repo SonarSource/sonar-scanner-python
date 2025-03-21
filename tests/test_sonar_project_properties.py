@@ -17,15 +17,17 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-from pyfakefs.fake_filesystem_unittest import TestCase
-from pysonar_scanner.configuration.properties_file import load
+from pathlib import Path
+
+import pyfakefs.fake_filesystem_unittest as pyfakefs
+from pysonar_scanner.configuration import sonar_project_properties
 
 
-class TestPropertiesFile(TestCase):
+class TestPropertiesFile(pyfakefs.TestCase):
     def setUp(self):
         self.setUpPyfakefs()
 
-    def test_load_properties_file(self):
+    def test_load_sonar_project_properties(self):
         self.fs.create_file(
             "sonar-project.properties",
             contents=(
@@ -36,20 +38,30 @@ class TestPropertiesFile(TestCase):
                 "sonar.exclusions=**/generated/**/*,**/deprecated/**/*,**/testdata/**/*\n"
             ),
         )
-        properties = load()
+        properties = sonar_project_properties.load(Path("."))
 
         self.assertEqual(properties.get("sonar.projectKey"), "my-project")
         self.assertEqual(properties.get("sonar.projectName"), "My Project")
         self.assertEqual(properties.get("sonar.sources"), "src")
         self.assertEqual(properties.get("sonar.exclusions"), "**/generated/**/*,**/deprecated/**/*,**/testdata/**/*")
 
+    def test_load_sonar_project_properties_custom_path(self):
+        self.fs.create_file(
+            "custom/path/sonar-project.properties",
+            contents=("sonar.projectKey=my-project\n" "sonar.projectName=My Project\n"),
+        )
+        properties = sonar_project_properties.load(Path("custom/path"))
+
+        self.assertEqual(properties.get("sonar.projectKey"), "my-project")
+        self.assertEqual(properties.get("sonar.projectName"), "My Project")
+
     def test_load_missing_file(self):
-        properties = load()
+        properties = sonar_project_properties.load(Path("."))
         self.assertEqual(len(properties), 0)
 
     def test_load_empty_file(self):
         self.fs.create_file("sonar-project.properties", contents="")
-        properties = load()
+        properties = sonar_project_properties.load(Path("."))
 
         self.assertEqual(len(properties), 0)
 
@@ -64,7 +76,7 @@ class TestPropertiesFile(TestCase):
             ),
         )
 
-        properties = load()
+        properties = sonar_project_properties.load(Path("."))
 
         self.assertEqual(properties.get("valid.key"), "valid value")
         self.assertEqual(properties.get("another.valid.key"), "another valid value")

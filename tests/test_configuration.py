@@ -20,7 +20,7 @@
 
 from unittest.mock import patch
 
-from pyfakefs.fake_filesystem_unittest import TestCase
+import pyfakefs.fake_filesystem_unittest as pyfakefs
 
 from pysonar_scanner import configuration
 from pysonar_scanner.configuration.properties import (
@@ -46,7 +46,7 @@ from pysonar_scanner.configuration import ConfigurationLoader, SONAR_PROJECT_BAS
 from pysonar_scanner.exceptions import MissingKeyException
 
 
-class TestConfigurationLoader(TestCase):
+class TestConfigurationLoader(pyfakefs.TestCase):
     def setUp(self):
         self.maxDiff = None
         self.setUpPyfakefs()
@@ -85,15 +85,17 @@ class TestConfigurationLoader(TestCase):
             configuration.get_token({})
 
     @patch("sys.argv", ["myscript.py", "--token", "myToken", "--sonar-project-key", "myProjectKey"])
-    def test_load_properties_file(self):
+    def test_load_sonar_project_properties(self):
 
         self.fs.create_file(
             "sonar-project.properties",
             contents=(
-                "sonar.projectKey=overwritten-project-key\n"
-                "sonar.projectName=My Project\n"
-                "sonar.sources=src # my sources\n"
-                "sonar.exclusions=**/generated/**/*,**/deprecated/**/*,**/testdata/**/*\n"
+                """
+                sonar.projectKey=overwritten-project-key
+                sonar.projectName=My Project\n
+                sonar.sources=src # my sources\n
+                sonar.exclusions=**/generated/**/*,**/deprecated/**/*,**/testdata/**/*\n
+                """
             ),
         )
         configuration = ConfigurationLoader.load()
@@ -129,16 +131,17 @@ class TestConfigurationLoader(TestCase):
             "custom/path",
         ],
     )
-    def test_load_properties_file_from_custom_path(self):
-        self.maxDiff = None
+    def test_load_sonar_project_properties_from_custom_path(self):
         self.fs.create_dir("custom/path")
         self.fs.create_file(
             "custom/path/sonar-project.properties",
             contents=(
-                "sonar.projectKey=custom-path-project-key\n"
-                "sonar.projectName=Custom Path Project\n"
-                "sonar.sources=src/main\n"
-                "sonar.tests=src/test\n"
+                """
+                sonar.projectKey=custom-path-project-key
+                sonar.projectName=Custom Path Project
+                sonar.sources=src/main
+                sonar.tests=src/test
+                """
             ),
         )
         configuration = ConfigurationLoader.load()
