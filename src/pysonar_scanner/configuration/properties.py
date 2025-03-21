@@ -236,5 +236,10 @@ PROPERTIES: list[Property] = [
         default_value=None, 
         cli_getter=lambda args: args.sonar_project_key
     ),
+    Property(
+            name=SONAR_PROJECT_NAME,
+            default_value=None,
+            cli_getter=lambda args: args.sonar_project_name
+    ),
 ]
 # fmt: on
