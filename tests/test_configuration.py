@@ -41,6 +41,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_TOKEN,
     SONAR_USER_HOME,
     SONAR_VERBOSE,
+    TOML_PATH,
 )
 from pysonar_scanner.configuration import ConfigurationLoader, SONAR_PROJECT_BASE_DIR
 from pysonar_scanner.exceptions import MissingKeyException
@@ -165,3 +166,148 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_TRUSTSTORE_PASSWORD: "changeit",
         }
         self.assertDictEqual(configuration, expected_configuration)
+
+    @patch(
+        "sys.argv",
+        [
+            "myscript.py",
+            "--token",
+            "myToken",
+            "--sonar-project-key",
+            "myProjectKey",
+            "--sonar-project-base-dir",
+            "custom/path",
+        ],
+    )
+    def test_load_pyproject_toml_from_base_dir(self):
+        self.fs.create_dir("custom/path")
+        self.fs.create_file(
+            "custom/path/pyproject.toml",
+            contents=(
+                """
+                [tool.sonar]
+                 projectKey = "custom-path-project-key"
+                 project-name = "Custom Path Project"
+                 sources = "src/main"
+                 tests= "src/test"
+                """
+            ),
+        )
+        configuration = ConfigurationLoader.load()
+        expected_configuration = {
+            SONAR_TOKEN: "myToken",
+            SONAR_PROJECT_KEY: "myProjectKey",
+            SONAR_PROJECT_NAME: "Custom Path Project",
+            SONAR_SOURCES: "src/main",
+            SONAR_PROJECT_BASE_DIR: "custom/path",
+            SONAR_TESTS: "src/test",
+            SONAR_SCANNER_APP: "python",
+            SONAR_SCANNER_APP_VERSION: "1.0",
+            SONAR_SCANNER_BOOTSTRAP_START_TIME: configuration[SONAR_SCANNER_BOOTSTRAP_START_TIME],
+            SONAR_VERBOSE: False,
+            SONAR_SCANNER_SKIP_JRE_PROVISIONING: False,
+            SONAR_USER_HOME: "~/.sonar",
+            SONAR_SCANNER_CONNECT_TIMEOUT: 5,
+            SONAR_SCANNER_SOCKET_TIMEOUT: 60,
+            SONAR_SCANNER_RESPONSE_TIMEOUT: 0,
+            SONAR_SCANNER_KEYSTORE_PASSWORD: "changeit",
+            SONAR_SCANNER_TRUSTSTORE_PASSWORD: "changeit",
+        }
+        self.assertDictEqual(configuration, expected_configuration)
+
+    @patch(
+        "sys.argv",
+        [
+            "myscript.py",
+            "--token",
+            "myToken",
+            "--sonar-project-key",
+            "myProjectKey",
+            "--toml-path",
+            "custom/path",
+        ],
+    )
+    def test_load_pyproject_toml_from_toml_path(self):
+        self.fs.create_dir("custom/path")
+        self.fs.create_file(
+            "custom/path/pyproject.toml",
+            contents=(
+                """
+                [tool.sonar]
+                projectKey = "custom-path-project-key"
+                project-name = "Custom Path Project"
+                sources = "src/main"
+                tests= "src/test"
+                """
+            ),
+        )
+        configuration = ConfigurationLoader.load()
+        expected_configuration = {
+            SONAR_TOKEN: "myToken",
+            SONAR_PROJECT_KEY: "myProjectKey",
+            SONAR_PROJECT_NAME: "Custom Path Project",
+            SONAR_SOURCES: "src/main",
+            SONAR_TESTS: "src/test",
+            SONAR_SCANNER_APP: "python",
+            SONAR_SCANNER_APP_VERSION: "1.0",
+            SONAR_SCANNER_BOOTSTRAP_START_TIME: configuration[SONAR_SCANNER_BOOTSTRAP_START_TIME],
+            SONAR_VERBOSE: False,
+            SONAR_SCANNER_SKIP_JRE_PROVISIONING: False,
+            SONAR_USER_HOME: "~/.sonar",
+            SONAR_SCANNER_CONNECT_TIMEOUT: 5,
+            SONAR_SCANNER_SOCKET_TIMEOUT: 60,
+            SONAR_SCANNER_RESPONSE_TIMEOUT: 0,
+            SONAR_SCANNER_KEYSTORE_PASSWORD: "changeit",
+            SONAR_SCANNER_TRUSTSTORE_PASSWORD: "changeit",
+            TOML_PATH: "custom/path",
+        }
+        self.assertDictEqual(configuration, expected_configuration)
+
+    @patch(
+        "sys.argv",
+        [
+            "myscript.py",
+            "--token",
+            "myToken",
+            "--sonar-project-key",
+            "ProjectKeyFromCLI",
+        ],
+    )
+    def test_properties_and_toml_priority(self):
+        """Test that sonar-project.properties has priority over pyproject.toml when both exist"""
+        # Create both configuration files
+        self.fs.create_file(
+            "sonar-project.properties",
+            contents=(
+                """
+                sonar.projectKey=ProjectKeyFromProperties
+                sonar.projectName=Properties Project
+                sonar.sources=src/properties
+                sonar.tests=test/properties
+                sonar.exclusions=properties-exclusions/**/*
+                """
+            ),
+        )
+        self.fs.create_file(
+            "pyproject.toml",
+            contents=(
+                """
+                [tool.sonar]
+                projectKey = "toml-project-key"
+                project-name = "TOML Project"
+                sources = "src/toml"
+                exclusions = "toml-exclusions/**/*"
+                """
+            ),
+        )
+
+        configuration = ConfigurationLoader.load()
+
+        # TOML values have priority over sonar-project.properties
+        self.assertEqual(configuration[SONAR_PROJECT_NAME], "TOML Project")
+        self.assertEqual(configuration[SONAR_SOURCES], "src/toml")
+        self.assertEqual(configuration[SONAR_TESTS], "test/properties")
+        self.assertEqual(configuration[SONAR_EXCLUSIONS], "toml-exclusions/**/*")
+
+        # CLI args still have highest priority
+        self.assertEqual(configuration[SONAR_PROJECT_KEY], "ProjectKeyFromCLI")

@@ -22,7 +22,7 @@ from pathlib import Path
 from pysonar_scanner.configuration import properties
 from pysonar_scanner.configuration.cli import CliConfigurationLoader
 from pysonar_scanner.configuration.properties import SONAR_TOKEN, SONAR_PROJECT_BASE_DIR, Key
-from pysonar_scanner.configuration import properties, sonar_project_properties
+from pysonar_scanner.configuration import properties, sonar_project_properties, toml_file
 
 from pysonar_scanner.exceptions import MissingKeyException
 
@@ -43,6 +43,11 @@ class ConfigurationLoader:
         # but we need to resolve them first to load the properties file
         base_dir = Path(cli_properties.get(SONAR_PROJECT_BASE_DIR, "."))
         resolved_properties.update(sonar_project_properties.load(base_dir))
+
+        toml_path_property = cli_properties.get("toml-path", ".")
+        toml_dir = Path(toml_path_property) if "toml-path" in cli_properties else base_dir
+        resolved_properties.update(toml_file.load(toml_dir))
+
         resolved_properties.update(cli_properties)
         return resolved_properties
 
