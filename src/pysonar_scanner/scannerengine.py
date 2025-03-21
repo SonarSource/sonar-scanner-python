@@ -17,9 +17,15 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+from enum import Enum
 import json
+import logging
+from operator import le
 import pathlib
-from typing import Optional
+from threading import Thread
+from typing import IO, Callable, Optional
+
+from dataclasses import dataclass
 
 import pysonar_scanner.api as api
 
@@ -28,6 +34,80 @@ from pysonar_scanner.cache import Cache, CacheFile
 from pysonar_scanner.exceptions import ChecksumException, SQTooOldException
 from pysonar_scanner.jre import JREProvisioner, JREResolvedPath, JREResolver, JREResolverConfiguration
 from subprocess import Popen, PIPE
+
+
+@dataclass(frozen=True)
+class LogLine:
+    level: str
+    message: str
+    stacktrace: Optional[str] = None
+
+    def get_logging_level(self) -> int:
+        if self.level == "ERROR":
+            return logging.ERROR
+        if self.level == "WARN":
+            return logging.WARNING
+        if self.level == "INFO":
+            return logging.INFO
+        if self.level == "DEBUG":
+            return logging.DEBUG
+        if self.level == "TRACE":
+            return logging.DEBUG
+        return logging.INFO
+
+
+def parse_log_line(line: str) -> LogLine:
+    try:
+        line_json = json.loads(line)
+        level = line_json.get("level", "INFO")
+        message = line_json.get("message", line)
+        stacktrace = line_json.get("stacktrace")
+        return LogLine(level=level, message=message, stacktrace=stacktrace)
+    except json.JSONDecodeError:
+        return LogLine(level="INFO", message=line, stacktrace=None)
+
+
+def default_log_line_listener(log_line: LogLine):
+    logging.log(log_line.get_logging_level(), log_line.message)
+    if log_line.stacktrace is not None:
+        logging.log(log_line.get_logging_level(), log_line.stacktrace)
+
+
+class CmdExecutor:
+    def __init__(
+        self,
+        cmd: list[str],
+        properties_str: str,
+        log_line_listener: Callable[[LogLine], None] = default_log_line_listener,
+    ):
+        self.cmd = cmd
+        self.properties_str = properties_str
+        self.log_line_listener = log_line_listener
+
+    def execute(self):
+        process = Popen(self.cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        process.stdin.write(self.properties_str.encode())
+        process.stdin.close()
+
+        output_thread = Thread(target=self.__log_output, args=(process.stdout,))
+        error_thread = Thread(target=self.__log_output, args=(process.stderr,))
+
+        return self.__process_output(output_thread, error_thread, process)
+
+    def __log_output(self, stream: IO[bytes]):
+        for line in stream:
+            decoded_line = line.decode("utf-8").rstrip()
+            log_line = parse_log_line(decoded_line)
+            self.log_line_listener(log_line)
+
+    def __process_output(self, output_thread: Thread, error_thread: Thread, process: Popen) -> int:
+        output_thread.start()
+        error_thread.start()
+        process.wait()
+        output_thread.join()
+        error_thread.join()
+
+        return process.returncode
 
 
 class ScannerEngineProvisioner:
@@ -71,7 +151,8 @@ class ScannerEngine:
         jre_path = self.__resolve_jre(config)
         scanner_engine_path = self.__fetch_scanner_engine()
         cmd = self.__build_command(jre_path, scanner_engine_path)
-        return self.__execute_scanner_engine(config, cmd)
+        properties_str = self.__config_to_json(config)
+        return CmdExecutor(cmd, properties_str).execute()
 
     def __build_command(self, jre_path: JREResolvedPath, scanner_engine_path: pathlib.Path) -> list[str]:
         cmd = []
@@ -80,34 +161,9 @@ class ScannerEngine:
         cmd.append(scanner_engine_path)
         return cmd
 
-    def __execute_scanner_engine(self, config: dict[str, any], cmd: list[str]) -> int:
-        popen = Popen(cmd, stdout=PIPE, stderr=PIPE, stdin=PIPE)
-        outs, _ = popen.communicate(self.__config_to_json(config).encode())
-        exitcode = popen.wait()  # 0 means success
-        self.__extract_errors_from_log(outs)
-        if exitcode != 0:
-            errors = self.__extract_errors_from_log(outs)
-            raise RuntimeError(f"Scan failed with exit code {exitcode}", errors)
-        return exitcode
-
     def __config_to_json(self, config: dict[str, any]) -> str:
         scanner_properties = [{"key": k, "value": v} for k, v in config.items()]
         return json.dumps({"scannerProperties": scanner_properties})
-
-    def __extract_errors_from_log(self, outs: str) -> list[str]:
-        try:
-            errors = []
-            for line in outs.decode("utf-8").split("\n"):
-                if line.strip() == "":
-                    continue
-                out_json = json.loads(line)
-                if out_json["level"] == "ERROR":
-                    errors.append(out_json["message"])
-                print(f"{out_json['level']}: {out_json['message']}")
-            return errors
-        except Exception as e:
-            print(e)
-            return []
 
     def __version_check(self):
         if self.api.is_sonar_qube_cloud():

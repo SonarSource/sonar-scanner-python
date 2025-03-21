@@ -17,20 +17,12 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-from unittest import mock
-from unittest.mock import patch
-
-from pyfakefs import fake_filesystem_unittest as pyfakefs
-
-from pysonar_scanner.configuration import ConfigurationLoader
-from pysonar_scanner.configuration.properties import SONAR_PROJECT_KEY, SONAR_TOKEN
-from pysonar_scanner.__main__ import scan
-from pysonar_scanner.scannerengine import ScannerEngine
+import logging
 
 
-class TestMain(pyfakefs.TestCase):
-    @patch.object(ConfigurationLoader, "load", return_value={SONAR_TOKEN: "myToken", SONAR_PROJECT_KEY: "myProjectKey"})
-    @patch.object(ScannerEngine, "run", return_value=0)
-    def test_minimal_success_run(self, load_mock, run_mock):
-        exitcode = scan()
-        self.assertEqual(exitcode, 0)
+def setup() -> None:
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+
+
+def configure_logging_level(verbose: bool) -> None:
+    logging.getLogger().setLevel(logging.DEBUG if verbose else logging.INFO)

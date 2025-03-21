@@ -17,50 +17,152 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+import json
+import logging
+from math import log
+from subprocess import PIPE
 import unittest
 import pathlib
 import pyfakefs.fake_filesystem_unittest as pyfakefs
 
-from pysonar_scanner import cache
+from pysonar_scanner import app_logging, cache
+from pysonar_scanner import scannerengine
 from pysonar_scanner.exceptions import ChecksumException, SQTooOldException
-from pysonar_scanner.scannerengine import ScannerEngine, ScannerEngineProvisioner
+from pysonar_scanner.jre import JREProvisioner, JREResolvedPath, JREResolver
+from pysonar_scanner.scannerengine import (
+    CmdExecutor,
+    LogLine,
+    ScannerEngine,
+    ScannerEngineProvisioner,
+    default_log_line_listener,
+    parse_log_line,
+)
 from unittest.mock import Mock
 
 from pysonar_scanner.api import SQVersion
 from tests import sq_api_utils
+from unittest.mock import patch, MagicMock
 
 
-class TestScannerEngine(unittest.TestCase):
+class TestLogLine(unittest.TestCase):
+    def test_without_stacktrace(self):
+        line = '{"level":"INFO","message":"a message"}'
+        log_line = scannerengine.parse_log_line(line)
+        self.assertEqual(log_line, LogLine(level="INFO", message="a message", stacktrace=None))
 
-    def test_error_log_extraction(self):
-        log_failure_example = b"""{"level":"INFO","message":"CPD Executor CPD calculation finished (done) | time=15ms"}\n
-            {"level":"INFO","message":"SCM revision ID \'a53e6a3193a049d0f77fc2ff16cf52e7a66c7adb\'"}\n
-            {"level":"INFO","message":"Analysis report generated in 152ms, dir size=760.6 kB"}\n
-            {"level":"INFO","message":"Analysis report compressed in 83ms, zip size=321.7 kB"}\n
-            {"level":"ERROR","message":"You\'re not authorized to analyze this project or the project doesn\'t exist on SonarQube and you\'re not authorized to create it. Please contact an administrator."}\n"""
+    def test_with_stacktrace(self):
+        line = '{"level":"INFO","message":"a message", "stacktrace":"a stacktrace"}'
+        log_line = scannerengine.parse_log_line(line)
+        self.assertEqual(log_line, LogLine(level="INFO", message="a message", stacktrace="a stacktrace"))
 
-        scanner = ScannerEngine(None, None)
-        expected = "You're not authorized to analyze this project or the project doesn't exist on SonarQube and you're not authorized to create it. Please contact an administrator."
-        errors = scanner._ScannerEngine__extract_errors_from_log(log_failure_example)
-        print(errors)
-        self.assertEqual(
-            errors,
-            [expected],
-        )
+    def test_invalid_json(self):
+        line = '"level":"INFO","message":"a message", "stacktrace":"a stacktrace"}'
+        log_line = scannerengine.parse_log_line(line)
+        self.assertEqual(log_line, LogLine(level="INFO", message=line, stacktrace=None))
 
-    def test_exception_in_error_log_extraction(self):
-        unexpected_log_failure_example = b"""unexpected log format'"""
-        scanner = ScannerEngine(None, None)
-        errors = scanner._ScannerEngine__extract_errors_from_log(unexpected_log_failure_example)
-        self.assertEqual(
-            errors,
-            [],
-        )
+    def test_no_level(self):
+        line = '{"message":"a message"}'
+        log_line = scannerengine.parse_log_line(line)
+        self.assertEqual(log_line, LogLine(level="INFO", message="a message", stacktrace=None))
+
+
+class TestCmdExecutor(unittest.TestCase):
+
+    @patch("pysonar_scanner.scannerengine.Popen")
+    def test_execute_successful(self, mock_popen):
+        mock_process = MagicMock()
+        mock_process.stdout = []
+        mock_process.stderr = []
+        mock_process.wait.return_value = 0
+        mock_process.returncode = 0
+        mock_popen.return_value = mock_process
+
+        cmd_executor = scannerengine.CmdExecutor(["echo", "hello"], "key=value")
+        return_code = cmd_executor.execute()
+
+        mock_popen.assert_called_once_with(["echo", "hello"], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        mock_process.stdin.write.assert_called_once_with(b"key=value")
+        mock_process.stdin.close.assert_called_once()
+        self.assertEqual(return_code, 0)
+
+    @patch("pysonar_scanner.scannerengine.Popen")
+    def test_error_log_extraction(self, popen_mock):
+        log_info = [
+            b'{"level":"INFO","message":"info2"}',
+            b'{"level":"WARN","message":"info1"}',
+        ]
+        log_error = [
+            b'{"level":"ERROR","message":"an error"}',
+            b'{"level":"ERROR","message":"another error", "stacktrace":"a stacktrace"}',
+        ]
+
+        popen_mock.return_value.stdin = MagicMock()
+        popen_mock.return_value.stdout = log_info
+        popen_mock.return_value.stderr = log_error
+
+        actual_lines = set()
+        expected_lines = {
+            LogLine(level="INFO", message="info2", stacktrace=None),
+            LogLine(level="WARN", message="info1", stacktrace=None),
+            LogLine(level="ERROR", message="an error", stacktrace=None),
+            LogLine(level="ERROR", message="another error", stacktrace="a stacktrace"),
+        }
+
+        def log_line_listener(log_line: LogLine):
+            actual_lines.add(log_line)
+
+        scannerengine.CmdExecutor(["echo"], "", log_line_listener).execute()
+
+        self.assertEqual(actual_lines, expected_lines)
+
+    def test_to_logging_level(self):
+        self.assertEqual(LogLine(level="ERROR", message="").get_logging_level(), logging.ERROR)
+        self.assertEqual(LogLine(level="WARN", message="").get_logging_level(), logging.WARNING)
+        self.assertEqual(LogLine(level="INFO", message="").get_logging_level(), logging.INFO)
+        self.assertEqual(LogLine(level="DEBUG", message="").get_logging_level(), logging.DEBUG)
+        self.assertEqual(LogLine(level="TRACE", message="").get_logging_level(), logging.DEBUG)
+        self.assertEqual(LogLine(level="UNKNOWN", message="").get_logging_level(), logging.INFO)
+
+    def test_default_log_line_listener(self):
+        with self.subTest("log line without stacktrace"), self.assertLogs(level="INFO") as logs:
+            scannerengine.default_log_line_listener(LogLine(level="INFO", message="info1", stacktrace=None))
+            self.assertEqual(logs.output, ["INFO:root:info1"])
+
+        with self.subTest("log line with stacktrace"), self.assertLogs(level="INFO") as logs:
+            default_log_line_listener(LogLine(level="WARN", message="info2", stacktrace="a stacktrace"))
+            self.assertEqual(logs.output, ["WARNING:root:info2", "WARNING:root:a stacktrace"])
 
 
 class TestScannerEngineWithFake(pyfakefs.TestCase):
     def setUp(self):
         self.setUpPyfakefs()
+
+    @patch("pysonar_scanner.scannerengine.CmdExecutor")
+    @patch.object(JREResolver, "resolve_jre")
+    @patch.object(ScannerEngineProvisioner, "provision")
+    def test_command_building(self, provision_mock, resolve_jre_mock, execute_mock):
+        provision_mock.return_value = pathlib.Path("/test/scanner-engine.jar")
+        resolve_jre_mock.return_value = JREResolvedPath(pathlib.Path("jre/bin/java"))
+
+        config = {
+            "sonar.token": "myToken",
+            "sonar.projectKey": "myProjectKey",
+        }
+
+        expected_std_in = json.dumps(
+            {
+                "scannerProperties": [
+                    {"key": "sonar.token", "value": "myToken"},
+                    {"key": "sonar.projectKey", "value": "myProjectKey"},
+                ]
+            }
+        )
+
+        scannerengine.ScannerEngine(sq_api_utils.get_sq_cloud(), cache.get_default()).run(config)
+
+        execute_mock.assert_called_once_with(
+            [pathlib.Path("jre/bin/java"), "-jar", pathlib.Path("/test/scanner-engine.jar")], expected_std_in
+        )
 
     def test_version_check(self):
         with self.subTest("SQ:Server is too old"):
