@@ -51,6 +51,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_TOKEN,
     SONAR_USER_HOME,
     SONAR_VERBOSE,
+    SONAR_PROJECT_NAME,
 )
 
 
@@ -116,6 +117,8 @@ class TestCliConfigurationLoader(unittest.TestCase):
             "myToken",
             "--sonar-project-key",
             "myProjectKey",
+            "--sonar-project-name",
+            "myProjectName",
             "-v",
             "--sonar-host-url",
             "mySonarHostUrl",
@@ -171,6 +174,7 @@ class TestCliConfigurationLoader(unittest.TestCase):
         expected_configuration = {
             SONAR_TOKEN: "myToken",
             SONAR_PROJECT_KEY: "myProjectKey",
+            SONAR_PROJECT_NAME: "myProjectName",
             SONAR_VERBOSE: True,
             SONAR_HOST_URL: "mySonarHostUrl",
             SONAR_SCANNER_SONARCLOUD_URL: "mySonarScannerCloudUrl",
