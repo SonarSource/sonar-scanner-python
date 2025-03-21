@@ -54,6 +54,12 @@ class CliConfigurationLoader:
             type=str,
             help="Key of the project that usually corresponds to the project name in SonarQube",
         )
+        parser.add_argument(
+            "--sonar-project-name",
+            "-Dsonar.projectName",
+            type=str,
+            help="Name of the project in SonarQube",
+        )
 
         parser.add_argument(
             "-v",
