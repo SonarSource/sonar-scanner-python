@@ -22,7 +22,7 @@ from unittest.mock import patch
 
 import pyfakefs.fake_filesystem_unittest as pyfakefs
 
-from pysonar_scanner import configuration
+from pysonar_scanner.configuration import configuration_loader
 from pysonar_scanner.configuration.properties import (
     SONAR_PROJECT_KEY,
     SONAR_PROJECT_NAME,
@@ -43,7 +43,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_VERBOSE,
     TOML_PATH,
 )
-from pysonar_scanner.configuration import ConfigurationLoader, SONAR_PROJECT_BASE_DIR
+from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader, SONAR_PROJECT_BASE_DIR
 from pysonar_scanner.exceptions import MissingKeyException
 
 
@@ -72,7 +72,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
         }
         self.assertDictEqual(configuration, expected_configuration)
 
-    @patch("pysonar_scanner.configuration.get_static_default_properties", return_value={})
+    @patch("pysonar_scanner.configuration.configuration_loader.get_static_default_properties", return_value={})
     @patch("sys.argv", ["myscript.py"])
     def test_no_defaults_in_configuration_loaders(self, get_static_default_properties_mock):
         config = ConfigurationLoader.load()
@@ -80,10 +80,10 @@ class TestConfigurationLoader(pyfakefs.TestCase):
 
     def test_get_token(self):
         with self.subTest("Token is present"):
-            self.assertEqual(configuration.get_token({SONAR_TOKEN: "myToken"}), "myToken")
+            self.assertEqual(configuration_loader.get_token({SONAR_TOKEN: "myToken"}), "myToken")
 
         with self.subTest("Token is absent"), self.assertRaises(MissingKeyException):
-            configuration.get_token({})
+            configuration_loader.get_token({})
 
     @patch("sys.argv", ["myscript.py", "--token", "myToken", "--sonar-project-key", "myProjectKey"])
     def test_load_sonar_project_properties(self):
