@@ -22,7 +22,7 @@ import unittest
 from unittest.mock import patch
 from io import StringIO
 
-from pysonar_scanner.configuration import CliConfigurationLoader
+from pysonar_scanner.configuration.configuration_loader import CliConfigurationLoader
 from pysonar_scanner.configuration.properties import (
     SONAR_HOST_URL,
     SONAR_REGION,
