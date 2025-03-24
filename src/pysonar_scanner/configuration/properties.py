@@ -68,7 +68,6 @@ SONAR_FILESIZE_LIMIT: Key = "sonar.filesize.limit"
 SONAR_CPD_PYTHON_MINIMUM_TOKENS: Key = "sonar.cpd.python.minimumTokens"
 SONAR_CPD_PYTHON_MINIMUM_LINES: Key = "sonar.cpd.python.minimumLines"
 SONAR_LOG_LEVEL: Key = "sonar.log.level"
-
 SONAR_QUALITYGATE_WAIT: Key = "sonar.qualitygate.wait"
 SONAR_QUALITYGATE_TIMEOUT: Key = "sonar.qualitygate.timeout"
 SONAR_EXTERNAL_ISSUES_REPORT_PATHS: Key = "sonar.externalIssuesReportPaths"

@@ -76,7 +76,7 @@ class CliConfigurationLoader:
             "--sonar-sources",
             "-Dsonar.sources",
             type=str,
-            help="The analysis scope for main source code (non-test code) in the project. ",
+            help="The analysis scope for main source code (non-test code) in the project",
         )
         parser.add_argument(
             "--sonar-tests",
@@ -240,14 +240,14 @@ class CliConfigurationLoader:
             "--sonar-scm-exclusions-disabled",
             "-Dsonar.scm.exclusions.disabled",
             type=bool,
-            help="Defines whether files ignored by the SCM, e.g., files listed in .gitignore, will be excluded from the analysis or not.",
+            help="Defines whether files ignored by the SCM, e.g., files listed in .gitignore, will be excluded from the analysis or not",
         )
 
         parser.add_argument(
             "--sonar-filesize-limit",
             "-Dsonar.filesize.limit",
             type=int,
-            help="Sets the limit in MB for files to be discarded from the analysis scope if the size is greater than specified.",
+            help="Sets the limit in MB for files to be discarded from the analysis scope if the size is greater than specified",
         )
 
         parser.add_argument(
@@ -280,7 +280,7 @@ class CliConfigurationLoader:
             "--sonar-qualitygate-timeout",
             "-Dsonar.qualitygate.timeout",
             type=int,
-            help="The number of seconds that the scanner should wait for a report to be processed.",
+            help="The number of seconds that the scanner should wait for a report to be processed",
         )
         parser.add_argument(
             "--sonar-external-issues-report-paths",
@@ -292,22 +292,22 @@ class CliConfigurationLoader:
             "--sonar-sarif-report-paths",
             "-Dsonar.sarifReportPaths",
             type=str,
-            help="Comma-delimited list of paths to SARIF issue reports.",
+            help="Comma-delimited list of paths to SARIF issue reports",
         )
         parser.add_argument(
-            "--sonar-links-ci", "-Dsonar.links.ci", type=str, help="The URL of the continuous integration system used."
+            "--sonar-links-ci", "-Dsonar.links.ci", type=str, help="The URL of the continuous integration system used"
         )
         parser.add_argument(
-            "--sonar-links-homepage", "-Dsonar.links.homepage", type=str, help="The URL of the build project home page."
+            "--sonar-links-homepage", "-Dsonar.links.homepage", type=str, help="The URL of the build project home page"
         )
         parser.add_argument(
-            "--sonar-links-issue", "-Dsonar.links.issue", type=str, help="The URL to the issue tracker being used. "
+            "--sonar-links-issue", "-Dsonar.links.issue", type=str, help="The URL to the issue tracker being used"
         )
         parser.add_argument(
             "--sonar-links-scm",
             "-Dsonar.links.scm",
             type=str,
-            help="The URL of the build project source code repository.",
+            help="The URL of the build project source code repository",
         )
         parser.add_argument(
             "--sonar-branch-name", "-Dsonar.branch.name", type=str, help="Name of the branch being analyzed"
@@ -340,7 +340,7 @@ class CliConfigurationLoader:
             "--sonar-scm-revision",
             "-Dsonar.scm.revision",
             type=str,
-            help="Overrides the revision, for instance, the Git sha1, displayed in analysis results.",
+            help="Overrides the revision, for instance, the Git sha1, displayed in analysis results",
         )
         parser.add_argument(
             "--sonar-build-string",
@@ -352,19 +352,19 @@ class CliConfigurationLoader:
             "--sonar-source-encoding",
             "-Dsonar.sourceEncoding",
             type=str,
-            help="Encoding of the source files. For example, UTF-8, MacRoman, Shift_JIS. ",
+            help="Encoding of the source files. For example, UTF-8, MacRoman, Shift_JIS",
         )
         parser.add_argument(
             "--sonar-working-directory",
             "-Dsonar.working.directory",
             type=str,
-            help="Path to the working directory used by the Sonar scanner during a project analysis to store temporary data.",
+            help="Path to the working directory used by the Sonar scanner during a project analysis to store temporary data",
         )
         parser.add_argument(
             "--sonar-scm-force-reload-all",
             "-Dsonar.scm.forceReloadAll",
             type=bool,
-            help="Set this property to true to load blame information for all files, which may significantly increase analysis duration.",
+            help="Set this property to true to load blame information for all files, which may significantly increase analysis duration",
         )
         parser.add_argument(
             "--toml-path",
