@@ -299,6 +299,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             "SONAR_HOST_URL": "https://sonar.env.example.com",  # Not set elsewhere, should be used
             "SONAR_USER_HOME": "/env/sonar/home",  # Should be used (overriding sonar-project.properties)
             "SONAR_SCANNER_JAVA_OPTS": "-Xmx2048m",  # Unique to env vars
+            "SONAR_SCANNER_JSON_PARAMS": '{"sonar.exclusions": "json-exclusions/**/*", "SONAR_HOST_URL": "https://sonar.env.example.com"}',  # JSON params
         },
         clear=True,
     )
@@ -361,10 +362,12 @@ class TestConfigurationLoader(pyfakefs.TestCase):
 
         # pyproject.toml [tool.sonar] section overrides sonar-project.properties
         self.assertEqual(configuration[SONAR_SOURCES], "src/toml")
-        self.assertEqual(configuration[SONAR_EXCLUSIONS], "toml-exclusions/**/*")
         self.assertEqual(configuration[SONAR_PROJECT_NAME], "TOML Project")  # Overrides sonar-project.properties
 
-        # Environment variables override pyproject.toml [tool.sonar]
+        # JSON params from environment variable should override toml but be overridden by regular env vars
+        self.assertEqual(configuration[SONAR_EXCLUSIONS], "json-exclusions/**/*")  # JSON overrides toml
+
+        # Environment variables override pyproject.toml [tool.sonar] and JSON params
         self.assertEqual(configuration[SONAR_HOST_URL], "https://sonar.env.example.com")
         self.assertEqual(configuration[SONAR_SCANNER_JAVA_OPTS], "-Xmx2048m")
         self.assertEqual(configuration[SONAR_USER_HOME], "/env/sonar/home")  # Env var overrides [sonar] toml

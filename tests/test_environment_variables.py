@@ -91,3 +91,39 @@ class TestEnvironmentVariables(unittest.TestCase):
             }
             self.assertEqual(len(properties), 5)
             self.assertDictEqual(properties, expected_properties)
+
+    def test_environment_variables_from_json_params(self):
+        env = {
+            "SONAR_SCANNER_JSON_PARAMS": '{"sonar.token": "json-token", "sonar.host.url": "https://json.example.com"}'
+        }
+        with patch.dict("os.environ", env, clear=True):
+            properties = environment_variables.load()
+            expected_properties = {
+                SONAR_TOKEN: "json-token",
+                SONAR_HOST_URL: "https://json.example.com",
+            }
+            self.assertEqual(len(properties), 2)
+            self.assertDictEqual(properties, expected_properties)
+
+    def test_invalid_json_params(self):
+        env = {"SONAR_SCANNER_JSON_PARAMS": '{"sonar.token": "json-token"'}
+        with patch.dict("os.environ", env, clear=True):
+            properties = environment_variables.load()
+            self.assertEqual(len(properties), 0)
+            self.assertDictEqual(properties, {})
+
+    def test_environment_variables_priority_over_json_params(self):
+        env = {
+            "SONAR_TOKEN": "regular-token",  # This should take priority
+            "SONAR_HOST_URL": "https://regular.example.com",  # This should take priority
+            "SONAR_SCANNER_JSON_PARAMS": '{"sonar.token": "json-token", "sonar.host.url": "https://json.example.com", "sonar.region": "eu"}',
+        }
+        with patch.dict("os.environ", env, clear=True):
+            properties = environment_variables.load()
+            expected_properties = {
+                SONAR_TOKEN: "regular-token",  # Regular env var takes priority
+                SONAR_HOST_URL: "https://regular.example.com",  # Regular env var takes priority
+                SONAR_REGION: "eu",  # Only in JSON, so this value is used
+            }
+            self.assertEqual(len(properties), 3)
+            self.assertDictEqual(properties, expected_properties)

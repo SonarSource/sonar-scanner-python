@@ -18,6 +18,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import os
+import json
 from typing import Dict
 
 from pysonar_scanner.configuration.properties import Key, PROPERTIES
@@ -32,6 +33,19 @@ def load() -> Dict[Key, str]:
     """
     properties = {}
     # Extract properties from environment variables using the env_variable_name() method
+
+    # First check for JSON params environment variable
+    if "SONAR_SCANNER_JSON_PARAMS" in os.environ:
+        try:
+            json_params = os.environ["SONAR_SCANNER_JSON_PARAMS"]
+            json_properties = json.loads(json_params)
+            properties.update(json_properties)
+        except json.JSONDecodeError:
+            # If JSON is invalid, continue with regular environment variables
+            # SCANPY-135 should log the error
+            pass
+
+    # Extract properties from environment variables using the mapping in Property objects
     for prop in PROPERTIES:
         env_var_name = prop.env_variable_name()
         if env_var_name in os.environ:
