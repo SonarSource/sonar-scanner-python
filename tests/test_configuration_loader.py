@@ -44,6 +44,8 @@ from pysonar_scanner.configuration.properties import (
     TOML_PATH,
     SONAR_PROJECT_DESCRIPTION,
     SONAR_PYTHON_VERSION,
+    SONAR_HOST_URL,
+    SONAR_SCANNER_JAVA_OPTS,
 )
 from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader, SONAR_PROJECT_BASE_DIR
 from pysonar_scanner.exceptions import MissingKeyException
@@ -53,6 +55,8 @@ class TestConfigurationLoader(pyfakefs.TestCase):
     def setUp(self):
         self.maxDiff = None
         self.setUpPyfakefs()
+        self.env_patcher = patch.dict("os.environ", {}, clear=True)
+        self.env_patcher.start()
 
     @patch("sys.argv", ["myscript.py", "--token", "myToken", "--sonar-project-key", "myProjectKey"])
     def test_defaults(self):
@@ -265,6 +269,19 @@ class TestConfigurationLoader(pyfakefs.TestCase):
         }
         self.assertDictEqual(configuration, expected_configuration)
 
+    @patch("sys.argv", ["myscript.py"])
+    @patch.dict("os.environ", {"SONAR_TOKEN": "TokenFromEnv", "SONAR_PROJECT_KEY": "KeyFromEnv"}, clear=True)
+    def test_load_from_env_variables_only(self):
+        """Test that configuration can be loaded exclusively from environment variables"""
+        configuration = ConfigurationLoader.load()
+
+        # Check that environment variables are loaded correctly
+        self.assertEqual(configuration[SONAR_TOKEN], "TokenFromEnv")
+        self.assertEqual(configuration[SONAR_PROJECT_KEY], "KeyFromEnv")
+
+        # Default values should still be populated
+        self.assertEqual(configuration[SONAR_SCANNER_APP], "python")
+
     @patch(
         "sys.argv",
         [
@@ -275,8 +292,26 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             "ProjectKeyFromCLI",
         ],
     )
-    def test_properties_and_toml_priority(self):
-        """Test that sonar-project.properties has priority over pyproject.toml when both exist"""
+    @patch.dict(
+        "os.environ",
+        {
+            "SONAR_TOKEN": "TokenFromEnv",  # Should be overridden by CLI
+            "SONAR_HOST_URL": "https://sonar.env.example.com",  # Not set elsewhere, should be used
+            "SONAR_USER_HOME": "/env/sonar/home",  # Should be used (overriding sonar-project.properties)
+            "SONAR_SCANNER_JAVA_OPTS": "-Xmx2048m",  # Unique to env vars
+        },
+        clear=True,
+    )
+    def test_properties_priority(self):
+        """Test the priority order of different configuration sources:
+        1. CLI args (highest)
+        2. Environment variables
+        3. Generic environment variable
+        4. pyproject.toml [tool.sonar] section
+        5. sonar-project.properties
+        6. Generic properties from pyproject.toml [project] section
+        7. Default values (lowest)
+        """
         # Create both configuration files
         self.fs.create_file(
             "sonar-project.properties",
@@ -284,9 +319,11 @@ class TestConfigurationLoader(pyfakefs.TestCase):
                 """
                 sonar.projectKey=ProjectKeyFromProperties
                 sonar.projectName=Properties Project
+                sonar.projectDescription=Properties Project Description
                 sonar.sources=src/properties
                 sonar.tests=test/properties
                 sonar.exclusions=properties-exclusions/**/*
+                sonar.userHome=/properties/sonar/home
                 """
             ),
         )
@@ -303,23 +340,35 @@ class TestConfigurationLoader(pyfakefs.TestCase):
                 project-name = "TOML Project"
                 sources = "src/toml"
                 exclusions = "toml-exclusions/**/*"
+                userHome = "/toml/sonar/home"
                 """
             ),
         )
 
         configuration = ConfigurationLoader.load()
 
-        # Generic pyproject.toml properties are retrieved when no other source is available
-        self.assertEqual(configuration[SONAR_PROJECT_DESCRIPTION], "My Project Description")
+        # Test Default values (lowest priority)
+        self.assertNotEqual(configuration[SONAR_SCANNER_CONNECT_TIMEOUT], "5")  # Default value would be 5
+
+        # Generic pyproject.toml properties from [project] section
         self.assertEqual(configuration[SONAR_PYTHON_VERSION], "3.6,3.7,3.8")
 
-        # sonar-project.properties values have priority over generic properties from pyproject.toml
-        self.assertEqual(configuration[SONAR_PROJECT_NAME], "TOML Project")
+        # sonar-project.properties values
+        self.assertEqual(configuration[SONAR_TESTS], "test/properties")
+        self.assertEqual(
+            configuration[SONAR_PROJECT_DESCRIPTION], "Properties Project Description"
+        )  # Overrides [project] toml
 
-        # Sonar pyproject.toml values have priority over sonar-project.properties
+        # pyproject.toml [tool.sonar] section overrides sonar-project.properties
         self.assertEqual(configuration[SONAR_SOURCES], "src/toml")
         self.assertEqual(configuration[SONAR_EXCLUSIONS], "toml-exclusions/**/*")
+        self.assertEqual(configuration[SONAR_PROJECT_NAME], "TOML Project")  # Overrides sonar-project.properties
 
-        # CLI args still have highest priority
+        # Environment variables override pyproject.toml [tool.sonar]
+        self.assertEqual(configuration[SONAR_HOST_URL], "https://sonar.env.example.com")
+        self.assertEqual(configuration[SONAR_SCANNER_JAVA_OPTS], "-Xmx2048m")
+        self.assertEqual(configuration[SONAR_USER_HOME], "/env/sonar/home")  # Env var overrides [sonar] toml
+
+        # CLI args have highest priority
         self.assertEqual(configuration[SONAR_PROJECT_KEY], "ProjectKeyFromCLI")
-        self.assertEqual(configuration[SONAR_TESTS], "test/properties")
+        self.assertEqual(configuration[SONAR_TOKEN], "myToken")  # CLI overrides env var
