@@ -60,7 +60,30 @@ class CliConfigurationLoader:
             type=str,
             help="Name of the project in SonarQube",
         )
-
+        parser.add_argument(
+            "--sonar-project-version",
+            "-Dsonar.projectVersion",
+            type=str,
+            help="Version of the project in SonarQube",
+        )
+        parser.add_argument(
+            "--sonar-project-description",
+            "-Dsonar.projectDescription",
+            type=str,
+            help="Description of the project in SonarQube",
+        )
+        parser.add_argument(
+            "--sonar-sources",
+            "-Dsonar.sources",
+            type=str,
+            help="The analysis scope for main source code (non-test code) in the project. ",
+        )
+        parser.add_argument(
+            "--sonar-tests",
+            "-Dsonar.tests",
+            type=str,
+            help="The analysis scope for test source code in the project",
+        )
         parser.add_argument(
             "-v",
             "--verbose",
@@ -113,6 +136,12 @@ class CliConfigurationLoader:
             type=str,
             choices=["x64", "aarch64"],
             help="Architecture on which the scanner will be running",
+        )
+        parser.add_argument(
+            "--sonar-scanner-metadata-filepath",
+            "-Dsonar.scanner.metadata.filepath",
+            type=str,
+            help="Sets the location where the scanner writes the report-task.txt file containing among other things the ceTaskId",
         )
 
         parser.add_argument(
@@ -207,6 +236,136 @@ class CliConfigurationLoader:
             help="Directory containing the project to be analyzed. Default is the current directory",
         )
 
+        parser.add_argument(
+            "--sonar-scm-exclusions-disabled",
+            "-Dsonar.scm.exclusions.disabled",
+            type=bool,
+            help="Defines whether files ignored by the SCM, e.g., files listed in .gitignore, will be excluded from the analysis or not.",
+        )
+
+        parser.add_argument(
+            "--sonar-filesize-limit",
+            "-Dsonar.filesize.limit",
+            type=int,
+            help="Sets the limit in MB for files to be discarded from the analysis scope if the size is greater than specified.",
+        )
+
+        parser.add_argument(
+            "--sonar-cpd-python-minimum-tokens",
+            "-Dsonar.cpd.python.minimumTokens",
+            type=int,
+            help="Minimum number of tokens to be considered as a duplicated block of code",
+        )
+        parser.add_argument(
+            "--sonar-cpd-python-minimum-lines",
+            "-Dsonar.cpd.python.minimumLines",
+            type=int,
+            help="Minimum number of tokens to be considered as a duplicated block of code",
+        )
+
+        parser.add_argument(
+            "--sonar-log-level",
+            "-Dsonar.log.level",
+            type=str,
+            choices=["TRACE", "DEBUG", "INFO", "WARN", "ERROR"],
+            help="Log level during the analysis",
+        )
+        parser.add_argument(
+            "--sonar-qualitygate-wait",
+            "-Dsonar.qualitygate.wait",
+            type=bool,
+            help="Forces the analysis step to poll the server instance and wait for the Quality Gate status",
+        )
+        parser.add_argument(
+            "--sonar-qualitygate-timeout",
+            "-Dsonar.qualitygate.timeout",
+            type=int,
+            help="The number of seconds that the scanner should wait for a report to be processed.",
+        )
+        parser.add_argument(
+            "--sonar-external-issues-report-paths",
+            "-Dsonar.externalIssuesReportPaths",
+            type=str,
+            help="Comma-delimited list of paths to generic issue reports",
+        )
+        parser.add_argument(
+            "--sonar-sarif-report-paths",
+            "-Dsonar.sarifReportPaths",
+            type=str,
+            help="Comma-delimited list of paths to SARIF issue reports.",
+        )
+        parser.add_argument(
+            "--sonar-links-ci", "-Dsonar.links.ci", type=str, help="The URL of the continuous integration system used."
+        )
+        parser.add_argument(
+            "--sonar-links-homepage", "-Dsonar.links.homepage", type=str, help="The URL of the build project home page."
+        )
+        parser.add_argument(
+            "--sonar-links-issue", "-Dsonar.links.issue", type=str, help="The URL to the issue tracker being used. "
+        )
+        parser.add_argument(
+            "--sonar-links-scm",
+            "-Dsonar.links.scm",
+            type=str,
+            help="The URL of the build project source code repository.",
+        )
+        parser.add_argument(
+            "--sonar-branch-name", "-Dsonar.branch.name", type=str, help="Name of the branch being analyzed"
+        )
+        parser.add_argument(
+            "--sonar-pullrequest-key",
+            "-Dsonar.pullrequest.key",
+            type=str,
+            help="Key of the pull request being analyzed",
+        )
+        parser.add_argument(
+            "--sonar-pullrequest-branch",
+            "-Dsonar.pullrequest.branch",
+            type=str,
+            help="Branch of the pull request being analyzed",
+        )
+        parser.add_argument(
+            "--sonar-pullrequest-base",
+            "-Dsonar.pullrequest.base",
+            type=str,
+            help="Base branch of the pull request being analyzed",
+        )
+        parser.add_argument(
+            "--sonar-newcode-reference-branch",
+            "-Dsonar.newCode.referenceBranch",
+            type=str,
+            help="Reference branch for new code definition",
+        )
+        parser.add_argument(
+            "--sonar-scm-revision",
+            "-Dsonar.scm.revision",
+            type=str,
+            help="Overrides the revision, for instance, the Git sha1, displayed in analysis results.",
+        )
+        parser.add_argument(
+            "--sonar-build-string",
+            "-Dsonar.buildString",
+            type=str,
+            help="The string passed with this property will be stored with the analysis and available in the results of api/project_analyses/search, thus allowing you to later identify a specific analysis and obtain its key for use with api/new_code_periods/set on the SPECIFIC_ANALYSIS type",
+        )
+        parser.add_argument(
+            "--sonar-source-encoding",
+            "-Dsonar.sourceEncoding",
+            type=str,
+            help="Encoding of the source files. For example, UTF-8, MacRoman, Shift_JIS. ",
+        )
+        parser.add_argument(
+            "--sonar-working-directory",
+            "-Dsonar.working.directory",
+            type=str,
+            help="Path to the working directory used by the Sonar scanner during a project analysis to store temporary data.",
+        )
+        parser.add_argument(
+            "--sonar-scm-force-reload-all",
+            "-Dsonar.scm.forceReloadAll",
+            type=bool,
+            help="Set this property to true to load blame information for all files, which may significantly increase analysis duration.",
+        )
         parser.add_argument(
             "--toml-path",
             type=str,
