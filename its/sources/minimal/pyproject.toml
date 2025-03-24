@@ -7,6 +7,4 @@ version = "1.5"
 [tool.sonar]
 projectKey="minimal"
 sources="src"
-login="admin"
-password="admin"
 
