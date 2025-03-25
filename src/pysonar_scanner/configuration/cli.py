@@ -27,7 +27,7 @@ class CliConfigurationLoader:
     @classmethod
     def load(cls) -> dict[str, any]:
         args = cls.__parse_cli_args()
-
+        print(args)
         config = {}
         for prop in properties.PROPERTIES:
             if prop.cli_getter is not None:
@@ -89,7 +89,7 @@ class CliConfigurationLoader:
             "--verbose",
             "--sonar-verbose",
             "-Dsonar.verbose",
-            action="store_true",
+            action=argparse.BooleanOptionalAction,
             default=None,
             help="Increase output verbosity",
         )
@@ -139,7 +139,7 @@ class CliConfigurationLoader:
         )
         parser.add_argument(
             "--sonar-scanner-metadata-filepath",
-            "-Dsonar.scanner.metadata.filepath",
+            "-Dsonar.scanner.metadataFilepath",
             type=str,
             help="Sets the location where the scanner writes the report-task.txt file containing among other things the ceTaskId",
         )
@@ -238,9 +238,15 @@ class CliConfigurationLoader:
 
         parser.add_argument(
             "--sonar-scm-exclusions-disabled",
+            type=bool,
+            action=argparse.BooleanOptionalAction,
+            help="Defines whether files ignored by the SCM, e.g., files listed in .gitignore, will be excluded from the analysis or not",
+        )
+
+        parser.add_argument(
             "-Dsonar.scm.exclusions.disabled",
             type=bool,
-            help="Defines whether files ignored by the SCM, e.g., files listed in .gitignore, will be excluded from the analysis or not",
+            help="Equivalent to --sonar-scm-exclusions-disabled",
         )
 
         parser.add_argument(
@@ -272,9 +278,14 @@ class CliConfigurationLoader:
         )
         parser.add_argument(
             "--sonar-qualitygate-wait",
+            type=bool,
+            action=argparse.BooleanOptionalAction,
+            help="Forces the analysis step to poll the server instance and wait for the Quality Gate status",
+        )
+        parser.add_argument(
             "-Dsonar.qualitygate.wait",
             type=bool,
-            help="Forces the analysis step to poll the server instance and wait for the Quality Gate status",
+            help="Equivalent to --sonar-qualitygate-wait",
         )
         parser.add_argument(
             "--sonar-qualitygate-timeout",
@@ -362,9 +373,14 @@ class CliConfigurationLoader:
         )
         parser.add_argument(
             "--sonar-scm-force-reload-all",
+            type=bool,
+            action=argparse.BooleanOptionalAction,
+            help="Set this property to true to load blame information for all files, which may significantly increase analysis duration",
+        )
+        parser.add_argument(
             "-Dsonar.scm.forceReloadAll",
             type=bool,
-            help="Set this property to true to load blame information for all files, which may significantly increase analysis duration",
+            help="Equivalent to --sonar-scm-force-reload-all",
         )
         parser.add_argument(
             "--toml-path",

@@ -267,7 +267,6 @@ class TestCliConfigurationLoader(unittest.TestCase):
             "--sonar-filesize-limit",
             "1000",
             "--sonar-scm-exclusions-disabled",
-            "true",
             "--sonar-cpd-python-minimum-tokens",
             "15",
             "--sonar-cpd-python-minimum-lines",
@@ -275,7 +274,6 @@ class TestCliConfigurationLoader(unittest.TestCase):
             "--sonar-log-level",
             "INFO",
             "--sonar-qualitygate-wait",
-            "true",
             "--sonar-qualitygate-timeout",
             "120",
             "--sonar-external-issues-report-paths",
@@ -309,7 +307,6 @@ class TestCliConfigurationLoader(unittest.TestCase):
             "--sonar-working-directory",
             "/tmp/sonar",
             "--sonar-scm-force-reload-all",
-            "true",
         ],
     )
     def test_all_cli_args(self):
@@ -349,7 +346,7 @@ class TestCliConfigurationLoader(unittest.TestCase):
             "-Dsonar.scanner.skipJreProvisioning",
             "-Dsonar.scanner.javaExePath=mySonarScannerJavaExePath",
             "-Dsonar.scanner.javaOpts=mySonarScannerJavaOpts",
-            "-Dsonar.scanner.metadata.filepath=myMetadataFilepath",
+            "-Dsonar.scanner.metadataFilepath=myMetadataFilepath",
             "-Dsonar.region=us",
             "-Dsonar.userHome=mySonarUserHome",
             "-Dsonar.projectBaseDir=mySonarProjectBaseDir",

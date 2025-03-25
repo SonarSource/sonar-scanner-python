@@ -326,7 +326,7 @@ PROPERTIES: list[Property] = [
     Property(
         name=SONAR_SCM_EXCLUSIONS_DISABLED,
         default_value=None,
-        cli_getter=lambda args: args.sonar_scm_exclusions_disabled
+        cli_getter=lambda args: args.sonar_scm_exclusions_disabled or getattr(args, "Dsonar.scm.exclusions.disabled")
     ),
     Property(
         name=SONAR_CPD_PYTHON_MINIMUM_TOKENS,
@@ -366,92 +366,93 @@ PROPERTIES: list[Property] = [
     Property(
         name=SONAR_QUALITYGATE_WAIT, 
         default_value=None, 
-        cli_getter=lambda args: args.sonar_qualitygate_wait
-        ),
+        cli_getter=lambda args: args.sonar_qualitygate_wait or getattr(args, "Dsonar.qualitygate.wait")
+    ),
     Property(
         name=SONAR_QUALITYGATE_TIMEOUT, 
         default_value=None, 
         cli_getter=lambda args: args.sonar_qualitygate_timeout
-        ),
+    ),
     Property(
         name=SONAR_EXTERNAL_ISSUES_REPORT_PATHS, 
         default_value=None, 
         cli_getter=lambda args: args.sonar_external_issues_report_paths
-        ),
+    ),
     Property(
         name=SONAR_SARIF_REPORT_PATHS, 
         default_value=None,
         cli_getter=lambda args: args.sonar_sarif_report_paths
-        ),
+    ),
     Property(
         name=SONAR_LINKS_CI, 
         default_value=None, 
         cli_getter=lambda args: args.sonar_links_ci
-        ),
+    ),
     Property(
         name=SONAR_LINKS_HOMEPAGE, 
         default_value=None, 
         cli_getter=lambda args: args.sonar_links_homepage
-        ),
+    ),
     Property(
         name=SONAR_LINKS_ISSUE, 
         default_value=None, 
         cli_getter=lambda args: args.sonar_links_issue
-        ),
+    ),
     Property(
         name=SONAR_LINKS_SCM, 
         default_value=None, 
         cli_getter=lambda args: args.sonar_links_scm
-        ),
+    ),
     Property(
         name=SONAR_BRANCH_NAME, 
         default_value=None, 
         cli_getter=lambda args: args.sonar_branch_name
-        ),
+    ),
     Property(
         name=SONAR_PULLREQUEST_KEY, 
         default_value=None, 
         cli_getter=lambda args: args.sonar_pullrequest_key
-        ),
+    ),
     Property(
         name=SONAR_PULLREQUEST_BRANCH, 
         default_value=None, 
         cli_getter=lambda args: args.sonar_pullrequest_branch
-        ),
+    ),
     Property(
         name=SONAR_PULLREQUEST_BASE, 
         default_value=None, 
         cli_getter=lambda args: args.sonar_pullrequest_base
-        ),
+    ),
     Property(
         name=SONAR_NEWCODE_REFERENCE_BRANCH, 
         default_value=None, 
         cli_getter=lambda args: args.sonar_newcode_reference_branch
-        ),
+    ),
     Property(
         name=SONAR_SCM_REVISION, 
         default_value=None, 
         cli_getter=lambda args: args.sonar_scm_revision
-        ),
+    ),
     Property(
         name=SONAR_BUILD_STRING, 
         default_value=None, 
         cli_getter=lambda args: args.sonar_build_string
-        ),
+    ),
     Property(
         name=SONAR_SOURCE_ENCODING, 
         default_value=None, 
         cli_getter=lambda args: args.sonar_source_encoding
-        ),
+    ),
     Property(
         name=SONAR_WORKING_DIRECTORY, 
         default_value=None, 
         cli_getter=lambda args: args.sonar_working_directory
-        ),
+    ),
     Property(
         name=SONAR_SCM_FORCE_RELOAD_ALL, 
         default_value=None, 
-        cli_getter=lambda args: args.sonar_scm_force_reload_all
-        )
+        cli_getter=lambda args: args.sonar_scm_force_reload_all or getattr(args, "Dsonar.scm.forceReloadAll")
+    )
+
 ]
 # fmt: on
