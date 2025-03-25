@@ -88,6 +88,21 @@ class Property:
             result.append(char.lower())
         return "".join(result)
 
+    def env_variable_name(self) -> str:
+        """Convert property name to environment variable name format.
+        Example: sonar.scanner.proxyPort -> SONAR_SCANNER_PROXY_PORT"""
+        # Replace dots with underscores
+        env_name = self.name.replace(".", "_")
+
+        # Insert underscores before uppercase letters (camelCase to snake_case)
+        result = []
+        for i, char in enumerate(env_name):
+            if char.isupper() and i > 0 and env_name[i - 1] != "_":
+                result.append("_")
+            result.append(char)
+        # Convert to uppercase
+        return "".join(result).upper()
+
 
 # fmt: off
 PROPERTIES: list[Property] = [
