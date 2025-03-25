@@ -20,7 +20,7 @@
 from pathlib import Path
 
 from pyfakefs.fake_filesystem_unittest import TestCase
-from pysonar_scanner.configuration import pyproject_toml
+from pysonar_scanner.configuration.pyproject_toml import TomlConfigurationLoader
 
 
 class TestTomlFile(TestCase):
@@ -38,7 +38,7 @@ class TestTomlFile(TestCase):
             exclusions = "**/generated/**/*,**/deprecated/**/*,**/testdata/**/*"
             """,
         )
-        properties = pyproject_toml.load(Path("."))
+        properties = TomlConfigurationLoader.load(Path("."))
 
         self.assertEqual(properties.sonar_properties.get("sonar.projectKey"), "my-project")
         self.assertEqual(properties.sonar_properties.get("sonar.projectName"), "My Project")
@@ -56,7 +56,7 @@ class TestTomlFile(TestCase):
             project-name = "My Project"
             """,
         )
-        properties = pyproject_toml.load(Path("."))
+        properties = TomlConfigurationLoader.load(Path("."))
 
         self.assertEqual(properties.sonar_properties.get("sonar.projectKey"), "my-project")
         self.assertEqual(properties.sonar_properties.get("sonar.projectName"), "My Project")
@@ -73,17 +73,17 @@ class TestTomlFile(TestCase):
             profile = "black"
             """,
         )
-        properties = pyproject_toml.load(Path("."))
+        properties = TomlConfigurationLoader.load(Path("."))
 
         self.assertEqual(len(properties.sonar_properties), 0)
 
     def test_load_missing_file(self):
-        properties = pyproject_toml.load(Path("."))
+        properties = TomlConfigurationLoader.load(Path("."))
         self.assertEqual(len(properties.sonar_properties), 0)
 
     def test_load_empty_file(self):
         self.fs.create_file("pyproject.toml", contents="")
-        properties = pyproject_toml.load(Path("."))
+        properties = TomlConfigurationLoader.load(Path("."))
 
         self.assertEqual(len(properties.sonar_properties), 0)
 
@@ -95,7 +95,7 @@ class TestTomlFile(TestCase):
             sonar.projectKey = "my-project"
             """,
         )
-        properties = pyproject_toml.load(Path("."))
+        properties = TomlConfigurationLoader.load(Path("."))
 
         self.assertEqual(len(properties.sonar_properties), 0)
 
@@ -111,7 +111,7 @@ class TestTomlFile(TestCase):
             coverage.reportPaths = "coverage.xml"
             """,
         )
-        properties = pyproject_toml.load(Path("."))
+        properties = TomlConfigurationLoader.load(Path("."))
 
         self.assertEqual(properties.sonar_properties.get("sonar.projectKey"), "my-project")
         self.assertEqual(properties.sonar_properties.get("sonar.python.version"), "3.9,3.10,3.11,3.12,3.13")
@@ -127,7 +127,7 @@ class TestTomlFile(TestCase):
             projectName = "Custom Path Project"
             """,
         )
-        properties = pyproject_toml.load(Path("custom/path"))
+        properties = TomlConfigurationLoader.load(Path("custom/path"))
 
         self.assertEqual(properties.sonar_properties.get("sonar.projectKey"), "custom-path-project")
         self.assertEqual(properties.sonar_properties.get("sonar.projectName"), "Custom Path Project")
@@ -147,7 +147,7 @@ class TestTomlFile(TestCase):
                 """
             ),
         )
-        properties = pyproject_toml.load(Path("."))
+        properties = TomlConfigurationLoader.load(Path("."))
 
         self.assertEqual(properties.sonar_properties.get("sonar.projectKey"), "my-project")
         self.assertEqual(properties.sonar_properties.get("sonar.projectName"), "My Project")
