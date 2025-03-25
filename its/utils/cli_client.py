@@ -20,13 +20,9 @@
 import pathlib
 from subprocess import CompletedProcess
 import subprocess
-import os
-from typing import Optional
 
-from attr import dataclass
 from utils.sonarqube_client import SonarQubeClient
 
-from pytest import fixture
 
 SCANNER_CMD: str = "pysonar-scanner"
 SOURCES_FOLDER_PATH: pathlib.Path = pathlib.Path(__file__).resolve().parent / "../sources"
