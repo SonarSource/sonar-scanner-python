@@ -60,6 +60,9 @@ SONAR_PROJECT_NAME: Key = "sonar.projectName"
 SONAR_SOURCES: Key = "sonar.sources"
 SONAR_EXCLUSIONS: Key = "sonar.exclusions"
 SONAR_TESTS: Key = "sonar.tests"
+SONAR_PROJECT_VERSION: Key = "sonar.projectVersion"
+SONAR_PROJECT_DESCRIPTION: Key = "sonar.projectDescription"
+SONAR_PYTHON_VERSION: Key = "sonar.python.version"
 
 # pysonar scanner specific properties
 TOML_PATH: Key = "toml-path"
@@ -257,6 +260,21 @@ PROPERTIES: list[Property] = [
             name=TOML_PATH,
             default_value=None,
             cli_getter=lambda args: args.toml_path
+    ),
+    Property(
+                name=SONAR_PROJECT_VERSION,
+                default_value=None,
+                cli_getter=lambda args: args.sonar_project_version
+    ),
+    Property(
+                name=SONAR_PROJECT_DESCRIPTION,
+                default_value=None,
+                cli_getter=lambda args: args.sonar_project_description
+    ),
+    Property(
+                name=SONAR_PYTHON_VERSION,
+                default_value=None,
+                cli_getter=lambda args: args.sonar_python_version
     ),
 ]
 # fmt: on
