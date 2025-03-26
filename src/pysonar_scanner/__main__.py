@@ -30,6 +30,8 @@ from pysonar_scanner.configuration.properties import (
     SONAR_SCANNER_SONARCLOUD_URL,
     SONAR_SCANNER_PROXY_PORT,
     SONAR_SCANNER_JAVA_EXE_PATH,
+    SONAR_SCANNER_OS,
+    SONAR_SCANNER_ARCH,
 )
 from pysonar_scanner.exceptions import SQTooOldException
 from pysonar_scanner.jre import JREResolvedPath, JREProvisioner, JREResolver, JREResolverConfiguration
@@ -89,6 +91,6 @@ def create_scanner_engine(api, cache_manager, config):
 
 
 def create_jre(api, cache, config: dict[str, any]) -> JREResolvedPath:
-    jre_provisioner = JREProvisioner(api, cache)
+    jre_provisioner = JREProvisioner(api, cache, config[SONAR_SCANNER_OS], config[SONAR_SCANNER_ARCH])
     jre_resolver = JREResolver(JREResolverConfiguration.from_dict(config), jre_provisioner)
     return jre_resolver.resolve_jre()

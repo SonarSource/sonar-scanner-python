@@ -17,15 +17,17 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-
+import os
 from unittest.mock import patch
 
 import pyfakefs.fake_filesystem_unittest as pyfakefs
 
 from pysonar_scanner.configuration import configuration_loader
+from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader
 from pysonar_scanner.configuration.properties import (
     SONAR_PROJECT_KEY,
     SONAR_PROJECT_NAME,
+    SONAR_PROJECT_BASE_DIR,
     SONAR_SCANNER_APP,
     SONAR_SCANNER_APP_VERSION,
     SONAR_SCANNER_BOOTSTRAP_START_TIME,
@@ -46,11 +48,16 @@ from pysonar_scanner.configuration.properties import (
     SONAR_PYTHON_VERSION,
     SONAR_HOST_URL,
     SONAR_SCANNER_JAVA_OPTS,
+    SONAR_SCANNER_ARCH,
+    SONAR_SCANNER_OS,
 )
-from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader, SONAR_PROJECT_BASE_DIR
 from pysonar_scanner.exceptions import MissingKeyException
+from pysonar_scanner.utils import Arch, Os
 
 
+# Mock utils.get_os and utils.get_arch at the module level
+@patch("pysonar_scanner.utils.get_arch", return_value=Arch.X64)
+@patch("pysonar_scanner.utils.get_os", return_value=Os.LINUX)
 class TestConfigurationLoader(pyfakefs.TestCase):
     def setUp(self):
         self.maxDiff = None
@@ -59,7 +66,10 @@ class TestConfigurationLoader(pyfakefs.TestCase):
         self.env_patcher.start()
 
     @patch("sys.argv", ["myscript.py", "--token", "myToken", "--sonar-project-key", "myProjectKey"])
-    def test_defaults(self):
+    def test_defaults(self, mock_get_os, mock_get_arch):
+        custom_dir = "/my_analysis_directory"
+        self.fs.create_dir(custom_dir)
+        os.chdir(custom_dir)
         configuration = ConfigurationLoader.load()
         expected_configuration = {
             SONAR_TOKEN: "myToken",
@@ -69,22 +79,40 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_BOOTSTRAP_START_TIME: configuration[SONAR_SCANNER_BOOTSTRAP_START_TIME],
             SONAR_VERBOSE: False,
             SONAR_SCANNER_SKIP_JRE_PROVISIONING: False,
-            SONAR_USER_HOME: "~/.sonar",
+            SONAR_PROJECT_BASE_DIR: "/my_analysis_directory",
             SONAR_SCANNER_CONNECT_TIMEOUT: 5,
             SONAR_SCANNER_SOCKET_TIMEOUT: 60,
             SONAR_SCANNER_RESPONSE_TIMEOUT: 0,
             SONAR_SCANNER_KEYSTORE_PASSWORD: "changeit",
             SONAR_SCANNER_TRUSTSTORE_PASSWORD: "changeit",
+            SONAR_SCANNER_OS: Os.LINUX.value,
+            SONAR_SCANNER_ARCH: Arch.X64.value,
         }
         self.assertDictEqual(configuration, expected_configuration)
 
     @patch("pysonar_scanner.configuration.configuration_loader.get_static_default_properties", return_value={})
+    @patch("pysonar_scanner.configuration.dynamic_defaults_loader.load", return_value={})
     @patch("sys.argv", ["myscript.py"])
-    def test_no_defaults_in_configuration_loaders(self, get_static_default_properties_mock):
+    def test_no_defaults_in_configuration_loaders(
+        self, get_static_default_properties_mock, mock_load, mock_get_os, mock_get_arch
+    ):
         config = ConfigurationLoader.load()
         self.assertDictEqual(config, {})
 
-    def test_get_token(self):
+    @patch("pysonar_scanner.configuration.configuration_loader.get_static_default_properties", return_value={})
+    @patch("sys.argv", ["myscript.py"])
+    def test_dynamic_defaults_are_loaded(self, get_static_default_properties_mock, mock_get_os, mock_get_arch):
+        config = ConfigurationLoader.load()
+        self.assertDictEqual(
+            config,
+            {
+                SONAR_PROJECT_BASE_DIR: os.getcwd(),
+                SONAR_SCANNER_OS: Os.LINUX.value,
+                SONAR_SCANNER_ARCH: Arch.X64.value,
+            },
+        )
+
+    def test_get_token(self, mock_get_os, mock_get_arch):
         with self.subTest("Token is present"):
             self.assertEqual(configuration_loader.get_token({SONAR_TOKEN: "myToken"}), "myToken")
 
@@ -92,7 +120,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             configuration_loader.get_token({})
 
     @patch("sys.argv", ["myscript.py", "--token", "myToken", "--sonar-project-key", "myProjectKey"])
-    def test_load_sonar_project_properties(self):
+    def test_load_sonar_project_properties(self, mock_get_os, mock_get_arch):
 
         self.fs.create_file(
             "sonar-project.properties",
@@ -117,12 +145,14 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_BOOTSTRAP_START_TIME: configuration[SONAR_SCANNER_BOOTSTRAP_START_TIME],
             SONAR_VERBOSE: False,
             SONAR_SCANNER_SKIP_JRE_PROVISIONING: False,
-            SONAR_USER_HOME: "~/.sonar",
+            SONAR_PROJECT_BASE_DIR: os.getcwd(),
             SONAR_SCANNER_CONNECT_TIMEOUT: 5,
             SONAR_SCANNER_SOCKET_TIMEOUT: 60,
             SONAR_SCANNER_RESPONSE_TIMEOUT: 0,
             SONAR_SCANNER_KEYSTORE_PASSWORD: "changeit",
             SONAR_SCANNER_TRUSTSTORE_PASSWORD: "changeit",
+            SONAR_SCANNER_OS: Os.LINUX.value,
+            SONAR_SCANNER_ARCH: Arch.X64.value,
         }
         self.assertDictEqual(configuration, expected_configuration)
 
@@ -138,7 +168,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             "custom/path",
         ],
     )
-    def test_load_sonar_project_properties_from_custom_path(self):
+    def test_load_sonar_project_properties_from_custom_path(self, mock_get_os, mock_get_arch):
         self.fs.create_dir("custom/path")
         self.fs.create_file(
             "custom/path/sonar-project.properties",
@@ -164,12 +194,13 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_BOOTSTRAP_START_TIME: configuration[SONAR_SCANNER_BOOTSTRAP_START_TIME],
             SONAR_VERBOSE: False,
             SONAR_SCANNER_SKIP_JRE_PROVISIONING: False,
-            SONAR_USER_HOME: "~/.sonar",
             SONAR_SCANNER_CONNECT_TIMEOUT: 5,
             SONAR_SCANNER_SOCKET_TIMEOUT: 60,
             SONAR_SCANNER_RESPONSE_TIMEOUT: 0,
             SONAR_SCANNER_KEYSTORE_PASSWORD: "changeit",
             SONAR_SCANNER_TRUSTSTORE_PASSWORD: "changeit",
+            SONAR_SCANNER_OS: Os.LINUX.value,
+            SONAR_SCANNER_ARCH: Arch.X64.value,
         }
         self.assertDictEqual(configuration, expected_configuration)
 
@@ -185,7 +216,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             "custom/path",
         ],
     )
-    def test_load_pyproject_toml_from_base_dir(self):
+    def test_load_pyproject_toml_from_base_dir(self, mock_get_os, mock_get_arch):
         self.fs.create_dir("custom/path")
         self.fs.create_file(
             "custom/path/pyproject.toml",
@@ -212,12 +243,13 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_BOOTSTRAP_START_TIME: configuration[SONAR_SCANNER_BOOTSTRAP_START_TIME],
             SONAR_VERBOSE: False,
             SONAR_SCANNER_SKIP_JRE_PROVISIONING: False,
-            SONAR_USER_HOME: "~/.sonar",
             SONAR_SCANNER_CONNECT_TIMEOUT: 5,
             SONAR_SCANNER_SOCKET_TIMEOUT: 60,
             SONAR_SCANNER_RESPONSE_TIMEOUT: 0,
             SONAR_SCANNER_KEYSTORE_PASSWORD: "changeit",
             SONAR_SCANNER_TRUSTSTORE_PASSWORD: "changeit",
+            SONAR_SCANNER_OS: Os.LINUX.value,
+            SONAR_SCANNER_ARCH: Arch.X64.value,
         }
         self.assertDictEqual(configuration, expected_configuration)
 
@@ -233,7 +265,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             "custom/path",
         ],
     )
-    def test_load_pyproject_toml_from_toml_path(self):
+    def test_load_pyproject_toml_from_toml_path(self, mock_get_os, mock_get_arch):
         self.fs.create_dir("custom/path")
         self.fs.create_file(
             "custom/path/pyproject.toml",
@@ -259,19 +291,21 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_BOOTSTRAP_START_TIME: configuration[SONAR_SCANNER_BOOTSTRAP_START_TIME],
             SONAR_VERBOSE: False,
             SONAR_SCANNER_SKIP_JRE_PROVISIONING: False,
-            SONAR_USER_HOME: "~/.sonar",
+            SONAR_PROJECT_BASE_DIR: os.getcwd(),
             SONAR_SCANNER_CONNECT_TIMEOUT: 5,
             SONAR_SCANNER_SOCKET_TIMEOUT: 60,
             SONAR_SCANNER_RESPONSE_TIMEOUT: 0,
             SONAR_SCANNER_KEYSTORE_PASSWORD: "changeit",
             SONAR_SCANNER_TRUSTSTORE_PASSWORD: "changeit",
+            SONAR_SCANNER_OS: Os.LINUX.value,
+            SONAR_SCANNER_ARCH: Arch.X64.value,
             TOML_PATH: "custom/path",
         }
         self.assertDictEqual(configuration, expected_configuration)
 
     @patch("sys.argv", ["myscript.py"])
     @patch.dict("os.environ", {"SONAR_TOKEN": "TokenFromEnv", "SONAR_PROJECT_KEY": "KeyFromEnv"}, clear=True)
-    def test_load_from_env_variables_only(self):
+    def test_load_from_env_variables_only(self, mock_get_os, mock_get_arch):
         """Test that configuration can be loaded exclusively from environment variables"""
         configuration = ConfigurationLoader.load()
 
@@ -303,7 +337,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
         },
         clear=True,
     )
-    def test_properties_priority(self):
+    def test_properties_priority(self, mock_get_os, mock_get_arch):
         """Test the priority order of different configuration sources:
         1. CLI args (highest)
         2. Environment variables
@@ -388,7 +422,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             "-Danother.unknown.property=anotherValue",
         ],
     )
-    def test_unknown_args_with_D_prefix(self):
+    def test_unknown_args_with_D_prefix(self, mock_get_os, mock_get_arch):
         configuration = ConfigurationLoader.load()
         self.assertEqual(configuration["unknown.property"], "unknownValue")
         self.assertEqual(configuration["another.unknown.property"], "anotherValue")
