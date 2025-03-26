@@ -42,12 +42,11 @@ def scan():
     config = ConfigurationLoader.load()
     set_logging_options(config)
 
-    cache_manager = cache.get_default()
-
     api = build_api(config)
     check_version(api)
     update_config_with_api_urls(config, api.base_urls)
 
+    cache_manager = cache.get_cache(config)
     scanner = create_scanner_engine(api, cache_manager, config)
 
     return scanner.run(config)

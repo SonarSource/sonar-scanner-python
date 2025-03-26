@@ -45,7 +45,7 @@ class TestJREProvisioner(pyfakefs.TestCase):
     def setUp(self):
         self.setUpPyfakefs(allow_root_user=False)
 
-        self.cache = cache.get_default()
+        self.cache = cache.get_cache({})
         self.api = sq_api_utils.get_sq_server()
 
         self.__setup_zip_file()

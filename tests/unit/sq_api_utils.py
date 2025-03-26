@@ -19,6 +19,7 @@
 #
 import contextlib
 from typing import Optional
+
 from pysonar_scanner import utils
 from pysonar_scanner.api import JRE, BaseUrls, SonarQubeApi
 import responses
