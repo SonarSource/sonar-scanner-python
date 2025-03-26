@@ -67,6 +67,15 @@ else:
         return sonarqube_client
 
 
+def pytest_addoption(parser):
+    parser.addoption("--debug-its", action="store_true", default=False, help="run scanner")
+
+
 @pytest.fixture
-def cli(sonarqube_client: SonarQubeClient) -> CliClient:
-    return CliClient(sonarqube_client)
+def is_debugging(pytestconfig) -> bool:
+    return pytestconfig.getoption("--debug-its")
+
+
+@pytest.fixture
+def cli(sonarqube_client: SonarQubeClient, is_debugging: bool, caplog: pytest.CaptureFixture) -> CliClient:
+    return CliClient(sonarqube_client, is_debugging, caplog)

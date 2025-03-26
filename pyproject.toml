@@ -46,6 +46,7 @@ pytest = '8.3.5'
 pytest-cov = '6.0.0'
 pytest-subtests = "^0.14.1"
 pytest-docker = "^3.2.0"
+debugpy = "^1.8.13"
 
 [[tool.poetry.packages]]
 from = 'src'
@@ -66,3 +67,5 @@ pythonpath = ['src']
 markers = [
     "its: marks tests as its"
 ]
+log_cli = true
+log_cli_level = "INFO"
