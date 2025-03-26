@@ -17,23 +17,20 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-from enum import Enum
 import json
 import logging
-from operator import le
 import pathlib
+from dataclasses import dataclass
+from subprocess import Popen, PIPE
 from threading import Thread
 from typing import IO, Callable, Optional
 
-from dataclasses import dataclass
-
 import pysonar_scanner.api as api
-
 from pysonar_scanner.api import SonarQubeApi
 from pysonar_scanner.cache import Cache, CacheFile
+from pysonar_scanner.configuration.properties import SONAR_SCANNER_JAVA_EXE_PATH
 from pysonar_scanner.exceptions import ChecksumException, SQTooOldException
 from pysonar_scanner.jre import JREProvisioner, JREResolvedPath, JREResolver, JREResolverConfiguration
-from subprocess import Popen, PIPE
 
 
 @dataclass(frozen=True)
@@ -149,6 +146,8 @@ class ScannerEngine:
     def run(self, config: dict[str, any]):
         self.__version_check()
         jre_path = self.__resolve_jre(config)
+
+        config[SONAR_SCANNER_JAVA_EXE_PATH] = str(jre_path.path)
         scanner_engine_path = self.__fetch_scanner_engine()
         cmd = self.__build_command(jre_path, scanner_engine_path)
         properties_str = self.__config_to_json(config)

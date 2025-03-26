@@ -20,10 +20,16 @@
 
 from pysonar_scanner import app_logging
 from pysonar_scanner import cache
-from pysonar_scanner.api import get_base_urls, SonarQubeApi
+from pysonar_scanner.api import get_base_urls, SonarQubeApi, BaseUrls
 from pysonar_scanner.configuration import configuration_loader
 from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader
-from pysonar_scanner.configuration.properties import SONAR_VERBOSE
+from pysonar_scanner.configuration.properties import (
+    SONAR_VERBOSE,
+    SONAR_HOST_URL,
+    SONAR_SCANNER_API_BASE_URL,
+    SONAR_SCANNER_SONARCLOUD_URL,
+    SONAR_SCANNER_PROXY_PORT,
+)
 from pysonar_scanner.scannerengine import ScannerEngine
 
 
@@ -35,6 +41,7 @@ def scan():
 
     cache_manager = cache.get_default()
     api = __build_api(config)
+    __update_config_with_api_urls(config, api.base_urls)
     scanner = ScannerEngine(api, cache_manager)
     return scanner.run(config)
 
@@ -47,3 +54,12 @@ def __build_api(config: dict[str, any]) -> SonarQubeApi:
     token = configuration_loader.get_token(config)
     base_urls = get_base_urls(config)
     return SonarQubeApi(base_urls, token)
+
+
+def __update_config_with_api_urls(config, base_urls: BaseUrls):
+    config[SONAR_HOST_URL] = base_urls.base_url
+    config[SONAR_SCANNER_API_BASE_URL] = base_urls.api_base_url
+    if base_urls.is_sonar_qube_cloud:
+        config[SONAR_SCANNER_SONARCLOUD_URL] = base_urls.base_url
+    config[SONAR_SCANNER_SONARCLOUD_URL] = base_urls.base_url
+    config[SONAR_SCANNER_PROXY_PORT] = "443" if base_urls.base_url.startswith("https") else "80"

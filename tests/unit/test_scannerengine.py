@@ -19,29 +19,26 @@
 #
 import json
 import logging
-from math import log
-from subprocess import PIPE
-import unittest
 import pathlib
+import unittest
+from subprocess import PIPE
+from unittest.mock import Mock
+from unittest.mock import patch, MagicMock
+
 import pyfakefs.fake_filesystem_unittest as pyfakefs
 
-from pysonar_scanner import app_logging, cache
+from pysonar_scanner import cache
 from pysonar_scanner import scannerengine
+from pysonar_scanner.api import SQVersion
 from pysonar_scanner.exceptions import ChecksumException, SQTooOldException
-from pysonar_scanner.jre import JREProvisioner, JREResolvedPath, JREResolver
+from pysonar_scanner.jre import JREResolvedPath, JREResolver
 from pysonar_scanner.scannerengine import (
-    CmdExecutor,
     LogLine,
     ScannerEngine,
     ScannerEngineProvisioner,
     default_log_line_listener,
-    parse_log_line,
 )
-from unittest.mock import Mock
-
-from pysonar_scanner.api import SQVersion
 from tests.unit import sq_api_utils
-from unittest.mock import patch, MagicMock
 
 
 class TestLogLine(unittest.TestCase):
@@ -154,6 +151,9 @@ class TestScannerEngineWithFake(pyfakefs.TestCase):
                 "scannerProperties": [
                     {"key": "sonar.token", "value": "myToken"},
                     {"key": "sonar.projectKey", "value": "myProjectKey"},
+                    {"key": "sonar.scanner.os", "value": "linux"},
+                    {"key": "sonar.scanner.arch", "value": "x64"},
+                    {"key": "sonar.scanner.javaExePath", "value": "jre/bin/java"},
                 ]
             }
         )

@@ -23,13 +23,36 @@ from pyfakefs import fake_filesystem_unittest as pyfakefs
 
 from pysonar_scanner.__main__ import scan
 from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader
-from pysonar_scanner.configuration.properties import SONAR_PROJECT_KEY, SONAR_TOKEN
+from pysonar_scanner.configuration.properties import (
+    SONAR_PROJECT_KEY,
+    SONAR_TOKEN,
+    SONAR_HOST_URL,
+    SONAR_SCANNER_API_BASE_URL,
+    SONAR_SCANNER_SONARCLOUD_URL,
+    SONAR_SCANNER_PROXY_PORT,
+)
 from pysonar_scanner.scannerengine import ScannerEngine
 
 
 class TestMain(pyfakefs.TestCase):
     @patch.object(ConfigurationLoader, "load", return_value={SONAR_TOKEN: "myToken", SONAR_PROJECT_KEY: "myProjectKey"})
     @patch.object(ScannerEngine, "run", return_value=0)
-    def test_minimal_success_run(self, load_mock, run_mock):
+    def test_minimal_success_run(self, run_mock, load_mock):
         exitcode = scan()
         self.assertEqual(exitcode, 0)
+
+        # Verify that run was called with the expected configuration
+        run_mock.assert_called_once()
+        config = run_mock.call_args[0][0]  # Extract the configuration arg
+
+        # Check expected configuration with a single assertion
+        expected_config = {
+            SONAR_TOKEN: "myToken",
+            SONAR_PROJECT_KEY: "myProjectKey",
+            SONAR_HOST_URL: "https://sonarcloud.io",
+            SONAR_SCANNER_API_BASE_URL: "https://api.sonarcloud.io",
+            SONAR_SCANNER_SONARCLOUD_URL: "https://sonarcloud.io",
+            SONAR_SCANNER_PROXY_PORT: "443",
+        }
+
+        self.assertEqual(expected_config, config)
