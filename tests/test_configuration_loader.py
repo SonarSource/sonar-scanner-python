@@ -51,11 +51,12 @@ from pysonar_scanner.configuration.properties import (
 )
 from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader, SONAR_PROJECT_BASE_DIR
 from pysonar_scanner.exceptions import MissingKeyException
+from pysonar_scanner.utils import Arch, Os
 
 
 # Mock utils.get_os and utils.get_arch at the module level
-@patch("pysonar_scanner.utils.get_arch", return_value="x64")
-@patch("pysonar_scanner.utils.get_os", return_value="linux")
+@patch("pysonar_scanner.utils.get_arch", return_value=Arch.X64)
+@patch("pysonar_scanner.utils.get_os", return_value=Os.LINUX)
 class TestConfigurationLoader(pyfakefs.TestCase):
     def setUp(self):
         self.maxDiff = None
@@ -80,8 +81,8 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_RESPONSE_TIMEOUT: 0,
             SONAR_SCANNER_KEYSTORE_PASSWORD: "changeit",
             SONAR_SCANNER_TRUSTSTORE_PASSWORD: "changeit",
-            SONAR_SCANNER_OS: "linux",
-            SONAR_SCANNER_ARCH: "x64",
+            SONAR_SCANNER_OS: Os.LINUX.value,
+            SONAR_SCANNER_ARCH: Arch.X64.value,
         }
         self.assertDictEqual(configuration, expected_configuration)
 
@@ -102,8 +103,8 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             config,
             {
                 SONAR_PROJECT_BASE_DIR: "/",
-                SONAR_SCANNER_OS: "linux",
-                SONAR_SCANNER_ARCH: "x64",
+                SONAR_SCANNER_OS: Os.LINUX.value,
+                SONAR_SCANNER_ARCH: Arch.X64.value,
             },
         )
 
@@ -146,8 +147,8 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_RESPONSE_TIMEOUT: 0,
             SONAR_SCANNER_KEYSTORE_PASSWORD: "changeit",
             SONAR_SCANNER_TRUSTSTORE_PASSWORD: "changeit",
-            SONAR_SCANNER_OS: "linux",
-            SONAR_SCANNER_ARCH: "x64",
+            SONAR_SCANNER_OS: Os.LINUX.value,
+            SONAR_SCANNER_ARCH: Arch.X64.value,
         }
         self.assertDictEqual(configuration, expected_configuration)
 
@@ -194,8 +195,8 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_RESPONSE_TIMEOUT: 0,
             SONAR_SCANNER_KEYSTORE_PASSWORD: "changeit",
             SONAR_SCANNER_TRUSTSTORE_PASSWORD: "changeit",
-            SONAR_SCANNER_OS: "linux",
-            SONAR_SCANNER_ARCH: "x64",
+            SONAR_SCANNER_OS: Os.LINUX.value,
+            SONAR_SCANNER_ARCH: Arch.X64.value,
         }
         self.assertDictEqual(configuration, expected_configuration)
 
@@ -243,8 +244,8 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_RESPONSE_TIMEOUT: 0,
             SONAR_SCANNER_KEYSTORE_PASSWORD: "changeit",
             SONAR_SCANNER_TRUSTSTORE_PASSWORD: "changeit",
-            SONAR_SCANNER_OS: "linux",
-            SONAR_SCANNER_ARCH: "x64",
+            SONAR_SCANNER_OS: Os.LINUX.value,
+            SONAR_SCANNER_ARCH: Arch.X64.value,
         }
         self.assertDictEqual(configuration, expected_configuration)
 
@@ -292,8 +293,8 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_RESPONSE_TIMEOUT: 0,
             SONAR_SCANNER_KEYSTORE_PASSWORD: "changeit",
             SONAR_SCANNER_TRUSTSTORE_PASSWORD: "changeit",
-            SONAR_SCANNER_OS: "linux",
-            SONAR_SCANNER_ARCH: "x64",
+            SONAR_SCANNER_OS: Os.LINUX.value,
+            SONAR_SCANNER_ARCH: Arch.X64.value,
             TOML_PATH: "custom/path",
         }
         self.assertDictEqual(configuration, expected_configuration)
@@ -407,8 +408,8 @@ class TestConfigurationLoader(pyfakefs.TestCase):
 
 
 # If you have test functions outside of classes, use patch as a decorator for each function
-@patch("pysonar_scanner.utils.get_arch", return_value="x64")
-@patch("pysonar_scanner.utils.get_os", return_value="linux")
+@patch("pysonar_scanner.utils.get_arch", return_value=Arch.X64.value)
+@patch("pysonar_scanner.utils.get_os", return_value=Os.LINUX.value)
 def test_standalone_function(mock_get_os, mock_get_arch):
     # ...existing test code...
     pass

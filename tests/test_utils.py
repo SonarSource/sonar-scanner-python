@@ -23,7 +23,7 @@ import unittest
 import unittest.mock
 import pyfakefs.fake_filesystem_unittest as pyfakefs
 
-from pysonar_scanner.utils import get_arch, get_os, remove_trailing_slash, calculate_checksum
+from pysonar_scanner.utils import Arch, Os, get_arch, get_os, remove_trailing_slash, calculate_checksum
 
 
 class TestUtils(unittest.TestCase):
@@ -35,10 +35,10 @@ class TestUtils(unittest.TestCase):
 
     def test_get_os(self):
         with self.subTest("os=Windows"), unittest.mock.patch("platform.system", return_value="Windows"):
-            self.assertEqual(get_os(), "windows")
+            self.assertEqual(get_os(), Os.WINDOWS)
 
         with self.subTest("os=Darwin"), unittest.mock.patch("platform.system", return_value="Darwin"):
-            self.assertEqual(get_os(), "mac")
+            self.assertEqual(get_os(), Os.MACOS)
 
     def test_get_arch(self):
         x64_machine_strs = ["amd64", "AmD64", "x86_64", "X86_64"]
@@ -46,13 +46,13 @@ class TestUtils(unittest.TestCase):
             with self.subTest("amd64", machine_str=machine_str), unittest.mock.patch(
                 "platform.machine", return_value=machine_str
             ):
-                self.assertEqual(get_arch(), "x64")
+                self.assertEqual(get_arch(), Arch.X64)
         arm_machine_strs = ["arm64", "ARm64"]
         for machine_str in arm_machine_strs:
             with self.subTest("arm", machine_str=machine_str), unittest.mock.patch(
                 "platform.machine", return_value=machine_str
             ):
-                self.assertEqual(get_arch(), "aarch64")
+                self.assertEqual(get_arch(), Arch.AARCH64)
 
 
 class TestAlpineDetection(unittest.TestCase):
@@ -99,7 +99,7 @@ class TestAlpineDetection(unittest.TestCase):
                 ):
                     assert patcher.fs is not None
                     patcher.fs.create_file(os_release_location, contents=alpine_text)
-                    self.assertEqual(get_os(), "alpine")
+                    self.assertEqual(get_os(), Os.ALPINE)
 
     def test_os_release_for_generic_linux(self):
         for os_release_location in self.os_release_locations:
@@ -110,7 +110,7 @@ class TestAlpineDetection(unittest.TestCase):
             ):
                 assert patcher.fs is not None
                 patcher.fs.create_file(os_release_location, contents=self.ubuntu_text)
-                self.assertEqual(get_os(), "linux")
+                self.assertEqual(get_os(), Os.LINUX)
 
     def test_os_release_does_not_exist(self):
         with (
@@ -120,7 +120,7 @@ class TestAlpineDetection(unittest.TestCase):
         ):
             self.assertFalse(pathlib.Path("/etc/os-release").exists())
             self.assertFalse(pathlib.Path("/usr/lib/os-release").exists())
-            self.assertEqual(get_os(), "linux")
+            self.assertEqual(get_os(), Os.LINUX)
 
 
 class TestCalculateChecksum(unittest.TestCase):

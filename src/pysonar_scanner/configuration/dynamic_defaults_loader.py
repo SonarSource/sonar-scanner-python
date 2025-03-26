@@ -29,8 +29,8 @@ def load() -> Dict[Key, any]:
     Load dynamically computed default properties
     """
     properties = {
-        SONAR_SCANNER_OS: utils.get_os(),
-        SONAR_SCANNER_ARCH: utils.get_arch(),
+        SONAR_SCANNER_OS: utils.get_os().value,
+        SONAR_SCANNER_ARCH: utils.get_arch().value,
         SONAR_PROJECT_BASE_DIR: os.getcwd(),
     }
     return properties

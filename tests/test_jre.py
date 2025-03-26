@@ -34,13 +34,14 @@ from pysonar_scanner.configuration.properties import (
 )
 from pysonar_scanner.exceptions import ChecksumException, NoJreAvailableException, UnsupportedArchiveFormat
 from pysonar_scanner.jre import JREProvisioner, JREResolvedPath, JREResolver, JREResolverConfiguration
+from pysonar_scanner.utils import Os, Arch
 from tests import sq_api_utils
 
 import zipfile
 
 
-@patch("pysonar_scanner.utils.get_os", return_value="linux")
-@patch("pysonar_scanner.utils.get_arch", return_value="aarch64")
+@patch("pysonar_scanner.utils.get_os", return_value=Os.LINUX)
+@patch("pysonar_scanner.utils.get_arch", return_value=Arch.AARCH64)
 class TestJREProvisioner(pyfakefs.TestCase):
     def setUp(self):
         self.setUpPyfakefs(allow_root_user=False)
@@ -56,7 +57,7 @@ class TestJREProvisioner(pyfakefs.TestCase):
             filename="fake_jre.zip",
             sha256="fakechecksum",
             java_path="fake_java",
-            os="windows",
+            os=Os.WINDOWS.value,
             arch="x64",
             download_url="http://example.com/fake_jre.zip",
         )
@@ -74,8 +75,8 @@ class TestJREProvisioner(pyfakefs.TestCase):
             filename=self.zip_name,
             sha256=self.zip_checksum,
             java_path="java",
-            os="linux",
-            arch="aarch64",
+            os=Os.LINUX.value,
+            arch=Arch.AARCH64.value,
             download_url=None,
         )
 
@@ -94,8 +95,8 @@ class TestJREProvisioner(pyfakefs.TestCase):
             filename=self.tar_gz_name,
             sha256=self.tar_gz_checksum,
             java_path="java",
-            os="linux",
-            arch="aarch64",
+            os=Os.LINUX.value,
+            arch=Arch.AARCH64.value,
             download_url=None,
         )
 
@@ -107,14 +108,14 @@ class TestJREProvisioner(pyfakefs.TestCase):
             filename=self.tgz_name,
             sha256=self.tgz_checksum,
             java_path="java",
-            os="linux",
-            arch="aarch64",
+            os=Os.LINUX.value,
+            arch=Arch.AARCH64.value,
             download_url=None,
         )
 
     def test_if_patching_worked(self, get_os_mock, get_arch_mock):
-        self.assertEqual(utils.get_os(), "linux")
-        self.assertEqual(utils.get_arch(), "aarch64")
+        self.assertEqual(utils.get_os(), Os.LINUX)
+        self.assertEqual(utils.get_arch(), Arch.AARCH64)
 
     def test_successfully_downloading_jre(self, get_os_mock, get_arch_mock):
         class JRETestCase(TypedDict):
@@ -137,11 +138,10 @@ class TestJREProvisioner(pyfakefs.TestCase):
             testcase_jre = testcase["jre"]
             jres = [testcase_jre, self.other_jre]
             with self.subTest(jre=testcase), sq_api_utils.sq_api_mocker() as mocker:
-                mocker.mock_analysis_jres(
-                    body=[sq_api_utils.jre_to_dict(jre) for jre in jres])
+                mocker.mock_analysis_jres(body=[sq_api_utils.jre_to_dict(jre) for jre in jres])
                 mocker.mock_analysis_jre_download(id=testcase_jre.id, body=testcase["bytes"], status=200)
 
-                provisioner = JREProvisioner(self.api, self.cache, utils.get_os(), utils.get_arch())
+                provisioner = JREProvisioner(self.api, self.cache, utils.get_os().value, utils.get_arch().value)
                 jre_path = provisioner.provision()
 
                 cache_file = self.cache.get_file(testcase_jre.filename, testcase["checksum"])
@@ -161,7 +161,7 @@ class TestJREProvisioner(pyfakefs.TestCase):
             mocker.mock_analysis_jres(body=[jre_dict])
             mocker.mock_analysis_jre_download(id="zip_jre", body=self.zip_bytes, status=200)
 
-            JREProvisioner(self.api, self.cache, utils.get_os(), utils.get_arch()).provision()
+            JREProvisioner(self.api, self.cache, utils.get_os().value, utils.get_arch().value).provision()
 
     def test_retry_mechanism(self, *args):
         with sq_api_utils.sq_api_mocker() as mocker:
@@ -173,7 +173,7 @@ class TestJREProvisioner(pyfakefs.TestCase):
             mocker.mock_analysis_jres(body=[jre_dict])
             mocker.mock_analysis_jre_download(id="zip_jre", body=self.zip_bytes, status=200)
 
-            JREProvisioner(self.api, self.cache, utils.get_os(), utils.get_arch()).provision()
+            JREProvisioner(self.api, self.cache, utils.get_os().value, utils.get_arch().value).provision()
 
             cache_file = self.cache.get_file(self.zip_jre.filename, self.zip_checksum)
             self.assertTrue(cache_file.is_valid())
@@ -187,7 +187,7 @@ class TestJREProvisioner(pyfakefs.TestCase):
             with self.cache.get_file(self.zip_jre.filename, self.zip_checksum).open(mode="wb") as f:
                 f.write(self.zip_bytes)
 
-            JREProvisioner(self.api, self.cache, utils.get_os(), utils.get_arch()).provision()
+            JREProvisioner(self.api, self.cache, utils.get_os().value, utils.get_arch().value).provision()
 
             cache_file = self.cache.get_file(self.zip_jre.filename, self.zip_checksum)
             self.assertTrue(cache_file.is_valid())
@@ -208,19 +208,18 @@ class TestJREProvisioner(pyfakefs.TestCase):
                 cache_file.is_valid(), msg="Cache file should have invalid checksum before provisioner ran"
             )
 
-            JREProvisioner(self.api, self.cache, utils.get_os(), utils.get_arch()).provision()
+            JREProvisioner(self.api, self.cache, utils.get_os().value, utils.get_arch().value).provision()
 
             self.assertTrue(cache_file.is_valid(), msg="Cache file should have valid checksum after provisioner ran")
 
     def test_no_jre_available(self, *args):
         with self.assertRaises(NoJreAvailableException), sq_api_utils.sq_api_mocker() as mocker:
             mocker.mock_analysis_jres(body=[])
-            JREProvisioner(self.api, self.cache, utils.get_os(), utils.get_arch()).provision()
+            JREProvisioner(self.api, self.cache, utils.get_os().value, utils.get_arch().value).provision()
 
     def test_unzip_dir_already_exists(self, *args):
         with sq_api_utils.sq_api_mocker() as mocker:
-            mocker.mock_analysis_jres(
-                body=[sq_api_utils.jre_to_dict(self.zip_jre)])
+            mocker.mock_analysis_jres(body=[sq_api_utils.jre_to_dict(self.zip_jre)])
             mocker.mock_analysis_jre_download(id="zip_jre", body=self.zip_bytes, status=200)
 
             unzip_dir = self.cache.get_file_path("jre.zip_unzip")
@@ -229,7 +228,7 @@ class TestJREProvisioner(pyfakefs.TestCase):
             old_text_file = unzip_dir / "subdir/test.txt"
             old_text_file.write_text("test")
 
-            JREProvisioner(self.api, self.cache, utils.get_os(), utils.get_arch()).provision()
+            JREProvisioner(self.api, self.cache, utils.get_os().value, utils.get_arch().value).provision()
 
             self.assertTrue(unzip_dir.exists())
             self.assertTrue((unzip_dir / "readme.md").exists())
@@ -242,17 +241,15 @@ class TestJREProvisioner(pyfakefs.TestCase):
             filename="jre.txt",
             sha256=self.zip_checksum,
             java_path="java",
-            os="linux",
-            arch="aarch64",
+            os=Os.LINUX.value,
+            arch=Arch.AARCH64.value,
             download_url=None,
         )
 
         with self.assertRaises(UnsupportedArchiveFormat), sq_api_utils.sq_api_mocker() as mocker:
-            mocker.mock_analysis_jres(
-                body=[sq_api_utils.jre_to_dict(unsupported_archive_jre)])
+            mocker.mock_analysis_jres(body=[sq_api_utils.jre_to_dict(unsupported_archive_jre)])
             mocker.mock_analysis_jre_download(id="unsupported", body=self.zip_bytes, status=200)
-
-            JREProvisioner(self.api, self.cache, utils.get_os(), utils.get_arch()).provision()
+            JREProvisioner(self.api, self.cache, utils.get_os().value, utils.get_arch().value).provision()
 
 
 class TestJREResolvedPath(unittest.TestCase):
@@ -279,13 +276,13 @@ class TestJREResolverConfiguration(unittest.TestCase):
             {
                 SONAR_SCANNER_JAVA_EXE_PATH: "a/b",
                 SONAR_SCANNER_SKIP_JRE_PROVISIONING: True,
-                SONAR_SCANNER_OS: "windows",
+                SONAR_SCANNER_OS: Os.WINDOWS.value,
             }
         )
 
         self.assertEqual(config.sonar_scanner_java_exe_path, "a/b")
         self.assertTrue(config.sonar_scanner_skip_jre_provisioning)
-        self.assertEqual(config.sonar_scanner_os, "windows")
+        self.assertEqual(config.sonar_scanner_os, Os.WINDOWS.value)
 
 
 class TestJREResolver(unittest.TestCase):
@@ -339,7 +336,7 @@ class TestJREResolver(unittest.TestCase):
             {
                 "name": "if skip_jre_provisioning is True and java_home is not set return the default for windows",
                 "config": JREResolverConfiguration(
-                    sonar_scanner_os="windows",
+                    sonar_scanner_os=Os.WINDOWS.value,
                     sonar_scanner_skip_jre_provisioning=True,
                     sonar_scanner_java_exe_path=None,
                 ),
