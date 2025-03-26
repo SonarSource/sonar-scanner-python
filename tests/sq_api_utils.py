@@ -79,8 +79,6 @@ class SQApiMocker:
     def mock_analysis_jres(
         self,
         body: Optional[list[dict]] = None,
-        os_matcher: Optional[str] = None,
-        arch_matcher: Optional[str] = None,
         status: int = 200,
     ) -> responses.BaseResponse:
         return self.rsps.get(
@@ -89,7 +87,6 @@ class SQApiMocker:
             status=status,
             match=[
                 matchers.header_matcher({"Accept": "application/json"}),
-                matchers.query_param_matcher(utils.filter_none_values({"os": os_matcher, "arch": arch_matcher})),
             ],
         )
 

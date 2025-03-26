@@ -21,7 +21,9 @@ import hashlib
 import pathlib
 import platform
 import typing
-from enum import Enum
+
+OsStr = typing.Literal["windows", "linux", "mac", "alpine", "other"]
+ArchStr = typing.Literal["x86_64", "aarch64", "x86"]
 
 
 def remove_trailing_slash(url: str) -> str:
@@ -35,15 +37,7 @@ def calculate_checksum(filehandle: typing.BinaryIO) -> str:
     return sha256_hash.hexdigest()
 
 
-class Os(Enum):
-    WINDOWS = "windows"
-    LINUX = "linux"
-    MACOS = "mac"
-    ALPINE = "alpine"
-    OTHER = "other"
-
-
-def get_os() -> Os:
+def get_os() -> OsStr:
     def is_alpine() -> bool:
         try:
             os_release = pathlib.Path("/etc/os-release")
@@ -58,30 +52,24 @@ def get_os() -> Os:
 
     os_name = platform.system()
     if os_name == "Windows":
-        return Os.WINDOWS
+        return "windows"
     elif os_name == "Darwin":
-        return Os.MACOS
+        return "mac"
     elif os_name == "Linux":
         if is_alpine():
-            return Os.ALPINE
+            return "alpine"
         else:
-            return Os.LINUX
-    return Os.OTHER
+            return "linux"
+    return "other"
 
 
-class Arch(Enum):
-    X64 = "x64"
-    AARCH64 = "aarch64"
-    OTHER = "other"
-
-
-def get_arch() -> Arch:
+def get_arch() -> ArchStr:
     machine = platform.machine().lower()
     if machine in ["amd64", "x86_64"]:
-        return Arch.X64
+        return "x64"
     elif machine == "arm64":
-        return Arch.AARCH64
-    return Arch.OTHER
+        return "aarch64"
+    return "other"
 
 
 def filter_none_values(dictionary: dict) -> dict:

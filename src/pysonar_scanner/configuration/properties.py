@@ -178,7 +178,7 @@ PROPERTIES: list[Property] = [
     ),
     Property(
         name=SONAR_USER_HOME, 
-        default_value="~/.sonar", 
+        default_value=None,
         cli_getter=lambda args: args.sonar_user_home
     ),  
     Property(

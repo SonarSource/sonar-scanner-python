@@ -320,7 +320,7 @@ class TestSonarQubeApi(unittest.TestCase):
         with self.subTest("get_analysis_jres works"), sq_api_mocker() as mocker:
             mocker.mock_analysis_jres([sq_api_utils.jre_to_dict(jre) for jre in expected_jres])
 
-            actual_jres = self.sq.get_analysis_jres()
+            actual_jres = self.sq.get_analysis_jres(os="linux", arch="x86_64")
             self.assertEqual(actual_jres, expected_jres)
 
         with (
@@ -329,7 +329,7 @@ class TestSonarQubeApi(unittest.TestCase):
             self.assertRaises(SonarQubeApiException),
         ):
             mocker.mock_analysis_jres(status=404)
-            self.sq.get_analysis_jres()
+            self.sq.get_analysis_jres(os="linux", arch="x86_64")
 
         with (
             self.subTest("get_analysis_jres returns error when keys are missing"),
@@ -337,7 +337,7 @@ class TestSonarQubeApi(unittest.TestCase):
             self.assertRaises(SonarQubeApiException),
         ):
             mocker.mock_analysis_jres([{"id": "jre1"}])
-            self.sq.get_analysis_jres()
+            self.sq.get_analysis_jres(os="linux", arch="x86_64")
 
     def test_download_analysis_jre(self):
         jre_id = "jre1"

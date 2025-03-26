@@ -39,8 +39,8 @@ from tests import sq_api_utils
 import zipfile
 
 
-@patch("pysonar_scanner.utils.get_os", return_value=utils.Os.LINUX)
-@patch("pysonar_scanner.utils.get_arch", return_value=utils.Arch.AARCH64)
+@patch("pysonar_scanner.utils.get_os", return_value="linux")
+@patch("pysonar_scanner.utils.get_arch", return_value="aarch64")
 class TestJREProvisioner(pyfakefs.TestCase):
     def setUp(self):
         self.setUpPyfakefs(allow_root_user=False)
@@ -56,8 +56,8 @@ class TestJREProvisioner(pyfakefs.TestCase):
             filename="fake_jre.zip",
             sha256="fakechecksum",
             java_path="fake_java",
-            os=utils.Os.WINDOWS.value,
-            arch=utils.Arch.X64.value,
+            os="windows",
+            arch="x64",
             download_url="http://example.com/fake_jre.zip",
         )
 
@@ -113,8 +113,8 @@ class TestJREProvisioner(pyfakefs.TestCase):
         )
 
     def test_if_patching_worked(self, get_os_mock, get_arch_mock):
-        self.assertEqual(utils.get_os(), utils.Os.LINUX)
-        self.assertEqual(utils.get_arch(), utils.Arch.AARCH64)
+        self.assertEqual(utils.get_os(), "linux")
+        self.assertEqual(utils.get_arch(), "aarch64")
 
     def test_successfully_downloading_jre(self, get_os_mock, get_arch_mock):
         class JRETestCase(TypedDict):
@@ -138,11 +138,10 @@ class TestJREProvisioner(pyfakefs.TestCase):
             jres = [testcase_jre, self.other_jre]
             with self.subTest(jre=testcase), sq_api_utils.sq_api_mocker() as mocker:
                 mocker.mock_analysis_jres(
-                    body=[sq_api_utils.jre_to_dict(jre) for jre in jres], os_matcher="linux", arch_matcher="aarch64"
-                )
+                    body=[sq_api_utils.jre_to_dict(jre) for jre in jres])
                 mocker.mock_analysis_jre_download(id=testcase_jre.id, body=testcase["bytes"], status=200)
 
-                provisioner = JREProvisioner(self.api, self.cache)
+                provisioner = JREProvisioner(self.api, self.cache, utils.get_os(), utils.get_arch())
                 jre_path = provisioner.provision()
 
                 cache_file = self.cache.get_file(testcase_jre.filename, testcase["checksum"])
@@ -159,10 +158,10 @@ class TestJREProvisioner(pyfakefs.TestCase):
         with self.assertRaises(ChecksumException), sq_api_utils.sq_api_mocker() as mocker:
             jre_dict = sq_api_utils.jre_to_dict(self.zip_jre)
             jre_dict["sha256"] = "invalid"
-            mocker.mock_analysis_jres(body=[jre_dict], os_matcher="linux", arch_matcher="aarch64")
+            mocker.mock_analysis_jres(body=[jre_dict])
             mocker.mock_analysis_jre_download(id="zip_jre", body=self.zip_bytes, status=200)
 
-            JREProvisioner(self.api, self.cache).provision()
+            JREProvisioner(self.api, self.cache, utils.get_os(), utils.get_arch()).provision()
 
     def test_retry_mechanism(self, *args):
         with sq_api_utils.sq_api_mocker() as mocker:
@@ -170,11 +169,11 @@ class TestJREProvisioner(pyfakefs.TestCase):
             jre_dict_with_invalid_checksum["sha256"] = "invalid"
 
             jre_dict = sq_api_utils.jre_to_dict(self.zip_jre)
-            mocker.mock_analysis_jres(body=[jre_dict_with_invalid_checksum], os_matcher="linux", arch_matcher="aarch64")
-            mocker.mock_analysis_jres(body=[jre_dict], os_matcher="linux", arch_matcher="aarch64")
+            mocker.mock_analysis_jres(body=[jre_dict_with_invalid_checksum])
+            mocker.mock_analysis_jres(body=[jre_dict])
             mocker.mock_analysis_jre_download(id="zip_jre", body=self.zip_bytes, status=200)
 
-            JREProvisioner(self.api, self.cache).provision()
+            JREProvisioner(self.api, self.cache, utils.get_os(), utils.get_arch()).provision()
 
             cache_file = self.cache.get_file(self.zip_jre.filename, self.zip_checksum)
             self.assertTrue(cache_file.is_valid())
@@ -182,13 +181,13 @@ class TestJREProvisioner(pyfakefs.TestCase):
     def test_already_cached(self, *args):
         with sq_api_utils.sq_api_mocker(assert_all_requests_are_fired=False) as mocker:
             jre_dict = sq_api_utils.jre_to_dict(self.zip_jre)
-            metadata_rsps = mocker.mock_analysis_jres(body=[jre_dict], os_matcher="linux", arch_matcher="aarch64")
+            metadata_rsps = mocker.mock_analysis_jres(body=[jre_dict])
             download_rsps = mocker.mock_analysis_jre_download(id="zip_jre", status=500)
 
             with self.cache.get_file(self.zip_jre.filename, self.zip_checksum).open(mode="wb") as f:
                 f.write(self.zip_bytes)
 
-            JREProvisioner(self.api, self.cache).provision()
+            JREProvisioner(self.api, self.cache, utils.get_os(), utils.get_arch()).provision()
 
             cache_file = self.cache.get_file(self.zip_jre.filename, self.zip_checksum)
             self.assertTrue(cache_file.is_valid())
@@ -199,7 +198,7 @@ class TestJREProvisioner(pyfakefs.TestCase):
     def test_file_already_exists_with_invalid_checksum(self, *args):
         with sq_api_utils.sq_api_mocker() as mocker:
             jre_dict = sq_api_utils.jre_to_dict(self.zip_jre)
-            mocker.mock_analysis_jres(body=[jre_dict], os_matcher="linux", arch_matcher="aarch64")
+            mocker.mock_analysis_jres(body=[jre_dict])
             mocker.mock_analysis_jre_download(id="zip_jre", body=self.zip_bytes, status=200)
 
             with self.cache.get_file(self.zip_jre.filename, self.zip_checksum).open(mode="wb") as f:
@@ -209,20 +208,19 @@ class TestJREProvisioner(pyfakefs.TestCase):
                 cache_file.is_valid(), msg="Cache file should have invalid checksum before provisioner ran"
             )
 
-            JREProvisioner(self.api, self.cache).provision()
+            JREProvisioner(self.api, self.cache, utils.get_os(), utils.get_arch()).provision()
 
             self.assertTrue(cache_file.is_valid(), msg="Cache file should have valid checksum after provisioner ran")
 
     def test_no_jre_available(self, *args):
         with self.assertRaises(NoJreAvailableException), sq_api_utils.sq_api_mocker() as mocker:
-            mocker.mock_analysis_jres(body=[], os_matcher="linux", arch_matcher="aarch64")
-            JREProvisioner(self.api, self.cache).provision()
+            mocker.mock_analysis_jres(body=[])
+            JREProvisioner(self.api, self.cache, utils.get_os(), utils.get_arch()).provision()
 
     def test_unzip_dir_already_exists(self, *args):
         with sq_api_utils.sq_api_mocker() as mocker:
             mocker.mock_analysis_jres(
-                body=[sq_api_utils.jre_to_dict(self.zip_jre)], os_matcher="linux", arch_matcher="aarch64"
-            )
+                body=[sq_api_utils.jre_to_dict(self.zip_jre)])
             mocker.mock_analysis_jre_download(id="zip_jre", body=self.zip_bytes, status=200)
 
             unzip_dir = self.cache.get_file_path("jre.zip_unzip")
@@ -231,7 +229,7 @@ class TestJREProvisioner(pyfakefs.TestCase):
             old_text_file = unzip_dir / "subdir/test.txt"
             old_text_file.write_text("test")
 
-            JREProvisioner(self.api, self.cache).provision()
+            JREProvisioner(self.api, self.cache, utils.get_os(), utils.get_arch()).provision()
 
             self.assertTrue(unzip_dir.exists())
             self.assertTrue((unzip_dir / "readme.md").exists())
@@ -251,11 +249,10 @@ class TestJREProvisioner(pyfakefs.TestCase):
 
         with self.assertRaises(UnsupportedArchiveFormat), sq_api_utils.sq_api_mocker() as mocker:
             mocker.mock_analysis_jres(
-                body=[sq_api_utils.jre_to_dict(unsupported_archive_jre)], os_matcher="linux", arch_matcher="aarch64"
-            )
+                body=[sq_api_utils.jre_to_dict(unsupported_archive_jre)])
             mocker.mock_analysis_jre_download(id="unsupported", body=self.zip_bytes, status=200)
 
-            JREProvisioner(self.api, self.cache).provision()
+            JREProvisioner(self.api, self.cache, utils.get_os(), utils.get_arch()).provision()
 
 
 class TestJREResolvedPath(unittest.TestCase):

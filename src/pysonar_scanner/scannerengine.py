@@ -31,6 +31,7 @@ import pysonar_scanner.api as api
 
 from pysonar_scanner.api import SonarQubeApi
 from pysonar_scanner.cache import Cache, CacheFile
+from pysonar_scanner.configuration.properties import SONAR_SCANNER_OS, SONAR_SCANNER_ARCH
 from pysonar_scanner.exceptions import ChecksumException, SQTooOldException
 from pysonar_scanner.jre import JREProvisioner, JREResolvedPath, JREResolver, JREResolverConfiguration
 from subprocess import Popen, PIPE
@@ -175,6 +176,6 @@ class ScannerEngine:
             )
 
     def __resolve_jre(self, config: dict[str, any]) -> JREResolvedPath:
-        jre_provisionner = JREProvisioner(self.api, self.cache)
+        jre_provisionner = JREProvisioner(self.api, self.cache, config[SONAR_SCANNER_OS], config[SONAR_SCANNER_ARCH])
         jre_resolver = JREResolver(JREResolverConfiguration.from_dict(config), jre_provisionner)
         return jre_resolver.resolve_jre()

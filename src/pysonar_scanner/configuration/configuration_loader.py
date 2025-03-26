@@ -23,7 +23,7 @@ from pysonar_scanner.configuration.cli import CliConfigurationLoader
 from pysonar_scanner.configuration.pyproject_toml import TomlConfigurationLoader
 from pysonar_scanner.configuration.properties import SONAR_TOKEN, SONAR_PROJECT_BASE_DIR, Key
 from pysonar_scanner.configuration.properties import PROPERTIES
-from pysonar_scanner.configuration import sonar_project_properties, environment_variables
+from pysonar_scanner.configuration import sonar_project_properties, environment_variables, dynamic_defaults_loader
 
 from pysonar_scanner.exceptions import MissingKeyException
 
@@ -38,6 +38,7 @@ class ConfigurationLoader:
         # each property loader is required to return NO default values.
         # E.g. if no property has been set, an empty dict must be returned.
         # Default values should be set through the get_static_default_properties() method
+
         cli_properties = CliConfigurationLoader.load()
         # CLI properties have a higher priority than properties file,
         # but we need to resolve them first to load the properties file
@@ -48,6 +49,7 @@ class ConfigurationLoader:
         toml_properties = TomlConfigurationLoader.load(toml_dir)
 
         resolved_properties = get_static_default_properties()
+        resolved_properties.update(dynamic_defaults_loader.load())
         resolved_properties.update(toml_properties.project_properties)
         resolved_properties.update(sonar_project_properties.load(base_dir))
         resolved_properties.update(toml_properties.sonar_properties)
