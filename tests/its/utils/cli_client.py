@@ -21,7 +21,7 @@ import pathlib
 from subprocess import CompletedProcess
 import subprocess
 
-from utils.sonarqube_client import SonarQubeClient
+from tests.its.utils.sonarqube_client import SonarQubeClient
 
 
 SCANNER_CMD: str = "pysonar-scanner"

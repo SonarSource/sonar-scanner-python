@@ -40,7 +40,7 @@ from pysonar_scanner.scannerengine import (
 from unittest.mock import Mock
 
 from pysonar_scanner.api import SQVersion
-from tests import sq_api_utils
+from tests.unit import sq_api_utils
 from unittest.mock import patch, MagicMock
 
 

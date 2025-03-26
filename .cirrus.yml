@@ -30,7 +30,7 @@ container_definition: &CONTAINER_DEFINITION
 poetry_cache_template: &POETRY_CACHE
   poetry_cache:
     folder: ~/.cache/poetry/
-    fingerprint_script: cat poetry.lock its/poetry.lock
+    fingerprint_script: cat poetry.lock 
 
 .poetry_template: &POETRY_TEMPLATE
   eks_container:
@@ -74,8 +74,7 @@ formatting_task:
     - poetry run black src/ tests/ --check
     - poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d src/
     - poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d tests/
-    - poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d its/ -x its/sources/**.py
-    - git diff --name-only --exit-code ./src ./tests ./its
+    - git diff --name-only --exit-code ./src ./tests
 
 analysis_task:
   <<: *POETRY_TEMPLATE
@@ -139,12 +138,11 @@ its_task:
     - cd $(ls -d sonarqube/*/)
     - ./bin/linux-x86-64/sonar.sh start
     - cd -
-    - cd its/
     - jfrog poetry-config --server-id-resolve repox --repo-resolve sonarsource-pypi
     - jfrog poetry install
     - unset SONAR_TOKEN
     - unset SONAR_HOST_URL
-    - poetry run pytest
+    - poetry run pytest --its tests/its 
 
 promote_task:
   depends_on:

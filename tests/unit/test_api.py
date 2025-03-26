@@ -31,8 +31,8 @@ from pysonar_scanner.configuration.properties import (
     SONAR_SCANNER_SONARCLOUD_URL,
 )
 from pysonar_scanner.api import SQVersion
-from tests import sq_api_utils
-from tests.sq_api_utils import sq_api_mocker
+from tests.unit import sq_api_utils
+from tests.unit.sq_api_utils import sq_api_mocker
 
 import unittest
 

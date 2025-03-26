@@ -20,14 +20,15 @@
 import os
 import pytest
 import pytest_docker.plugin as docker
-from utils.cli_client import CliClient
-from utils.sonarqube_client import SonarQubeClient
 from requests.exceptions import ConnectionError, HTTPError
+
+from tests.its.utils.cli_client import CliClient
+from tests.its.utils.sonarqube_client import SonarQubeClient
 
 
 @pytest.fixture(scope="session")
 def docker_compose_file(pytestconfig: pytest.Config):
-    return pytestconfig.rootpath / "compose.yaml"
+    return pytestconfig.rootpath / "tests/its/compose.yaml"
 
 
 def check_health(sonarqube_client: SonarQubeClient) -> bool:

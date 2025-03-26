@@ -34,7 +34,7 @@ from pysonar_scanner.configuration.properties import (
 )
 from pysonar_scanner.exceptions import ChecksumException, NoJreAvailableException, UnsupportedArchiveFormat
 from pysonar_scanner.jre import JREProvisioner, JREResolvedPath, JREResolver, JREResolverConfiguration
-from tests import sq_api_utils
+from tests.unit import sq_api_utils
 
 import zipfile
 
