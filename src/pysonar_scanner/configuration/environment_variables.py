@@ -31,10 +31,18 @@ def load() -> Dict[Key, str]:
     Returns:
         Dictionary of property keys and their values extracted from environment variables.
     """
-    properties = {}
     # Extract properties from environment variables using the env_variable_name() method
 
     # First check for JSON params environment variable
+    properties = load_json_env_variables()
+    # Extract properties from environment variables using the mapping in Property objects
+    properties.update(load_properties_env_variables())
+
+    return properties
+
+
+def load_json_env_variables():
+    properties = {}
     if "SONAR_SCANNER_JSON_PARAMS" in os.environ:
         try:
             json_params = os.environ["SONAR_SCANNER_JSON_PARAMS"]
@@ -44,11 +52,13 @@ def load() -> Dict[Key, str]:
             # If JSON is invalid, continue with regular environment variables
             # SCANPY-135 should log the error
             pass
+    return properties
 
-    # Extract properties from environment variables using the mapping in Property objects
+
+def load_properties_env_variables():
+    properties = {}
     for prop in PROPERTIES:
         env_var_name = prop.env_variable_name()
         if env_var_name in os.environ:
             properties[prop.name] = os.environ[env_var_name]
-
     return properties
