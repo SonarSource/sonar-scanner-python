@@ -17,7 +17,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-
+import os
 from unittest.mock import patch
 
 import pyfakefs.fake_filesystem_unittest as pyfakefs
@@ -26,6 +26,7 @@ from pysonar_scanner.configuration import configuration_loader
 from pysonar_scanner.configuration.properties import (
     SONAR_PROJECT_KEY,
     SONAR_PROJECT_NAME,
+    SONAR_PROJECT_BASE_DIR,
     SONAR_SCANNER_APP,
     SONAR_SCANNER_APP_VERSION,
     SONAR_SCANNER_BOOTSTRAP_START_TIME,
@@ -49,7 +50,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_SCANNER_ARCH,
     SONAR_SCANNER_OS,
 )
-from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader, SONAR_PROJECT_BASE_DIR
+from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader
 from pysonar_scanner.exceptions import MissingKeyException
 from pysonar_scanner.utils import Arch, Os
 
@@ -66,6 +67,9 @@ class TestConfigurationLoader(pyfakefs.TestCase):
 
     @patch("sys.argv", ["myscript.py", "--token", "myToken", "--sonar-project-key", "myProjectKey"])
     def test_defaults(self, mock_get_os, mock_get_arch):
+        custom_dir = "/my_analysis_directory"
+        self.fs.create_dir(custom_dir)
+        os.chdir(custom_dir)
         configuration = ConfigurationLoader.load()
         expected_configuration = {
             SONAR_TOKEN: "myToken",
@@ -75,7 +79,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_BOOTSTRAP_START_TIME: configuration[SONAR_SCANNER_BOOTSTRAP_START_TIME],
             SONAR_VERBOSE: False,
             SONAR_SCANNER_SKIP_JRE_PROVISIONING: False,
-            SONAR_PROJECT_BASE_DIR: "/",
+            SONAR_PROJECT_BASE_DIR: "/my_analysis_directory",
             SONAR_SCANNER_CONNECT_TIMEOUT: 5,
             SONAR_SCANNER_SOCKET_TIMEOUT: 60,
             SONAR_SCANNER_RESPONSE_TIMEOUT: 0,
@@ -102,7 +106,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
         self.assertDictEqual(
             config,
             {
-                SONAR_PROJECT_BASE_DIR: "/",
+                SONAR_PROJECT_BASE_DIR: os.getcwd(),
                 SONAR_SCANNER_OS: Os.LINUX.value,
                 SONAR_SCANNER_ARCH: Arch.X64.value,
             },
@@ -141,7 +145,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_BOOTSTRAP_START_TIME: configuration[SONAR_SCANNER_BOOTSTRAP_START_TIME],
             SONAR_VERBOSE: False,
             SONAR_SCANNER_SKIP_JRE_PROVISIONING: False,
-            SONAR_PROJECT_BASE_DIR: "/",
+            SONAR_PROJECT_BASE_DIR: os.getcwd(),
             SONAR_SCANNER_CONNECT_TIMEOUT: 5,
             SONAR_SCANNER_SOCKET_TIMEOUT: 60,
             SONAR_SCANNER_RESPONSE_TIMEOUT: 0,
@@ -287,7 +291,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_BOOTSTRAP_START_TIME: configuration[SONAR_SCANNER_BOOTSTRAP_START_TIME],
             SONAR_VERBOSE: False,
             SONAR_SCANNER_SKIP_JRE_PROVISIONING: False,
-            SONAR_PROJECT_BASE_DIR: "/",
+            SONAR_PROJECT_BASE_DIR: os.getcwd(),
             SONAR_SCANNER_CONNECT_TIMEOUT: 5,
             SONAR_SCANNER_SOCKET_TIMEOUT: 60,
             SONAR_SCANNER_RESPONSE_TIMEOUT: 0,
