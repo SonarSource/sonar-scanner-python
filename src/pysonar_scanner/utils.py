@@ -24,7 +24,7 @@ import typing
 from enum import Enum
 
 OsStr = typing.Literal["windows", "linux", "mac", "alpine", "other"]
-ArchStr = typing.Literal["x86_64", "aarch64", "x86"]
+ArchStr = typing.Literal["x64", "aarch64", "other"]
 
 
 def remove_trailing_slash(url: str) -> str:

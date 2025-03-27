@@ -41,7 +41,7 @@ import zipfile
 
 
 @patch("pysonar_scanner.utils.get_os", return_value=Os.LINUX)
-@patch("pysonar_scanner.utils.get_arch", return_value=Arch.AARCH64)
+@patch("pysonar_scanner.utils.get_arch", return_value=Arch.X64)
 class TestJREProvisioner(pyfakefs.TestCase):
     def setUp(self):
         self.setUpPyfakefs(allow_root_user=False)
@@ -115,7 +115,7 @@ class TestJREProvisioner(pyfakefs.TestCase):
 
     def test_if_patching_worked(self, get_os_mock, get_arch_mock):
         self.assertEqual(utils.get_os(), Os.LINUX)
-        self.assertEqual(utils.get_arch(), Arch.AARCH64)
+        self.assertEqual(utils.get_arch(), Arch.X64)
 
     def test_successfully_downloading_jre(self, get_os_mock, get_arch_mock):
         class JRETestCase(TypedDict):

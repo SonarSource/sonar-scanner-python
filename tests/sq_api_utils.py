@@ -80,6 +80,8 @@ class SQApiMocker:
         self,
         body: Optional[list[dict]] = None,
         status: int = 200,
+        os_matcher: Optional[str] = "linux",
+        arch_matcher: Optional[str] = "x64",
     ) -> responses.BaseResponse:
         return self.rsps.get(
             url=f"{self.api_url}/analysis/jres",
@@ -87,6 +89,7 @@ class SQApiMocker:
             status=status,
             match=[
                 matchers.header_matcher({"Accept": "application/json"}),
+                matchers.query_param_matcher(utils.filter_none_values({"os": os_matcher, "arch": arch_matcher})),
             ],
         )
 
