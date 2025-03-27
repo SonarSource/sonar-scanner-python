@@ -147,6 +147,8 @@ class TestScannerEngineWithFake(pyfakefs.TestCase):
         config = {
             "sonar.token": "myToken",
             "sonar.projectKey": "myProjectKey",
+            "sonar.scanner.os": "linux",
+            "sonar.scanner.arch": "x64",
         }
 
         expected_std_in = json.dumps(
@@ -154,6 +156,8 @@ class TestScannerEngineWithFake(pyfakefs.TestCase):
                 "scannerProperties": [
                     {"key": "sonar.token", "value": "myToken"},
                     {"key": "sonar.projectKey", "value": "myProjectKey"},
+                    {"key": "sonar.scanner.os", "value": "linux"},
+                    {"key": "sonar.scanner.arch", "value": "x64"},
                 ]
             }
         )
