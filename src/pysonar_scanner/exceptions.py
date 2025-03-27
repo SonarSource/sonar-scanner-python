@@ -31,6 +31,10 @@ class SQTooOldException(Exception):
     pass
 
 
+class InconsistentConfiguration(Exception):
+    pass
+
+
 class ChecksumException(Exception):
     pass
 

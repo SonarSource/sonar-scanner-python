@@ -31,6 +31,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_SCANNER_SONARCLOUD_URL,
 )
 from pysonar_scanner.api import SQVersion
+from pysonar_scanner.exceptions import InconsistentConfiguration
 from tests.unit import sq_api_utils
 from tests.unit.sq_api_utils import sq_api_mocker
 
@@ -139,33 +140,29 @@ class TestApi(unittest.TestCase):
                     base_url="https://sonarcloud.io", api_base_url="https://api.sonarcloud.io", is_sonar_qube_cloud=True
                 ),
             },
-            # SQ:Cloud region tests
+            # Region parameter
             {
-                "name": "When region is set, use region in base urls",
+                "name": "When region is set to US, use US base urls",
                 "config": {
-                    SONAR_HOST_URL: "https://sonarcloud.io",
+                    SONAR_HOST_URL: "/",
                     SONAR_SCANNER_SONARCLOUD_URL: "",
                     SONAR_SCANNER_API_BASE_URL: "",
                     SONAR_REGION: "us",
                 },
                 "expected": BaseUrls(
-                    base_url="https://us.sonarcloud.io",
-                    api_base_url="https://api.us.sonarcloud.io",
-                    is_sonar_qube_cloud=True,
+                    base_url="https://sonarqube.us", api_base_url="https://api.sonarqube.us", is_sonar_qube_cloud=True
                 ),
             },
             {
-                "name": "Ignore region when sonarcloud_url and api_base_url is set",
+                "name": "US region and US base url is fine",
                 "config": {
-                    SONAR_HOST_URL: "https://custom-sq-cloud.io",
-                    SONAR_SCANNER_SONARCLOUD_URL: "https://custom-sq-cloud.io",
-                    SONAR_SCANNER_API_BASE_URL: "https://other-api.custom-sq-cloud.io",
+                    SONAR_HOST_URL: "https://sonarqube.us",
+                    SONAR_SCANNER_SONARCLOUD_URL: "",
+                    SONAR_SCANNER_API_BASE_URL: "",
                     SONAR_REGION: "us",
                 },
                 "expected": BaseUrls(
-                    base_url="https://custom-sq-cloud.io",
-                    api_base_url="https://other-api.custom-sq-cloud.io",
-                    is_sonar_qube_cloud=True,
+                    base_url="https://sonarqube.us", api_base_url="https://api.sonarqube.us", is_sonar_qube_cloud=True
                 ),
             },
             # SQ:Server tests
@@ -203,6 +200,50 @@ class TestApi(unittest.TestCase):
                 self.assertEqual(base_urls.api_base_url, expected.api_base_url)
                 self.assertEqual(base_urls.is_sonar_qube_cloud, expected.is_sonar_qube_cloud)
                 self.assertEqual(base_urls, expected)
+
+    def test_inconsistent_urls_raises_exception(self):
+        with self.subTest("US region and global SQCloud URL"):
+            config = {
+                SONAR_HOST_URL: "https://sonarcloud.io",
+                SONAR_SCANNER_SONARCLOUD_URL: "",
+                SONAR_SCANNER_API_BASE_URL: "",
+                SONAR_REGION: "us",
+            }
+            with self.assertRaises(
+                InconsistentConfiguration,
+                msg="Inconsistent values for properties 'sonar.region' and 'sonar.host.url'. "
+                "Please only specify one of the two properties.",
+            ):
+                get_base_urls(config)
+
+        with self.subTest("Region set with unknown SQCloud URL"):
+            config = {
+                SONAR_HOST_URL: "https://custom-sq-cloud.io",
+                SONAR_SCANNER_SONARCLOUD_URL: "https://custom-sq-cloud.io",
+                SONAR_SCANNER_API_BASE_URL: "https://other-api.custom-sq-cloud.io",
+                SONAR_REGION: "us",
+            }
+            with self.assertRaises(
+                InconsistentConfiguration,
+                msg="Inconsistent values for properties 'sonar.region' and 'sonar.host.url'. "
+                "Please only specify one of the two properties.",
+            ):
+                get_base_urls(config)
+
+        with self.subTest("Unsupported region parameter"):
+            config = {
+                SONAR_HOST_URL: "",
+                SONAR_SCANNER_SONARCLOUD_URL: "",
+                SONAR_SCANNER_API_BASE_URL: "",
+                SONAR_REGION: "fr",
+            }
+            with self.assertRaises(
+                InconsistentConfiguration,
+                msg="Invalid region 'fr'. Valid regions are: 'us'. "
+                "Please check the 'sonar.region' property "
+                "or the 'SONAR_REGION' environment variable.",
+            ):
+                get_base_urls(config)
 
 
 class TestSonarQubeApiWithUnreachableSQServer(unittest.TestCase):
