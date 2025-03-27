@@ -20,7 +20,7 @@
 
 from pysonar_scanner import app_logging
 from pysonar_scanner import cache
-from pysonar_scanner.api import get_base_urls, SonarQubeApi, BaseUrls
+from pysonar_scanner.api import get_base_urls, SonarQubeApi, BaseUrls, MIN_SUPPORTED_SQ_VERSION
 from pysonar_scanner.configuration import configuration_loader
 from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader
 from pysonar_scanner.configuration.properties import (
@@ -29,8 +29,11 @@ from pysonar_scanner.configuration.properties import (
     SONAR_SCANNER_API_BASE_URL,
     SONAR_SCANNER_SONARCLOUD_URL,
     SONAR_SCANNER_PROXY_PORT,
+    SONAR_SCANNER_JAVA_EXE_PATH,
 )
-from pysonar_scanner.scannerengine import ScannerEngine
+from pysonar_scanner.exceptions import SQTooOldException
+from pysonar_scanner.jre import JREResolvedPath, JREProvisioner, JREResolver, JREResolverConfiguration
+from pysonar_scanner.scannerengine import ScannerEngine, ScannerEngineProvisioner
 
 
 def scan():
@@ -40,10 +43,28 @@ def scan():
     set_logging_options(config)
 
     cache_manager = cache.get_default()
+
     api = __build_api(config)
+    check_version(api)
     __update_config_with_api_urls(config, api.base_urls)
-    scanner = ScannerEngine(api, cache_manager)
+
+    scanner = create_scanner_engine(api, cache_manager, config)
+
     return scanner.run(config)
+
+
+def create_scanner_engine(api, cache_manager, config):
+    jre_path = create_jre(api, cache_manager, config)
+    config[SONAR_SCANNER_JAVA_EXE_PATH] = str(jre_path.path)
+    scanner_engine_path = ScannerEngineProvisioner(api, cache_manager).provision()
+    scanner = ScannerEngine(jre_path, scanner_engine_path)
+    return scanner
+
+
+def create_jre(api, cache, config: dict[str, any]) -> JREResolvedPath:
+    jre_provisioner = JREProvisioner(api, cache)
+    jre_resolver = JREResolver(JREResolverConfiguration.from_dict(config), jre_provisioner)
+    return jre_resolver.resolve_jre()
 
 
 def set_logging_options(config):
@@ -61,5 +82,14 @@ def __update_config_with_api_urls(config, base_urls: BaseUrls):
     config[SONAR_SCANNER_API_BASE_URL] = base_urls.api_base_url
     if base_urls.is_sonar_qube_cloud:
         config[SONAR_SCANNER_SONARCLOUD_URL] = base_urls.base_url
-    config[SONAR_SCANNER_SONARCLOUD_URL] = base_urls.base_url
     config[SONAR_SCANNER_PROXY_PORT] = "443" if base_urls.base_url.startswith("https") else "80"
+
+
+def check_version(api):
+    if api.is_sonar_qube_cloud():
+        return
+    version = api.get_analysis_version()
+    if not version.does_support_bootstrapping():
+        raise SQTooOldException(
+            f"Only SonarQube versions >= {MIN_SUPPORTED_SQ_VERSION} are supported, but got {version}"
+        )

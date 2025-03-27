@@ -25,12 +25,10 @@ from subprocess import Popen, PIPE
 from threading import Thread
 from typing import IO, Callable, Optional
 
-import pysonar_scanner.api as api
 from pysonar_scanner.api import SonarQubeApi
 from pysonar_scanner.cache import Cache, CacheFile
-from pysonar_scanner.configuration.properties import SONAR_SCANNER_JAVA_EXE_PATH
-from pysonar_scanner.exceptions import ChecksumException, SQTooOldException
-from pysonar_scanner.jre import JREProvisioner, JREResolvedPath, JREResolver, JREResolverConfiguration
+from pysonar_scanner.exceptions import ChecksumException
+from pysonar_scanner.jre import JREResolvedPath
 
 
 @dataclass(frozen=True)
@@ -136,20 +134,12 @@ class ScannerEngineProvisioner:
 
 
 class ScannerEngine:
-    def __init__(self, api: SonarQubeApi, cache: Cache):
-        self.api = api
-        self.cache = cache
-
-    def __fetch_scanner_engine(self) -> pathlib.Path:
-        return ScannerEngineProvisioner(self.api, self.cache).provision()
+    def __init__(self, jre_path: JREResolvedPath, scanner_engine_path: pathlib.Path):
+        self.jre_path = jre_path
+        self.scanner_engine_path = scanner_engine_path
 
     def run(self, config: dict[str, any]):
-        self.__version_check()
-        jre_path = self.__resolve_jre(config)
-
-        config[SONAR_SCANNER_JAVA_EXE_PATH] = str(jre_path.path)
-        scanner_engine_path = self.__fetch_scanner_engine()
-        cmd = self.__build_command(jre_path, scanner_engine_path)
+        cmd = self.__build_command(self.jre_path, self.scanner_engine_path)
         properties_str = self.__config_to_json(config)
         return CmdExecutor(cmd, properties_str).execute()
 
@@ -163,17 +153,3 @@ class ScannerEngine:
     def __config_to_json(self, config: dict[str, any]) -> str:
         scanner_properties = [{"key": k, "value": v} for k, v in config.items()]
         return json.dumps({"scannerProperties": scanner_properties})
-
-    def __version_check(self):
-        if self.api.is_sonar_qube_cloud():
-            return
-        version = self.api.get_analysis_version()
-        if not version.does_support_bootstrapping():
-            raise SQTooOldException(
-                f"Only SonarQube versions >= {api.MIN_SUPPORTED_SQ_VERSION} are supported, but got {version}"
-            )
-
-    def __resolve_jre(self, config: dict[str, any]) -> JREResolvedPath:
-        jre_provisionner = JREProvisioner(self.api, self.cache)
-        jre_resolver = JREResolver(JREResolverConfiguration.from_dict(config), jre_provisionner)
-        return jre_resolver.resolve_jre()

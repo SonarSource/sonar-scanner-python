@@ -135,15 +135,13 @@ class TestScannerEngineWithFake(pyfakefs.TestCase):
         self.setUpPyfakefs()
 
     @patch("pysonar_scanner.scannerengine.CmdExecutor")
-    @patch.object(JREResolver, "resolve_jre")
-    @patch.object(ScannerEngineProvisioner, "provision")
-    def test_command_building(self, provision_mock, resolve_jre_mock, execute_mock):
-        provision_mock.return_value = pathlib.Path("/test/scanner-engine.jar")
-        resolve_jre_mock.return_value = JREResolvedPath(pathlib.Path("jre/bin/java"))
-
+    def test_command_building(self, execute_mock):
         config = {
             "sonar.token": "myToken",
             "sonar.projectKey": "myProjectKey",
+            "sonar.scanner.os": "linux",
+            "sonar.scanner.arch": "x64",
+            "sonar.scanner.javaExePath": "jre/bin/java",
         }
 
         expected_std_in = json.dumps(
@@ -157,39 +155,15 @@ class TestScannerEngineWithFake(pyfakefs.TestCase):
                 ]
             }
         )
+        jre_resolve_path_mock = Mock()
+        jre_resolve_path_mock.path = pathlib.Path("jre/bin/java")
+        scanner_engine_mock = pathlib.Path("/test/scanner-engine.jar")
 
-        scannerengine.ScannerEngine(sq_api_utils.get_sq_cloud(), cache.get_default()).run(config)
+        scannerengine.ScannerEngine(jre_resolve_path_mock, scanner_engine_mock).run(config)
 
         execute_mock.assert_called_once_with(
             [pathlib.Path("jre/bin/java"), "-jar", pathlib.Path("/test/scanner-engine.jar")], expected_std_in
         )
-
-    def test_version_check(self):
-        with self.subTest("SQ:Server is too old"):
-            sq_cloud_api = sq_api_utils.get_sq_server()
-            sq_cloud_api.get_analysis_version = Mock(return_value=SQVersion.from_str("9.9.9"))
-            scannerengine = ScannerEngine(sq_cloud_api, cache.get_default())
-
-            with self.assertRaises(SQTooOldException):
-                scannerengine._ScannerEngine__version_check()
-
-        with self.subTest("SQ:Server that is new than 10.6"):
-            sq_cloud_api = sq_api_utils.get_sq_server()
-            sq_cloud_api.get_analysis_version = Mock(return_value=SQVersion.from_str("10.7"))
-            scannerengine = ScannerEngine(sq_cloud_api, cache.get_default())
-
-            scannerengine._ScannerEngine__version_check()
-
-            sq_cloud_api.get_analysis_version.assert_called_once()
-
-        with self.subTest("SQ:Cloud "):
-            sq_cloud_api = sq_api_utils.get_sq_cloud()
-            sq_cloud_api.get_analysis_version = Mock()
-            scannerengine = ScannerEngine(sq_cloud_api, cache.get_default())
-
-            scannerengine._ScannerEngine__version_check()
-
-            sq_cloud_api.get_analysis_version.assert_not_called()
 
 
 class TestScannerEngineProvisioner(pyfakefs.TestCase):
