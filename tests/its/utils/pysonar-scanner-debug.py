@@ -20,8 +20,8 @@
 """
 This module is the entry point for debugging the pysonar-scanner in the its.
 The pysonar-scanner-debug is started with the working directory set to the root of the project, so that python
-(and pydebug by extension) can find the pysonar-scanner-debug module. However, since the scanner should be run
-from the root of the project, the working directory is changed to the project root before running the scanner.
+(and pydebug by extension) can find the pysonar-scanner-debug module. However, since the scanner should run in the
+ analyzed project, the working directory is changed to the root of the analyzed project before running the scanner.
 
 The pysonar-scanner-debug expects the PYSONAR_SCANNER_DEBUG_WORKDIR environment variable to be set to the directory
 where the scanner should be run. This is set to the directory containing the sources to be analyzed.
