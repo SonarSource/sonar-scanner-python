@@ -395,5 +395,30 @@ class CliConfigurationLoader:
             type=str,
             help="Python version used for the project",
         )
-
+        parser.add_argument(
+            "--sonar-python-pylint-report-path",
+            "-Dsonar.python.pylint.reportPath",
+            type=str,
+            help="Path to third-parties issues report file for pylint",
+        )
+        parser.add_argument(
+            "--sonar-python-coverage-report-paths",
+            "-Dsonar.python.coverage.reportPaths",
+            type=str,
+            help="Comma-delimited list of paths to coverage reports in the Cobertura XML format.",
+        )
+        parser.add_argument(
+            "--sonar-python-skip-unchanged",
+            type=bool,
+            action=argparse.BooleanOptionalAction,
+            help="Override the SonarQube configuration of skipping or not the analysis of unchanged Python files",
+        )
+        parser.add_argument(
+            "-Dsonar.python.skipUnchanged",
+            type=bool,
+            help="Equivalent to --sonar-python-skip-unchanged",
+        )
+        parser.add_argument(
+            "--sonar-modules", "-Dsonar.modules", type=str, help="Comma-delimited list of modules to analyze"
+        )
         return parser.parse_args()

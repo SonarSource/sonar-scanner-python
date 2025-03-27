@@ -81,13 +81,16 @@ SONAR_PULLREQUEST_KEY: Key = "sonar.pullrequest.key"
 SONAR_PULLREQUEST_BRANCH: Key = "sonar.pullrequest.branch"
 SONAR_PULLREQUEST_BASE: Key = "sonar.pullrequest.base"
 SONAR_PYTHON_VERSION: Key = "sonar.python.version"
+SONAR_PYTHON_PYLINT_REPORT_PATH: Key = "sonar.python.pylint.reportPath"
+SONAR_PYTHON_COVERAGE_REPORT_PATHS: Key = "sonar.python.coverage.reportPaths"
+SONAR_PYTHON_SKIP_UNCHANGED: Key = "sonar.python.skipUnchanged"
 SONAR_NEWCODE_REFERENCE_BRANCH: Key = "sonar.newCode.referenceBranch"
 SONAR_SCM_REVISION: Key = "sonar.scm.revision"
 SONAR_BUILD_STRING: Key = "sonar.buildString"
 SONAR_SOURCE_ENCODING: Key = "sonar.sourceEncoding"
 SONAR_WORKING_DIRECTORY: Key = "sonar.working.directory"
 SONAR_SCM_FORCE_RELOAD_ALL: Key = "sonar.scm.forceReloadAll"
-
+SONAR_MODULES: Key = "sonar.modules"
 TOML_PATH: Key = "toml-path"
 
 
@@ -453,7 +456,26 @@ PROPERTIES: list[Property] = [
         name=SONAR_SCM_FORCE_RELOAD_ALL, 
         default_value=None, 
         cli_getter=lambda args: args.sonar_scm_force_reload_all or getattr(args, "Dsonar.scm.forceReloadAll")
+    ),
+    Property(
+        name=SONAR_PYTHON_PYLINT_REPORT_PATH,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_python_pylint_report_path
+    ),
+    Property(
+        name=SONAR_PYTHON_COVERAGE_REPORT_PATHS,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_python_coverage_report_paths
+    ),
+    Property(
+        name=SONAR_PYTHON_SKIP_UNCHANGED,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_python_skip_unchanged or getattr(args, "Dsonar.python.skipUnchanged")
+    ),
+    Property(
+        name=SONAR_MODULES,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_modules
     )
-
 ]
 # fmt: on

@@ -80,6 +80,10 @@ from pysonar_scanner.configuration.properties import (
     SONAR_SOURCE_ENCODING,
     SONAR_WORKING_DIRECTORY,
     SONAR_SCM_FORCE_RELOAD_ALL,
+    SONAR_PYTHON_PYLINT_REPORT_PATH,
+    SONAR_PYTHON_COVERAGE_REPORT_PATHS,
+    SONAR_PYTHON_SKIP_UNCHANGED,
+    SONAR_MODULES,
 )
 
 EXPECTED_CONFIGURATION = {
@@ -139,6 +143,10 @@ EXPECTED_CONFIGURATION = {
     SONAR_SOURCE_ENCODING: "UTF-8",
     SONAR_WORKING_DIRECTORY: "/tmp/sonar",
     SONAR_SCM_FORCE_RELOAD_ALL: True,
+    SONAR_PYTHON_PYLINT_REPORT_PATH: "path/to/pylint/report",
+    SONAR_PYTHON_COVERAGE_REPORT_PATHS: "path/to/coverage1,path/to/coverage2",
+    SONAR_PYTHON_SKIP_UNCHANGED: True,
+    SONAR_MODULES: "module1,module2",
 }
 
 
@@ -307,6 +315,13 @@ class TestCliConfigurationLoader(unittest.TestCase):
             "--sonar-working-directory",
             "/tmp/sonar",
             "--sonar-scm-force-reload-all",
+            "--sonar-python-pylint-report-path",
+            "path/to/pylint/report",
+            "--sonar-python-coverage-report-paths",
+            "path/to/coverage1,path/to/coverage2",
+            "--sonar-python-skip-unchanged",
+            "--sonar-modules",
+            "module1,module2",
         ],
     )
     def test_all_cli_args(self):
@@ -373,6 +388,10 @@ class TestCliConfigurationLoader(unittest.TestCase):
             "-Dsonar.working.directory=/tmp/sonar",
             "-Dsonar.scm.forceReloadAll=true",
             "-Dsonar.log.level=INFO",
+            "-Dsonar.python.pylint.reportPath=path/to/pylint/report",
+            "-Dsonar.python.coverage.reportPaths=path/to/coverage1,path/to/coverage2",
+            "-Dsonar.python.skipUnchanged=true",
+            "-Dsonar.modules=module1,module2",
         ],
     )
     def test_jvm_style_cli_args(self):
