@@ -38,6 +38,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_SCANNER_SKIP_JRE_PROVISIONING,
     SONAR_SCANNER_OS,
     Key,
+    SONAR_SCANNER_ARCH,
 )
 
 
