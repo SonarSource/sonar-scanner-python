@@ -32,7 +32,7 @@ url = 'https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple'
 
 ## Run the tests only
 
-Run `poetry run pytest test/`
+Run `poetry run pytest tests/`
 
 ## Run the tests with coverage and results displayed in the terminal
 
@@ -41,6 +41,39 @@ Run `poetry run pytest --cov-report=term-missing --cov-config=pyproject.toml --c
 ## Run the tests with coverage and store the result in an xml file
 
 Run `poetry run pytest --cov-report=xml:coverage.xml --cov-config=pyproject.toml --cov=src --cov-branch tests`
+
+## Run the ITs
+
+Run `poetry run pytest tests/its --its` to run the its.
+
+To see the ITs in the VSCode test explorer, add the `--its` argument to the `python.testing.pytestArgs` setting in `.vscode/settings.json`.
+
+The the following keys should be present:
+```json
+  "python.testing.unittestArgs": ["-v", "-s", "tests", "-p", "test_*.py"],
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestArgs": ["--its", "tests"],
+```
+
+### Debugging the ITs
+
+To debug the sonar-scanner being run in the its, the ITs have to be run with `poetry run pytest tests/its --its --debug-its`
+
+The `pysonar-scanner` process will wait until VSCode or any other debug adapter protocol client connects on the port `5678`.
+
+For VSCode, add the following launch configuration in the `configurations` array:
+```json
+{
+    "name": "Python Debugger: Remote Attach",
+    "type": "debugpy",
+    "request": "attach",
+    "connect": {
+        "host": "localhost",
+        "port": 5678
+    },
+}
+```
 
 # Build the package
 

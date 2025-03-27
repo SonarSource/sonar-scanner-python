@@ -45,6 +45,8 @@ mypy = '>=1.7.1'
 pytest = '8.3.5'
 pytest-cov = '6.0.0'
 pytest-subtests = "^0.14.1"
+pytest-docker = "^3.2.0"
+debugpy = "^1.8.13"
 
 [[tool.poetry.packages]]
 from = 'src'
@@ -60,5 +62,10 @@ priority = "primary"
 
 [tool.pytest]
 [tool.pytest.ini_options]
-addopts = ['--import-mode=importlib']
+addopts = ['--import-mode=importlib', '--strict-markers']
 pythonpath = ['src']
+markers = [
+    "its: marks tests as its"
+]
+log_cli = true
+log_cli_level = "INFO"

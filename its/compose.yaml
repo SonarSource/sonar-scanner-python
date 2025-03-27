@@ -1,5 +1,0 @@
-services:
-  sonarqube:
-    ports:
-      - "9000:9000"
-    image: sonarqube:10.5.1-community

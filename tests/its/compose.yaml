@@ -1,0 +1,5 @@
+services:
+  sonarqube:
+    ports:
+      - "9000" # port 9000 is forwarded to a random port on the host
+    image: sonarqube:${SONARQUBE_IMAGE_VERSION:-community}

@@ -10,6 +10,7 @@ env:
   DEPLOY_PULL_REQUEST: 'true'
   POETRY_VIRTUALENVS_PATH: "~/.cache/poetry/venvs"
   POETRY_CACHE_DIR: "~/.cache/poetry/pypoetry"
+  SONARQUBE_VERSION: 25.3.0.104237
 
 only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && ($CIRRUS_PR != "" || $CIRRUS_BRANCH == 'master' || $CIRRUS_BRANCH =~ "branch-.*")
 container_definition: &CONTAINER_DEFINITION
@@ -29,7 +30,7 @@ container_definition: &CONTAINER_DEFINITION
 poetry_cache_template: &POETRY_CACHE
   poetry_cache:
     folder: ~/.cache/poetry/
-    fingerprint_script: cat poetry.lock its/poetry.lock
+    fingerprint_script: cat poetry.lock 
 
 .poetry_template: &POETRY_TEMPLATE
   eks_container:
@@ -73,8 +74,7 @@ formatting_task:
     - poetry run black src/ tests/ --check
     - poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d src/
     - poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d tests/
-    - poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d its/ -x its/sources/**.py
-    - git diff --name-only --exit-code ./src ./tests ./its
+    - git diff --name-only --exit-code ./src ./tests
 
 analysis_task:
   <<: *POETRY_TEMPLATE
@@ -130,20 +130,19 @@ its_task:
   alias: its
   sonarqube_cache:
     folder: sonarqube_cache/
-    populate_script: mkdir -p sonarqube_cache && wget -q https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.5.1.90531.zip -O sonarqube_cache/sonarqube.zip
-    fingerprint_key: sonarqube-10.5.1.90531
+    populate_script: mkdir -p sonarqube_cache && wget -q https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-$SONARQUBE_VERSION.zip -O sonarqube_cache/sonarqube.zip
+    fingerprint_script: echo "sonarqube-$SONARQUBE_VERSION"
   <<: *POETRY_TEMPLATE
   its_script:
     - unzip -q sonarqube_cache/sonarqube.zip -d sonarqube
     - cd $(ls -d sonarqube/*/)
     - ./bin/linux-x86-64/sonar.sh start
     - cd -
-    - cd its/
     - jfrog poetry-config --server-id-resolve repox --repo-resolve sonarsource-pypi
     - jfrog poetry install
     - unset SONAR_TOKEN
     - unset SONAR_HOST_URL
-    - poetry run pytest
+    - poetry run pytest --its tests/its 
 
 promote_task:
   depends_on:
