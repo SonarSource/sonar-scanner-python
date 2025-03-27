@@ -53,18 +53,41 @@ SONAR_SCANNER_PROXY_HOST: Key = "sonar.scanner.proxyHost"
 SONAR_SCANNER_PROXY_PORT: Key = "sonar.scanner.proxyPort"
 SONAR_SCANNER_PROXY_USER: Key = "sonar.scanner.proxyUser"
 SONAR_SCANNER_PROXY_PASSWORD: Key = "sonar.scanner.proxyPassword"
-SONAR_PROJECT_BASE_DIR: Key = "sonar.projectBaseDir"
+SONAR_SCANNER_METADATA_FILEPATH: Key = "sonar.scanner.metadataFilePath"
 SONAR_SCANNER_JAVA_OPTS: Key = "sonar.scanner.javaOpts"
+SONAR_PROJECT_BASE_DIR: Key = "sonar.projectBaseDir"
 SONAR_PROJECT_KEY: Key = "sonar.projectKey"
 SONAR_PROJECT_NAME: Key = "sonar.projectName"
+SONAR_PROJECT_VERSION: Key = "sonar.projectVersion"
+SONAR_PROJECT_DESCRIPTION: Key = "sonar.projectDescription"
+SONAR_SCM_EXCLUSIONS_DISABLED = "sonar.scm.exclusions.disabled"
 SONAR_SOURCES: Key = "sonar.sources"
 SONAR_EXCLUSIONS: Key = "sonar.exclusions"
 SONAR_TESTS: Key = "sonar.tests"
-SONAR_PROJECT_VERSION: Key = "sonar.projectVersion"
-SONAR_PROJECT_DESCRIPTION: Key = "sonar.projectDescription"
+SONAR_FILESIZE_LIMIT: Key = "sonar.filesize.limit"
+SONAR_CPD_PYTHON_MINIMUM_TOKENS: Key = "sonar.cpd.python.minimumTokens"
+SONAR_CPD_PYTHON_MINIMUM_LINES: Key = "sonar.cpd.python.minimumLines"
+SONAR_LOG_LEVEL: Key = "sonar.log.level"
+SONAR_QUALITYGATE_WAIT: Key = "sonar.qualitygate.wait"
+SONAR_QUALITYGATE_TIMEOUT: Key = "sonar.qualitygate.timeout"
+SONAR_EXTERNAL_ISSUES_REPORT_PATHS: Key = "sonar.externalIssuesReportPaths"
+SONAR_SARIF_REPORT_PATHS: Key = "sonar.sarifReportPaths"
+SONAR_LINKS_CI: Key = "sonar.links.ci"
+SONAR_LINKS_HOMEPAGE: Key = "sonar.links.homepage"
+SONAR_LINKS_ISSUE: Key = "sonar.links.issue"
+SONAR_LINKS_SCM: Key = "sonar.links.scm"
+SONAR_BRANCH_NAME: Key = "sonar.branch.name"
+SONAR_PULLREQUEST_KEY: Key = "sonar.pullrequest.key"
+SONAR_PULLREQUEST_BRANCH: Key = "sonar.pullrequest.branch"
+SONAR_PULLREQUEST_BASE: Key = "sonar.pullrequest.base"
 SONAR_PYTHON_VERSION: Key = "sonar.python.version"
+SONAR_NEWCODE_REFERENCE_BRANCH: Key = "sonar.newCode.referenceBranch"
+SONAR_SCM_REVISION: Key = "sonar.scm.revision"
+SONAR_BUILD_STRING: Key = "sonar.buildString"
+SONAR_SOURCE_ENCODING: Key = "sonar.sourceEncoding"
+SONAR_WORKING_DIRECTORY: Key = "sonar.working.directory"
+SONAR_SCM_FORCE_RELOAD_ALL: Key = "sonar.scm.forceReloadAll"
 
-# pysonar scanner specific properties
 TOML_PATH: Key = "toml-path"
 
 
@@ -262,19 +285,69 @@ PROPERTIES: list[Property] = [
         cli_getter=lambda args: args.sonar_scanner_java_opts
     ),
     Property(
+        name=SONAR_SCANNER_METADATA_FILEPATH,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_scanner_metadata_filepath
+    ),
+    Property(
         name=SONAR_PROJECT_KEY, 
         default_value=None, 
         cli_getter=lambda args: args.sonar_project_key
     ),
     Property(
-            name=SONAR_PROJECT_NAME,
-            default_value=None,
-            cli_getter=lambda args: args.sonar_project_name
+        name=SONAR_PROJECT_NAME,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_project_name
     ),
     Property(
-            name=TOML_PATH,
-            default_value=None,
-            cli_getter=lambda args: args.toml_path
+        name=SONAR_PROJECT_VERSION,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_project_version
+    ),
+    Property(
+        name=SONAR_PROJECT_DESCRIPTION,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_project_description
+    ),
+    Property(
+        name=SONAR_SOURCES,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_sources
+    ),
+    Property(
+        name=SONAR_TESTS,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_tests
+    ),
+    Property(
+        name=SONAR_FILESIZE_LIMIT,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_filesize_limit
+    ),
+    Property(
+        name=SONAR_SCM_EXCLUSIONS_DISABLED,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_scm_exclusions_disabled or getattr(args, "Dsonar.scm.exclusions.disabled")
+    ),
+    Property(
+        name=SONAR_CPD_PYTHON_MINIMUM_TOKENS,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_cpd_python_minimum_tokens
+    ),
+    Property(
+        name=SONAR_CPD_PYTHON_MINIMUM_LINES,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_cpd_python_minimum_lines
+    ),
+    Property(
+        name=SONAR_LOG_LEVEL,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_log_level
+    ),
+    Property(
+        name=TOML_PATH,
+        default_value=None,
+        cli_getter=lambda args: args.toml_path
     ),
     Property(
                 name=SONAR_PROJECT_VERSION,
@@ -291,5 +364,96 @@ PROPERTIES: list[Property] = [
                 default_value=None,
                 cli_getter=lambda args: args.sonar_python_version
     ),
+    Property(
+        name=SONAR_QUALITYGATE_WAIT, 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_qualitygate_wait or getattr(args, "Dsonar.qualitygate.wait")
+    ),
+    Property(
+        name=SONAR_QUALITYGATE_TIMEOUT, 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_qualitygate_timeout
+    ),
+    Property(
+        name=SONAR_EXTERNAL_ISSUES_REPORT_PATHS, 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_external_issues_report_paths
+    ),
+    Property(
+        name=SONAR_SARIF_REPORT_PATHS, 
+        default_value=None,
+        cli_getter=lambda args: args.sonar_sarif_report_paths
+    ),
+    Property(
+        name=SONAR_LINKS_CI, 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_links_ci
+    ),
+    Property(
+        name=SONAR_LINKS_HOMEPAGE, 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_links_homepage
+    ),
+    Property(
+        name=SONAR_LINKS_ISSUE, 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_links_issue
+    ),
+    Property(
+        name=SONAR_LINKS_SCM, 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_links_scm
+    ),
+    Property(
+        name=SONAR_BRANCH_NAME, 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_branch_name
+    ),
+    Property(
+        name=SONAR_PULLREQUEST_KEY, 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_pullrequest_key
+    ),
+    Property(
+        name=SONAR_PULLREQUEST_BRANCH, 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_pullrequest_branch
+    ),
+    Property(
+        name=SONAR_PULLREQUEST_BASE, 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_pullrequest_base
+    ),
+    Property(
+        name=SONAR_NEWCODE_REFERENCE_BRANCH, 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_newcode_reference_branch
+    ),
+    Property(
+        name=SONAR_SCM_REVISION, 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_scm_revision
+    ),
+    Property(
+        name=SONAR_BUILD_STRING, 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_build_string
+    ),
+    Property(
+        name=SONAR_SOURCE_ENCODING, 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_source_encoding
+    ),
+    Property(
+        name=SONAR_WORKING_DIRECTORY, 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_working_directory
+    ),
+    Property(
+        name=SONAR_SCM_FORCE_RELOAD_ALL, 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_scm_force_reload_all or getattr(args, "Dsonar.scm.forceReloadAll")
+    )
+
 ]
 # fmt: on
