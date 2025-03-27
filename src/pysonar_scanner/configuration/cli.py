@@ -27,7 +27,6 @@ class CliConfigurationLoader:
     @classmethod
     def load(cls) -> dict[str, any]:
         args = cls.__parse_cli_args()
-        print(args)
         config = {}
         for prop in properties.PROPERTIES:
             if prop.cli_getter is not None:
@@ -59,18 +58,6 @@ class CliConfigurationLoader:
             "-Dsonar.projectName",
             type=str,
             help="Name of the project in SonarQube",
-        )
-        parser.add_argument(
-            "--sonar-project-version",
-            "-Dsonar.projectVersion",
-            type=str,
-            help="Version of the project in SonarQube",
-        )
-        parser.add_argument(
-            "--sonar-project-description",
-            "-Dsonar.projectDescription",
-            type=str,
-            help="Description of the project in SonarQube",
         )
         parser.add_argument(
             "--sonar-sources",

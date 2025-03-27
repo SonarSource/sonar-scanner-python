@@ -378,3 +378,36 @@ class TestCliConfigurationLoader(unittest.TestCase):
     def test_jvm_style_cli_args(self):
         configuration = CliConfigurationLoader.load()
         self.assertEqual(configuration, EXPECTED_CONFIGURATION)
+
+    def test_both_boolean_args_given(self):
+        patch_template = ["myscript.py", "--token", "myToken", "--sonar-project-key", "myProjectKey"]
+
+        with patch("sys.argv", patch_template):
+            configuration = CliConfigurationLoader.load()
+            self.assertFalse(configuration.get(SONAR_SCM_EXCLUSIONS_DISABLED))
+
+        # the python args parser allows to use --no-* prefix to pass a False value to a boolean option
+        with patch("sys.argv", [*patch_template, "--no-sonar-scm-exclusions-disabled"]):
+            configuration = CliConfigurationLoader.load()
+            self.assertFalse(configuration.get(SONAR_SCM_EXCLUSIONS_DISABLED))
+
+        # When both options are given, a logic OR is applied on the two
+        with patch(
+            "sys.argv", [*patch_template, "--no-sonar-scm-exclusions-disabled", "-Dsonar.scm.exclusions.disabled=true"]
+        ):
+            configuration = CliConfigurationLoader.load()
+            self.assertTrue(configuration.get(SONAR_SCM_EXCLUSIONS_DISABLED))
+
+        with patch(
+            "sys.argv", [*patch_template, "-Dsonar.scm.exclusions.disabled=true", "--sonar-scm-exclusions-disabled"]
+        ):
+            configuration = CliConfigurationLoader.load()
+            self.assertTrue(configuration.get(SONAR_SCM_EXCLUSIONS_DISABLED))
+
+        with patch("sys.argv", [*patch_template, "--sonar-scm-exclusions-disabled"]):
+            configuration = CliConfigurationLoader.load()
+            self.assertTrue(configuration.get(SONAR_SCM_EXCLUSIONS_DISABLED))
+
+        with patch("sys.argv", [*patch_template, "-Dsonar.scm.exclusions.disabled=true"]):
+            configuration = CliConfigurationLoader.load()
+            self.assertTrue(configuration.get(SONAR_SCM_EXCLUSIONS_DISABLED))
