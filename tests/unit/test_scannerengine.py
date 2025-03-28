@@ -29,12 +29,9 @@ import pyfakefs.fake_filesystem_unittest as pyfakefs
 
 from pysonar_scanner import cache
 from pysonar_scanner import scannerengine
-from pysonar_scanner.api import SQVersion
-from pysonar_scanner.exceptions import ChecksumException, SQTooOldException
-from pysonar_scanner.jre import JREResolvedPath, JREResolver
+from pysonar_scanner.exceptions import ChecksumException
 from pysonar_scanner.scannerengine import (
     LogLine,
-    ScannerEngine,
     ScannerEngineProvisioner,
     default_log_line_listener,
 )

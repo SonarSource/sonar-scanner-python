@@ -23,6 +23,7 @@ import pyfakefs.fake_filesystem_unittest as pyfakefs
 
 from pysonar_scanner.cache import Cache, CacheFile
 import pysonar_scanner.cache as cache
+from pysonar_scanner.configuration.properties import SONAR_USER_HOME
 
 
 class TestCacheFile(unittest.TestCase):
@@ -52,7 +53,10 @@ class TestCache(pyfakefs.TestCase):
         self.assertEqual(cache_file.checksum, "123")
 
     def test_get_default(self):
-        self.assertEqual(cache.get_default().cache_folder, pathlib.Path.home() / ".sonar-scanner/cache")
+        self.assertEqual(cache.get_cache({}).cache_folder, pathlib.Path.home() / ".sonar/cache")
+
+    def test_uses_user_home(self):
+        self.assertEqual(cache.get_cache({SONAR_USER_HOME: "my/home"}).cache_folder, pathlib.Path("my/home") / "cache")
 
     def test_exists(self):
         cache = Cache.create_cache(pathlib.Path("/folder1/folder2/"))

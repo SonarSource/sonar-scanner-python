@@ -23,6 +23,7 @@ import typing
 from dataclasses import dataclass
 
 from pysonar_scanner import utils
+from pysonar_scanner.configuration.properties import SONAR_USER_HOME
 
 OpenBinaryMode = typing.Literal["wb", "xb"]
 
@@ -68,5 +69,9 @@ class Cache:
         return Cache(cache_folder)
 
 
-def get_default() -> Cache:
-    return Cache.create_cache(pathlib.Path.home() / ".sonar-scanner/cache")
+def get_cache(config) -> Cache:
+    if SONAR_USER_HOME in config:
+        cache_folder = pathlib.Path(config[SONAR_USER_HOME]) / "cache"
+    else:
+        cache_folder = pathlib.Path.home() / ".sonar/cache"
+    return Cache.create_cache(cache_folder)
