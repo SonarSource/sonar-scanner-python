@@ -22,6 +22,8 @@
 from dataclasses import dataclass
 import logging
 
+EXCEPTION_RETURN_CODE = 1
+
 
 @dataclass
 class MissingProperty:
@@ -66,3 +68,12 @@ class NoJreAvailableException(JreProvisioningException):
 
 class UnsupportedArchiveFormat(JreProvisioningException):
     pass
+
+
+def log_error(e: Exception):
+    logger = logging.getLogger()
+    is_debug_level = logger.getEffectiveLevel() <= logging.DEBUG
+
+    logger.error(str(e), exc_info=is_debug_level)
+
+    return EXCEPTION_RETURN_CODE
