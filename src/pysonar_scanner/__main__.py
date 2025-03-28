@@ -44,6 +44,8 @@ def scan():
     config = ConfigurationLoader.load()
     set_logging_options(config)
 
+    ConfigurationLoader.check_configuration(config)
+
     api = build_api(config)
     check_version(api)
     update_config_with_api_urls(config, api.base_urls)

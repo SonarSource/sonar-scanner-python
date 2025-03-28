@@ -31,8 +31,8 @@ from pysonar_scanner.configuration.properties import (
     SONAR_REGION,
     Key,
 )
-from pysonar_scanner.exceptions import MissingKeyException, SonarQubeApiException, InconsistentConfiguration
 from pysonar_scanner.utils import remove_trailing_slash, OsStr, ArchStr
+from pysonar_scanner.exceptions import SonarQubeApiException, InconsistentConfiguration
 
 GLOBAL_SONARCLOUD_URL = "https://sonarcloud.io"
 US_SONARCLOUD_URL = "https://sonarqube.us"
@@ -98,18 +98,15 @@ class JRE:
 
     @staticmethod
     def from_dict(dict: dict) -> "JRE":
-        try:
-            return JRE(
-                id=dict["id"],
-                filename=dict["filename"],
-                sha256=dict["sha256"],
-                java_path=dict["javaPath"],
-                os=dict["os"],
-                arch=dict["arch"],
-                download_url=dict.get("downloadUrl", None),
-            )
-        except KeyError as e:
-            raise MissingKeyException(f"Missing key in dictionary {dict}") from e
+        return JRE(
+            id=dict["id"],
+            filename=dict["filename"],
+            sha256=dict["sha256"],
+            java_path=dict["javaPath"],
+            os=dict["os"],
+            arch=dict["arch"],
+            download_url=dict.get("downloadUrl", None),
+        )
 
 
 ApiConfiguration = TypedDict(
@@ -243,7 +240,7 @@ class SonarQubeApi:
             res.raise_for_status()
             json_array = res.json()
             return [JRE.from_dict(jre) for jre in json_array]
-        except (requests.RequestException, MissingKeyException) as e:
+        except (requests.RequestException, KeyError) as e:
             raise SonarQubeApiException("Error while fetching the analysis version") from e
 
     def download_analysis_jre(self, id: str, handle: typing.BinaryIO) -> None:
