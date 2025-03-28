@@ -438,5 +438,5 @@ class CliConfigurationLoader:
         parser.add_argument(
             "--sonar-modules", "-Dsonar.modules", type=str, help="Comma-delimited list of modules to analyze"
         )
-        
+
         return parser.parse_args()
