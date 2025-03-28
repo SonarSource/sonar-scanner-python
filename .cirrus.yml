@@ -11,9 +11,11 @@ env:
   POETRY_VIRTUALENVS_PATH: "~/.cache/poetry/venvs"
   POETRY_CACHE_DIR: "~/.cache/poetry/pypoetry"
   SONARQUBE_VERSION: 25.3.0.104237
+  # Use bash (instead of sh on linux or cmd.exe on windows)
+  CIRRUS_SHELL: bash
 
 only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && ($CIRRUS_PR != "" || $CIRRUS_BRANCH == 'master' || $CIRRUS_BRANCH =~ "branch-.*")
-container_definition: &CONTAINER_DEFINITION
+linux_container_definition: &LINUX_CONTAINER_DEFINITION
   dockerfile: .cirrus/poetry.Dockerfile
   cluster_name: ${CIRRUS_CLUSTER_NAME}
   region: eu-central-1
@@ -27,14 +29,59 @@ container_definition: &CONTAINER_DEFINITION
   cpu: 3
   memory: 8G
 
+
+win_vm_definition: &WINDOWS_VM_DEFINITION
+  ec2_instance:
+    experimental: true # see https://github.com/cirruslabs/cirrus-ci-docs/issues/1051
+    image: base-windows-jdk17-v*
+    platform: windows
+    region: eu-central-1
+    type: c6id.4xlarge
+    preemptible: false
+    use_ssd: true
+
+win_ssd_and_clone:
+  &WIN_SSD_AND_CLONE # copy&paste from https://github.com/SonarSource/sonar-cpp/blob/a8c6f1e45a12393508682a013ac7ee35eb92bece/.cirrus.yml#L45
+  prepare_disk_script:
+    - ps: |
+        Get-Disk -Number 2 | Initialize-Disk -PassThru | New-Partition -UseMaximumSize -DriveLetter Z
+        Format-Volume -DriveLetter Z -FileSystem NTFS -Confirm:$false
+    - echo "CIRRUS_WORKING_DIR=Z:/cirrus-ci-build" >> $CIRRUS_ENV
+  # we don't clone submodules because they are not needed for the tests
+  clone_script: |
+    git config --system core.longpaths true
+    if [ -z "$CIRRUS_PR" ]; then
+      git clone --branch=$CIRRUS_BRANCH https://x-access-token:${CIRRUS_REPO_CLONE_TOKEN}@github.com/${CIRRUS_REPO_FULL_NAME}.git $CIRRUS_WORKING_DIR
+      git reset --hard $CIRRUS_CHANGE_IN_REPO
+    else
+      git clone https://x-access-token:${CIRRUS_REPO_CLONE_TOKEN}@github.com/${CIRRUS_REPO_FULL_NAME}.git $CIRRUS_WORKING_DIR
+      git fetch origin pull/$CIRRUS_PR/head:pull/$CIRRUS_PR
+      git reset --hard $CIRRUS_CHANGE_IN_REPO
+    fi
+
+poetry_win_install: &POETRY_WIN_INSTALL
+  <<: *WINDOWS_VM_DEFINITION
+  <<: *WIN_SSD_AND_CLONE
+  env:
+    PYTHON_VERSION: 3.12.1
+    POETRY_VERSION: 2.0.1
+  jfrog_win_install_script:
+    - powershell "Start-Process -Wait -Verb RunAs powershell '-NoProfile iwr https://releases.jfrog.io/artifactory/jfrog-cli/v2-jf/[RELEASE]/jfrog-cli-windows-amd64/jf.exe -OutFile $env:SYSTEMROOT\system32\jf.exe'"
+    - jf intro
+  poetry_win_install_script:
+    - source cirrus-env QA
+    - pip install poetry=="$POETRY_VERSION"
+    - source set_poetry_build_version "$CI_BUILD_NUMBER"
+    - jf config add repox --artifactory-url "$ARTIFACTORY_URL" --access-token "$ARTIFACTORY_PRIVATE_ACCESS_TOKEN"
+    - jf poetry-config --server-id-resolve repox --repo-resolve sonarsource-pypi
+    - jf poetry install --build-name="$CIRRUS_REPO_NAME" --build-number="$CI_BUILD_NUMBER"
+
 poetry_cache_template: &POETRY_CACHE
   poetry_cache:
     folder: ~/.cache/poetry/
     fingerprint_script: cat poetry.lock 
 
 .poetry_template: &POETRY_TEMPLATE
-  eks_container:
-    <<: *CONTAINER_DEFINITION
   <<: *POETRY_CACHE
   poetry_install_script:
     - source set_poetry_build_version "$CI_BUILD_NUMBER"
@@ -43,8 +90,13 @@ poetry_cache_template: &POETRY_CACHE
     - jfrog poetry-config --server-id-resolve repox --repo-resolve sonarsource-pypi
     - jfrog poetry install --build-name="$CIRRUS_REPO_NAME" --build-number="$CI_BUILD_NUMBER"
 
-mend_scan_task:
+.poetry_linux_template: &POETRY_LINUX_TEMPLATE
   <<: *POETRY_TEMPLATE
+  eks_container:
+    <<: *LINUX_CONTAINER_DEFINITION
+
+mend_scan_task:
+  <<: *POETRY_LINUX_TEMPLATE
   depends_on:
     - build
   # run only on master and long-living branches
@@ -67,7 +119,7 @@ mend_scan_task:
       path: "whitesource/**/*"
 
 formatting_task:
-  <<: *POETRY_TEMPLATE
+  <<: *POETRY_LINUX_TEMPLATE
   alias: formatting
   name: "Formatting"
   formatting_script:
@@ -76,8 +128,8 @@ formatting_task:
     - poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d tests/
     - git diff --name-only --exit-code ./src ./tests
 
-analysis_task:
-  <<: *POETRY_TEMPLATE
+analysis_linux_task:
+  <<: *POETRY_LINUX_TEMPLATE
   alias: analysis
   name: "NEXT Analysis"
   analysis_script:
@@ -115,12 +167,20 @@ qa_task:
       eks_container:
         docker_arguments:
           PYTHON_VERSION: 3.13.2
-  <<: *POETRY_TEMPLATE
+  <<: *POETRY_LINUX_TEMPLATE
   qa_script:
     - poetry run pytest tests/
 
+qa_windows_task:
+  name: "Test Windows"
+  <<: *POETRY_WIN_INSTALL
+  alias: qa_windows
+  qa_script:
+    - poetry run pytest tests/
+    - exit $LASTEXITCODE
+
 build_task:
-  <<: *POETRY_TEMPLATE
+  <<: *POETRY_LINUX_TEMPLATE
   alias: build
   name: "Build"
   build_script: regular_poetry_build_publish
@@ -132,7 +192,7 @@ its_task:
     folder: sonarqube_cache/
     populate_script: mkdir -p sonarqube_cache && wget -q https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-$SONARQUBE_VERSION.zip -O sonarqube_cache/sonarqube.zip
     fingerprint_script: echo "sonarqube-$SONARQUBE_VERSION"
-  <<: *POETRY_TEMPLATE
+  <<: *POETRY_LINUX_TEMPLATE
   its_script:
     - unzip -q sonarqube_cache/sonarqube.zip -d sonarqube
     - cd $(ls -d sonarqube/*/)
@@ -149,10 +209,11 @@ promote_task:
     - formatting
     - analysis
     - qa
+    - qa_windows
     - build
     - its
   env:
     ARTIFACTORY_PROMOTE_ACCESS_TOKEN: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promoter access_token]
     GITHUB_TOKEN: VAULT[development/github/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promotion token]
-  <<: *POETRY_TEMPLATE
+  <<: *POETRY_LINUX_TEMPLATE
   promote_script: cirrus_promote

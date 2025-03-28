@@ -226,6 +226,6 @@ class TestScannerEngineProvisioner(pyfakefs.TestCase):
             mocker.mock_analysis_engine(filename="scanner-engine.jar", sha256=self.test_file_checksum)
             mocker.mock_analysis_engine_download(body=self.test_file_content)
 
-            self.fs.chmod("/some-folder/cache-folder", mode=0o000)
+            self.fs.chmod("/some-folder/cache-folder", mode=0o000, force_unix_mode=True)
 
             ScannerEngineProvisioner(self.api, self.cache).provision()
