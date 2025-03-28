@@ -19,8 +19,23 @@
 #
 
 
-class MissingKeyException(Exception):
-    pass
+from dataclasses import dataclass
+import logging
+
+EXCEPTION_RETURN_CODE = 1
+
+
+@dataclass
+class MissingProperty:
+    property: str
+    cli_arg: str
+
+
+class MissingPropertyException(Exception):
+    @staticmethod
+    def from_missing_keys(*properties: MissingProperty) -> "MissingPropertyException":
+        missing_properties = ", ".join([f"{prop.property} ({prop.cli_arg})" for prop in properties])
+        return MissingPropertyException(f"Missing required properties: {missing_properties}")
 
 
 class SonarQubeApiException(Exception):
@@ -53,3 +68,12 @@ class NoJreAvailableException(JreProvisioningException):
 
 class UnsupportedArchiveFormat(JreProvisioningException):
     pass
+
+
+def log_error(e: Exception):
+    logger = logging.getLogger()
+    is_debug_level = logger.getEffectiveLevel() <= logging.DEBUG
+
+    logger.error(str(e), exc_info=is_debug_level)
+
+    return EXCEPTION_RETURN_CODE
