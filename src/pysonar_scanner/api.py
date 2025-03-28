@@ -31,8 +31,11 @@ from pysonar_scanner.configuration.properties import (
     SONAR_REGION,
     Key,
 )
-from pysonar_scanner.exceptions import MissingKeyException, SonarQubeApiException
+from pysonar_scanner.exceptions import MissingKeyException, SonarQubeApiException, InconsistentConfiguration
 from pysonar_scanner.utils import Arch, Os, remove_trailing_slash
+
+GLOBAL_SONARCLOUD_URL = "https://sonarcloud.io"
+US_SONARCLOUD_URL = "https://sonarqube.us"
 
 
 @dataclass(frozen=True)
@@ -126,26 +129,43 @@ def to_api_configuration(config_dict: dict[Key, any]) -> ApiConfiguration:
 
 def get_base_urls(config_dict: dict[Key, any]) -> BaseUrls:
     def is_sq_cloud_url(api_config: ApiConfiguration, sonar_host_url: str) -> bool:
-        sq_cloud_url = api_config[SONAR_SCANNER_SONARCLOUD_URL] or "https://sonarcloud.io"
-        return remove_trailing_slash(sonar_host_url) == remove_trailing_slash(sq_cloud_url)
+        sq_cloud_url = api_config[SONAR_SCANNER_SONARCLOUD_URL] or GLOBAL_SONARCLOUD_URL
+        return remove_trailing_slash(sonar_host_url) in [remove_trailing_slash(sq_cloud_url), US_SONARCLOUD_URL]
 
     def is_blank(str) -> bool:
         return str.strip() == ""
 
-    def region_with_dot(region: str) -> str:
-        return region + "." if not is_blank(region) else ""
-
     api_config: ApiConfiguration = to_api_configuration(config_dict)
 
     sonar_host_url = remove_trailing_slash(api_config[SONAR_HOST_URL])
+    region = api_config[SONAR_REGION]
+    if region and region != "us":
+        raise InconsistentConfiguration(
+            f"Invalid region '{region}'. Valid regions are: 'us'. "
+            "Please check the 'sonar.region' property or the 'SONAR_REGION' environment variable."
+        )
+    if is_inconsistent_configuration(region, sonar_host_url):
+        raise InconsistentConfiguration(
+            "Inconsistent values for properties 'sonar.region' and 'sonar.host.url'. "
+            + "Please only specify one of the two properties."
+        )
     if is_blank(sonar_host_url) or is_sq_cloud_url(api_config, sonar_host_url):
-        region = region_with_dot(api_config[SONAR_REGION])
-        sonar_host_url = api_config[SONAR_SCANNER_SONARCLOUD_URL] or f"https://{region}sonarcloud.io"
-        api_base_url = api_config[SONAR_SCANNER_API_BASE_URL] or f"https://api.{region}sonarcloud.io"
+        default_url = US_SONARCLOUD_URL if region == "us" else GLOBAL_SONARCLOUD_URL
+        default_api_base_url = "https://api.sonarqube.us" if region == "us" else "https://api.sonarcloud.io"
+        sonar_host_url = api_config[SONAR_SCANNER_SONARCLOUD_URL] or default_url
+        api_base_url = api_config[SONAR_SCANNER_API_BASE_URL] or default_api_base_url
         return BaseUrls(base_url=sonar_host_url, api_base_url=api_base_url, is_sonar_qube_cloud=True)
     else:
         api_base_url = api_config[SONAR_SCANNER_API_BASE_URL] or f"{sonar_host_url}/api/v2"
         return BaseUrls(base_url=sonar_host_url, api_base_url=api_base_url, is_sonar_qube_cloud=False)
+
+
+def is_inconsistent_configuration(region, sonar_host_url):
+    if not region or not sonar_host_url:
+        return False
+    if region == "us" and sonar_host_url.startswith(US_SONARCLOUD_URL):
+        return False
+    return True
 
 
 class BearerAuth(requests.auth.AuthBase):
