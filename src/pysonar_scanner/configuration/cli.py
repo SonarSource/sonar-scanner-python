@@ -20,24 +20,40 @@
 import argparse
 
 from pysonar_scanner.configuration import properties
+from pysonar_scanner.exceptions import UnexpectedCliArgument
 
 
 class CliConfigurationLoader:
 
     @classmethod
     def load(cls) -> dict[str, any]:
-        args = cls.__parse_cli_args()
+        args, unknown_args = cls.__parse_cli_args()
         config = {}
         for prop in properties.PROPERTIES:
             if prop.cli_getter is not None:
                 value = prop.cli_getter(args)
                 config[prop.name] = value
 
+        # Handle unknown args starting with '-D'
+        for arg in unknown_args:
+            if not arg.startswith("-D"):
+                raise UnexpectedCliArgument(f"Unexpected argument: {arg}")
+            key_value = arg[2:].split("=", 1)
+            if len(key_value) == 2:
+                key, value = key_value
+                config[key] = value
+            else:
+                # If no value is provided, set the key to "true"
+                config[arg[2:]] = "true"
+
         return {k: v for k, v in config.items() if v is not None}
 
     @classmethod
-    def __parse_cli_args(cls) -> argparse.Namespace:
-        parser = argparse.ArgumentParser(description="Sonar scanner CLI for Python")
+    def __parse_cli_args(cls) -> tuple[argparse.Namespace, list[str]]:
+        parser = argparse.ArgumentParser(
+            description="Sonar scanner CLI for Python",
+            epilog="Analysis properties not listed here will also be accepted, as long as they start with the -D prefix.",
+        )
 
         parser.add_argument(
             "-t",
@@ -439,4 +455,4 @@ class CliConfigurationLoader:
             "--sonar-modules", "-Dsonar.modules", type=str, help="Comma-delimited list of modules to analyze"
         )
 
-        return parser.parse_args()
+        return parser.parse_known_args()

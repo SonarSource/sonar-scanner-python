@@ -87,6 +87,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_PYTHON_XUNIT_SKIP_DETAILS,
     SONAR_MODULES,
 )
+from pysonar_scanner.exceptions import UnexpectedCliArgument
 
 EXPECTED_CONFIGURATION = {
     SONAR_TOKEN: "myToken",
@@ -439,3 +440,82 @@ class TestCliConfigurationLoader(unittest.TestCase):
         with patch("sys.argv", [*patch_template, "-Dsonar.scm.exclusions.disabled=true"]):
             configuration = CliConfigurationLoader.load()
             self.assertTrue(configuration.get(SONAR_SCM_EXCLUSIONS_DISABLED))
+
+    @patch(
+        "sys.argv",
+        [
+            "myscript.py",
+            "--token",
+            "myToken",
+            "--sonar-project-key",
+            "myProjectKey",
+            "-Dunknown.property=unknownValue",
+            "-Danother.unknown.property=anotherValue",
+        ],
+    )
+    def test_unknown_args_with_D_prefix(self):
+        configuration = CliConfigurationLoader.load()
+        expected_configuration = {
+            SONAR_TOKEN: "myToken",
+            SONAR_PROJECT_KEY: "myProjectKey",
+            "unknown.property": "unknownValue",
+            "another.unknown.property": "anotherValue",
+        }
+        self.assertDictEqual(configuration, expected_configuration)
+
+    @patch(
+        "sys.argv",
+        [
+            "myscript.py",
+            "--token",
+            "myToken",
+            "--sonar-project-key",
+            "myProjectKey",
+            "-Dunknown.flag",
+        ],
+    )
+    def test_unknown_args_no_value(self):
+        configuration = CliConfigurationLoader.load()
+        expected_configuration = {
+            SONAR_TOKEN: "myToken",
+            SONAR_PROJECT_KEY: "myProjectKey",
+            "unknown.flag": "true",
+        }
+        self.assertDictEqual(configuration, expected_configuration)
+
+    @patch(
+        "sys.argv",
+        [
+            "myscript.py",
+            "--token",
+            "myToken",
+            "--sonar-project-key",
+            "myProjectKey",
+            "-unknown.property=some_value",
+        ],
+    )
+    def test_unknown_args_missing_D_prefix(self):
+        with self.assertRaises(
+            UnexpectedCliArgument, msg="Unexpected argument format: -unknown.property=some_value=another_value"
+        ):
+            CliConfigurationLoader.load()
+
+    @patch(
+        "sys.argv",
+        [
+            "myscript.py",
+            "--token",
+            "myToken",
+            "--sonar-project-key",
+            "myProjectKey",
+            "-Dsonar.unknown.property=some_value=another_value",
+        ],
+    )
+    def test_unknown_args_unexpected_format(self):
+        configuration = CliConfigurationLoader.load()
+        expected_configuration = {
+            SONAR_TOKEN: "myToken",
+            SONAR_PROJECT_KEY: "myProjectKey",
+            "sonar.unknown.property": "some_value=another_value",
+        }
+        self.assertDictEqual(configuration, expected_configuration)
