@@ -41,8 +41,8 @@ def test_minimal_project(sonarqube_client: SonarQubeClient, cli: CliClient):
 
 def test_minimal_project_unexpected_arg(cli: CliClient):
     process = cli.run_analysis(params=["-unexpected"], sources_dir="minimal")
-    assert process.returncode == 2, str(process.stdout)
-    assert "error: unrecognized arguments: -unexpected" in process.stdout
+    assert process.returncode == 1, str(process.stdout)
+    assert "Unexpected argument: -unexpected" in process.stdout
 
 
 def test_invalid_token(sonarqube_client: SonarQubeClient, cli: CliClient):

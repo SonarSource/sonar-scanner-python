@@ -375,3 +375,22 @@ class TestConfigurationLoader(pyfakefs.TestCase):
         # CLI args have highest priority
         self.assertEqual(configuration[SONAR_PROJECT_KEY], "ProjectKeyFromCLI")
         self.assertEqual(configuration[SONAR_TOKEN], "myToken")  # CLI overrides env var
+
+    @patch(
+        "sys.argv",
+        [
+            "myscript.py",
+            "--token",
+            "myToken",
+            "--sonar-project-key",
+            "myProjectKey",
+            "-Dunknown.property=unknownValue",
+            "-Danother.unknown.property=anotherValue",
+        ],
+    )
+    def test_unknown_args_with_D_prefix(self):
+        configuration = ConfigurationLoader.load()
+        self.assertEqual(configuration["unknown.property"], "unknownValue")
+        self.assertEqual(configuration["another.unknown.property"], "anotherValue")
+        self.assertEqual(configuration[SONAR_TOKEN], "myToken")
+        self.assertEqual(configuration[SONAR_PROJECT_KEY], "myProjectKey")

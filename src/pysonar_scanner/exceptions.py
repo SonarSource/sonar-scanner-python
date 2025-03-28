@@ -35,6 +35,10 @@ class ChecksumException(Exception):
     pass
 
 
+class UnexpectedCliArgument(Exception):
+    pass
+
+
 class JreProvisioningException(Exception):
     pass
 

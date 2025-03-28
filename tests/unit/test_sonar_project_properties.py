@@ -36,6 +36,7 @@ class TestPropertiesFile(pyfakefs.TestCase):
                 "sonar.sources=src # my sources\n"
                 "sonar.sources=src\n"
                 "sonar.exclusions=**/generated/**/*,**/deprecated/**/*,**/testdata/**/*\n"
+                "sonar.some.unknownProperty=my_unknown_property_value\n"
             ),
         )
         properties = sonar_project_properties.load(Path("."))
@@ -44,6 +45,7 @@ class TestPropertiesFile(pyfakefs.TestCase):
         self.assertEqual(properties.get("sonar.projectName"), "My Project")
         self.assertEqual(properties.get("sonar.sources"), "src")
         self.assertEqual(properties.get("sonar.exclusions"), "**/generated/**/*,**/deprecated/**/*,**/testdata/**/*")
+        self.assertEqual(properties.get("sonar.some.unknownProperty"), "my_unknown_property_value")
 
     def test_load_sonar_project_properties_custom_path(self):
         self.fs.create_file(

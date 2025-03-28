@@ -36,6 +36,7 @@ class TestTomlFile(TestCase):
             projectName = "My Project"
             sources = "src"
             exclusions = "**/generated/**/*,**/deprecated/**/*,**/testdata/**/*"
+            some.unknownProperty = "unknown_property_value"
             """,
         )
         properties = TomlConfigurationLoader.load(Path("."))
@@ -46,6 +47,7 @@ class TestTomlFile(TestCase):
         self.assertEqual(
             properties.sonar_properties.get("sonar.exclusions"), "**/generated/**/*,**/deprecated/**/*,**/testdata/**/*"
         )
+        self.assertEqual(properties.sonar_properties.get("sonar.some.unknownProperty"), "unknown_property_value")
 
     def test_load_toml_file_kebab_case(self):
         self.fs.create_file(
