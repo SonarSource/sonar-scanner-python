@@ -33,8 +33,6 @@ poetry_cache_template: &POETRY_CACHE
     fingerprint_script: cat poetry.lock 
 
 .poetry_template: &POETRY_TEMPLATE
-  eks_container:
-    <<: *CONTAINER_DEFINITION
   <<: *POETRY_CACHE
   poetry_install_script:
     - source set_poetry_build_version "$CI_BUILD_NUMBER"
@@ -43,6 +41,30 @@ poetry_cache_template: &POETRY_CACHE
     - jfrog poetry-config --server-id-resolve repox --repo-resolve sonarsource-pypi
     - jfrog poetry install --build-name="$CIRRUS_REPO_NAME" --build-number="$CI_BUILD_NUMBER"
 
+.poetry_macos_template: &POETRY_MACOS_TEMPLATE
+  <<: *POETRY_CACHE
+  jfrog_install_script:
+    - brew install jfrog-cli
+    - jf intro
+  poetry_install_script:
+    - brew install poetry
+    - poetry config keyring.enabled false # Keyring is locked in macOS VM and not needed for downloading dependencies
+    - jfrog config add repox --artifactory-url "$ARTIFACTORY_URL" --access-token "$ARTIFACTORY_PRIVATE_ACCESS_TOKEN"
+    - jfrog poetry-config --server-id-resolve repox --repo-resolve sonarsource-pypi
+    - jfrog poetry install --build-name="$CIRRUS_REPO_NAME" --build-number="$CI_BUILD_NUMBER"
+
+macos_worker_template: &MACOS_WORKER_DEFINITION
+  persistent_worker:
+    isolation:
+      tart:
+        image: ghcr.io/cirruslabs/macos-sonoma-xcode:latest
+        cpu: 3
+        memory: 6G
+    resources:
+      tart-vms: 1
+    labels:
+      envname: prod
+ 
 mend_scan_task:
   <<: *POETRY_TEMPLATE
   depends_on:
@@ -50,6 +72,7 @@ mend_scan_task:
   # run only on master and long-living branches
   only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && ($CIRRUS_BRANCH == "master" || $CIRRUS_BRANCH =~ "branch-.*")
   eks_container:
+    <<: *CONTAINER_DEFINITION
     image: ${CIRRUS_AWS_ACCOUNT}.dkr.ecr.eu-central-1.amazonaws.com/base:j21-latest
     region: eu-central-1
     cluster_name: ${CIRRUS_CLUSTER_NAME}
@@ -68,6 +91,8 @@ mend_scan_task:
 
 formatting_task:
   <<: *POETRY_TEMPLATE
+  eks_container:
+    <<: *CONTAINER_DEFINITION
   alias: formatting
   name: "Formatting"
   formatting_script:
@@ -78,6 +103,8 @@ formatting_task:
 
 analysis_task:
   <<: *POETRY_TEMPLATE
+  eks_container:
+    <<: *CONTAINER_DEFINITION
   alias: analysis
   name: "NEXT Analysis"
   analysis_script:
@@ -116,33 +143,65 @@ qa_task:
         docker_arguments:
           PYTHON_VERSION: 3.13.2
   <<: *POETRY_TEMPLATE
+  eks_container:
+    <<: *CONTAINER_DEFINITION
   qa_script:
     - poetry run pytest tests/
 
+qa_macos_task:
+  alias: qa_macos
+  only_if: $CIRRUS_CRON == "macos-its-cron"
+  name: "[macOS] Run tests"
+  <<: [*MACOS_WORKER_DEFINITION, *POETRY_MACOS_TEMPLATE]
+  env:
+    PATH: "/Users/admin/.local/bin:$PATH"
+  install_uv_script:
+    - brew install uv
+  test_39_script:
+    - .cirrus/run_macos_tests.sh "3.9.18"
+  test_310_script:
+    - .cirrus/run_macos_tests.sh "3.10.13"
+  test_311_script:
+    - .cirrus/run_macos_tests.sh "3.11.7"
+  test_312_script:
+    - .cirrus/run_macos_tests.sh "3.12.1"
+  test_313_script:
+    - .cirrus/run_macos_tests.sh "3.13.2"
+
 build_task:
   <<: *POETRY_TEMPLATE
+  eks_container:
+    <<: *CONTAINER_DEFINITION
   alias: build
   name: "Build"
   build_script: regular_poetry_build_publish
 
+its_macos_task:
+  name: "[macOS] Integration Tests"
+  alias: its_macos
+  only_if: $CIRRUS_CRON == "macos-its-cron"
+  <<: [*MACOS_WORKER_DEFINITION, *POETRY_MACOS_TEMPLATE]
+  sonarqube_cache:
+    folder: sonarqube_cache/
+    populate_script: mkdir -p sonarqube_cache && wget -q https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-$SONARQUBE_VERSION.zip -O sonarqube_cache/sonarqube.zip
+    fingerprint_script: echo "sonarqube-$SONARQUBE_VERSION"
+
+  its_script:
+    - .cirrus/run_its.sh
+
 its_task:
   name: "Integration Tests"
   alias: its
+  # the macOS workers are only available from Monday 06:45 CEST to Friday 20:00 CEST (see https://xtranet-sonarsource.atlassian.net/wiki/spaces/Platform/pages/3447980037/MacOS+Persistent+Workers+User+Guide+-+Cirrus+CI)
   sonarqube_cache:
     folder: sonarqube_cache/
     populate_script: mkdir -p sonarqube_cache && wget -q https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-$SONARQUBE_VERSION.zip -O sonarqube_cache/sonarqube.zip
     fingerprint_script: echo "sonarqube-$SONARQUBE_VERSION"
   <<: *POETRY_TEMPLATE
+  eks_container:
+    <<: *CONTAINER_DEFINITION
   its_script:
-    - unzip -q sonarqube_cache/sonarqube.zip -d sonarqube
-    - cd $(ls -d sonarqube/*/)
-    - ./bin/linux-x86-64/sonar.sh start
-    - cd -
-    - jfrog poetry-config --server-id-resolve repox --repo-resolve sonarsource-pypi
-    - jfrog poetry install
-    - unset SONAR_TOKEN
-    - unset SONAR_HOST_URL
-    - poetry run pytest --its tests/its 
+    - .cirrus/run_its.sh
 
 promote_task:
   depends_on:
@@ -155,4 +214,6 @@ promote_task:
     ARTIFACTORY_PROMOTE_ACCESS_TOKEN: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promoter access_token]
     GITHUB_TOKEN: VAULT[development/github/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promotion token]
   <<: *POETRY_TEMPLATE
+  eks_container:
+    <<: *CONTAINER_DEFINITION
   promote_script: cirrus_promote
