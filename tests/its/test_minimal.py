@@ -48,4 +48,4 @@ def test_minimal_project_unexpected_arg(cli: CliClient):
 def test_invalid_token(sonarqube_client: SonarQubeClient, cli: CliClient):
     process = cli.run_analysis(sources_dir="minimal", token="invalid")
     assert process.returncode == 1, str(process.stdout)
-    assert "401 Client Error" in process.stdout
+    assert "Error while fetching the analysis version" in process.stdout

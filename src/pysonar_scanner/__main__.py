@@ -20,6 +20,7 @@
 
 from pysonar_scanner import app_logging
 from pysonar_scanner import cache
+from pysonar_scanner import exceptions
 from pysonar_scanner.api import get_base_urls, SonarQubeApi, BaseUrls, MIN_SUPPORTED_SQ_VERSION
 from pysonar_scanner.configuration import configuration_loader
 from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader
@@ -39,6 +40,13 @@ from pysonar_scanner.scannerengine import ScannerEngine, ScannerEngineProvisione
 
 
 def scan():
+    try:
+        return do_scan()
+    except Exception as e:
+        return exceptions.log_error(e)
+
+
+def do_scan():
     app_logging.setup()
 
     config = ConfigurationLoader.load()
