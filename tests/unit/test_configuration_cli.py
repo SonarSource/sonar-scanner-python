@@ -443,6 +443,26 @@ class TestCliConfigurationLoader(unittest.TestCase):
             "myToken",
             "--sonar-project-key",
             "myProjectKey",
+            "-Dunknown.flag",
+        ],
+    )
+    def test_unknown_args_no_value(self):
+        configuration = CliConfigurationLoader.load()
+        expected_configuration = {
+            SONAR_TOKEN: "myToken",
+            SONAR_PROJECT_KEY: "myProjectKey",
+            "unknown.flag": "true",
+        }
+        self.assertDictEqual(configuration, expected_configuration)
+
+    @patch(
+        "sys.argv",
+        [
+            "myscript.py",
+            "--token",
+            "myToken",
+            "--sonar-project-key",
+            "myProjectKey",
             "-unknown.property=some_value",
         ],
     )

@@ -39,8 +39,12 @@ class CliConfigurationLoader:
             if not arg.startswith("-D"):
                 raise UnexpectedCliArgument(f"Unexpected argument: {arg}")
             key_value = arg[2:].split("=", 1)
-            key, value = key_value
-            config[key] = value
+            if len(key_value) == 2:
+                key, value = key_value
+                config[key] = value
+            else:
+                # If no value is provided, set the key to "true"
+                config[arg[2:]] = "true"
 
         return {k: v for k, v in config.items() if v is not None}
 
