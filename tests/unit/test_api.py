@@ -202,48 +202,54 @@ class TestApi(unittest.TestCase):
                 self.assertEqual(base_urls, expected)
 
     def test_inconsistent_urls_raises_exception(self):
-        with self.subTest("US region and global SQCloud URL"):
-            config = {
-                SONAR_HOST_URL: "https://sonarcloud.io",
-                SONAR_SCANNER_SONARCLOUD_URL: "",
-                SONAR_SCANNER_API_BASE_URL: "",
-                SONAR_REGION: "us",
-            }
-            with self.assertRaises(
-                InconsistentConfiguration,
-                msg="Inconsistent values for properties 'sonar.region' and 'sonar.host.url'. "
-                "Please only specify one of the two properties.",
-            ):
-                get_base_urls(config)
+        class TestCaseDict(TypedDict):
+            name: str
+            config: dict[Key, any]
+            expected: str
 
-        with self.subTest("Region set with unknown SQCloud URL"):
-            config = {
-                SONAR_HOST_URL: "https://custom-sq-cloud.io",
-                SONAR_SCANNER_SONARCLOUD_URL: "https://custom-sq-cloud.io",
-                SONAR_SCANNER_API_BASE_URL: "https://other-api.custom-sq-cloud.io",
-                SONAR_REGION: "us",
-            }
-            with self.assertRaises(
-                InconsistentConfiguration,
-                msg="Inconsistent values for properties 'sonar.region' and 'sonar.host.url'. "
+        cases: list[TestCaseDict] = [
+            {
+                "name": "US region and global SQCloud URL",
+                "config": {
+                    SONAR_HOST_URL: "https://sonarcloud.io",
+                    SONAR_SCANNER_SONARCLOUD_URL: "",
+                    SONAR_SCANNER_API_BASE_URL: "",
+                    SONAR_REGION: "us",
+                },
+                "expected": "Inconsistent values for properties 'sonar.region' and 'sonar.host.url'. "
                 "Please only specify one of the two properties.",
-            ):
-                get_base_urls(config)
-
-        with self.subTest("Unsupported region parameter"):
-            config = {
-                SONAR_HOST_URL: "",
-                SONAR_SCANNER_SONARCLOUD_URL: "",
-                SONAR_SCANNER_API_BASE_URL: "",
-                SONAR_REGION: "fr",
-            }
-            with self.assertRaises(
-                InconsistentConfiguration,
-                msg="Invalid region 'fr'. Valid regions are: 'us'. "
+            },
+            {
+                "name": "Region set with unknown SQCloud URL",
+                "config": {
+                    SONAR_HOST_URL: "https://custom-sq-cloud.io",
+                    SONAR_SCANNER_SONARCLOUD_URL: "https://custom-sq-cloud.io",
+                    SONAR_SCANNER_API_BASE_URL: "https://other-api.custom-sq-cloud.io",
+                    SONAR_REGION: "us",
+                },
+                "expected": "Inconsistent values for properties 'sonar.region' and 'sonar.host.url'. "
+                "Please only specify one of the two properties.",
+            },
+            {
+                "name": "Unsupported region parameter",
+                "config": {
+                    SONAR_HOST_URL: "",
+                    SONAR_SCANNER_SONARCLOUD_URL: "",
+                    SONAR_SCANNER_API_BASE_URL: "",
+                    SONAR_REGION: "fr",
+                },
+                "expected": "Invalid region 'fr'. Valid regions are: 'us'. "
                 "Please check the 'sonar.region' property "
                 "or the 'SONAR_REGION' environment variable.",
-            ):
-                get_base_urls(config)
+            },
+        ]
+
+        for case in cases:
+            config = case["config"]
+            expected = case["expected"]
+            with self.subTest(case["name"], config=config, expected=expected):
+                with self.assertRaises(InconsistentConfiguration, msg=expected):
+                    get_base_urls(config)
 
 
 class TestSonarQubeApiWithUnreachableSQServer(unittest.TestCase):
