@@ -419,6 +419,24 @@ class CliConfigurationLoader:
             help="Equivalent to --sonar-python-skip-unchanged",
         )
         parser.add_argument(
+            "--sonar-python-xunit-report-path",
+            "-Dsonar.python.xunit.reportPath",
+            type=str,
+            help="Path to the report of test execution, relative to project's root",
+        )
+        parser.add_argument(
+            "--sonar-python-xunit-skip-details",
+            type=bool,
+            action=argparse.BooleanOptionalAction,
+            help="When enabled, the test execution statistics is provided only on project level",
+        )
+        parser.add_argument(
+            "-Dsonar.python.xunit.skipDetails",
+            type=bool,
+            help="Equivalent to -Dsonar.python.xunit.skipDetails",
+        )
+        parser.add_argument(
             "--sonar-modules", "-Dsonar.modules", type=str, help="Comma-delimited list of modules to analyze"
         )
+        
         return parser.parse_args()

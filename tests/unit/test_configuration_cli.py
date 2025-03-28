@@ -83,6 +83,8 @@ from pysonar_scanner.configuration.properties import (
     SONAR_PYTHON_PYLINT_REPORT_PATH,
     SONAR_PYTHON_COVERAGE_REPORT_PATHS,
     SONAR_PYTHON_SKIP_UNCHANGED,
+    SONAR_PYTHON_XUNIT_REPORT_PATH,
+    SONAR_PYTHON_XUNIT_SKIP_DETAILS,
     SONAR_MODULES,
 )
 
@@ -146,6 +148,8 @@ EXPECTED_CONFIGURATION = {
     SONAR_PYTHON_PYLINT_REPORT_PATH: "path/to/pylint/report",
     SONAR_PYTHON_COVERAGE_REPORT_PATHS: "path/to/coverage1,path/to/coverage2",
     SONAR_PYTHON_SKIP_UNCHANGED: True,
+    SONAR_PYTHON_XUNIT_REPORT_PATH: "path/to/xunit/report",
+    SONAR_PYTHON_XUNIT_SKIP_DETAILS: True,
     SONAR_MODULES: "module1,module2",
 }
 
@@ -320,6 +324,9 @@ class TestCliConfigurationLoader(unittest.TestCase):
             "--sonar-python-coverage-report-paths",
             "path/to/coverage1,path/to/coverage2",
             "--sonar-python-skip-unchanged",
+            "--sonar-python-xunit-report-path",
+            "path/to/xunit/report",
+            "--sonar-python-xunit-skip-details",
             "--sonar-modules",
             "module1,module2",
         ],
@@ -391,6 +398,8 @@ class TestCliConfigurationLoader(unittest.TestCase):
             "-Dsonar.python.pylint.reportPath=path/to/pylint/report",
             "-Dsonar.python.coverage.reportPaths=path/to/coverage1,path/to/coverage2",
             "-Dsonar.python.skipUnchanged=true",
+            "-Dsonar.python.xunit.reportPath=path/to/xunit/report",
+            "-Dsonar.python.xunit.skipDetails=true",
             "-Dsonar.modules=module1,module2",
         ],
     )

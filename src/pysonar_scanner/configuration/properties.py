@@ -91,6 +91,8 @@ SONAR_SOURCE_ENCODING: Key = "sonar.sourceEncoding"
 SONAR_WORKING_DIRECTORY: Key = "sonar.working.directory"
 SONAR_SCM_FORCE_RELOAD_ALL: Key = "sonar.scm.forceReloadAll"
 SONAR_MODULES: Key = "sonar.modules"
+SONAR_PYTHON_XUNIT_REPORT_PATH = "sonar.python.xunit.reportPath"
+SONAR_PYTHON_XUNIT_SKIP_DETAILS = "sonar.python.xunit.skipDetails"
 TOML_PATH: Key = "toml-path"
 
 
@@ -353,19 +355,19 @@ PROPERTIES: list[Property] = [
         cli_getter=lambda args: args.toml_path
     ),
     Property(
-                name=SONAR_PROJECT_VERSION,
-                default_value=None,
-                cli_getter=lambda args: args.sonar_project_version
+        name=SONAR_PROJECT_VERSION,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_project_version
     ),
     Property(
-                name=SONAR_PROJECT_DESCRIPTION,
-                default_value=None,
-                cli_getter=lambda args: args.sonar_project_description
+        name=SONAR_PROJECT_DESCRIPTION,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_project_description
     ),
     Property(
-                name=SONAR_PYTHON_VERSION,
-                default_value=None,
-                cli_getter=lambda args: args.sonar_python_version
+        name=SONAR_PYTHON_VERSION,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_python_version
     ),
     Property(
         name=SONAR_QUALITYGATE_WAIT, 
@@ -471,6 +473,16 @@ PROPERTIES: list[Property] = [
         name=SONAR_PYTHON_SKIP_UNCHANGED,
         default_value=None,
         cli_getter=lambda args: args.sonar_python_skip_unchanged or getattr(args, "Dsonar.python.skipUnchanged")
+    ),
+    Property(
+        name=SONAR_PYTHON_XUNIT_REPORT_PATH,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_python_xunit_report_path
+    ),
+    Property(
+        name=SONAR_PYTHON_XUNIT_SKIP_DETAILS,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_python_xunit_skip_details or getattr(args, "Dsonar.python.xunit.skipDetails")
     ),
     Property(
         name=SONAR_MODULES,
