@@ -18,7 +18,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import pathlib
-from pathlib import Path
 from unittest.mock import patch, Mock
 
 from pyfakefs import fake_filesystem_unittest as pyfakefs
@@ -45,6 +44,8 @@ from tests.unit import sq_api_utils
 
 
 class TestMain(pyfakefs.TestCase):
+
+    @patch.object(pathlib.Path, "home", return_value=pathlib.Path("home/user"))
     @patch.object(
         ConfigurationLoader,
         "load",
@@ -55,10 +56,10 @@ class TestMain(pyfakefs.TestCase):
             SONAR_SCANNER_ARCH: "x64",
         },
     )
-    @patch.object(ScannerEngineProvisioner, "provision", return_value=JREResolvedPath(Path("scanner_engine_path")))
-    @patch("pysonar_scanner.__main__.create_jre", return_value=JREResolvedPath(Path("jre_path")))
+    @patch.object(ScannerEngineProvisioner, "provision", return_value=JREResolvedPath(pathlib.Path("scanner_engine_path")))
+    @patch("pysonar_scanner.__main__.create_jre", return_value=JREResolvedPath(pathlib.Path("jre_path")))
     @patch.object(ScannerEngine, "run", return_value=0)
-    def test_minimal_success_run(self, run_mock, create_jre_mock, provision_mock, load_mock):
+    def test_minimal_success_run(self, run_mock, create_jre_mock, provision_mock, load_mock, path_home_mock):
         exitcode = scan()
         self.assertEqual(exitcode, 0)
 
