@@ -54,7 +54,9 @@ class JREResolvedPath:
 
 
 class JREProvisioner:
-    def __init__(self, api: SonarQubeApi, cache: Cache, sonar_scanner_os: str, sonar_scanner_arch: str):
+    def __init__(
+        self, api: SonarQubeApi, cache: Cache, sonar_scanner_os: utils.OsStr, sonar_scanner_arch: utils.ArchStr
+    ):
         self.api = api
         self.cache = cache
         self.sonar_scanner_os = sonar_scanner_os
