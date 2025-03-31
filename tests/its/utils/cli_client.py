@@ -60,7 +60,7 @@ class CliClient:
             "--listen",
             str(DEBUGPY_PORT),
             "-m",
-            "tests.its.utils.pysonar-scanner-debug",
+            "tests.its.utils.pysonar-debug",
             f"--sonar-host-url={self.sq_client.base_url}",
             f"--token={token}",
             *params,

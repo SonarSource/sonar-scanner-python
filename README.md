@@ -79,13 +79,13 @@ By default, the scanner will expect the `pyproject.toml` file to be present in t
 However, its path can be provided manually through the `toml.path` ([SCANPY-40](https://sonarsource.atlassian.net/jira/software/c/projects/PYSCAN/issues/PYSCAN-40)) CLI argument as well as through the `sonar.projectHome` argument. For instance:
 
 ```
-pysonar -Dtoml.path="path/to/pyproject.toml"
+pysonar --toml.path "path/to/pyproject.toml"
 ```
 
 Or:
 
 ```
-pysonar -Dsonar.projectHome="path/to/projectHome"
+pysonar --sonar-project-home "path/to/projectHome"
 ```
 
 
