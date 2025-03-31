@@ -30,7 +30,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_SCANNER_API_BASE_URL,
     SONAR_SCANNER_SONARCLOUD_URL,
 )
-from pysonar_scanner.api import SQVersion
+from pysonar_scanner.api import SQVersion, ApiConfiguration
 from pysonar_scanner.exceptions import InconsistentConfiguration
 from tests.unit import sq_api_utils
 from tests.unit.sq_api_utils import sq_api_mocker
@@ -480,19 +480,25 @@ class TestSonarQubeApi(unittest.TestCase):
 
     def test_to_api_configuration(self):
         with self.subTest("Missing keys"):
-            expected = {
-                SONAR_HOST_URL: "",
-                SONAR_SCANNER_SONARCLOUD_URL: "",
-                SONAR_SCANNER_API_BASE_URL: "",
-                SONAR_REGION: "",
-            }
+            expected = ApiConfiguration(
+                sonar_host_url="",
+                sonar_scanner_sonarcloud_url="",
+                sonar_scanner_api_base_url="",
+                sonar_region="",
+            )
             self.assertEqual(expected, api.to_api_configuration({}))
 
         with self.subTest("All keys"):
-            expected = {
+            input_config = {
                 SONAR_HOST_URL: "https://sonarcloud.io",
                 SONAR_SCANNER_SONARCLOUD_URL: "https://sonarcloud.io",
                 SONAR_SCANNER_API_BASE_URL: "https://api.sonarcloud.io",
                 SONAR_REGION: "us",
             }
-            self.assertEqual(expected, api.to_api_configuration(expected))
+            expected = ApiConfiguration(
+                sonar_host_url="https://sonarcloud.io",
+                sonar_scanner_sonarcloud_url="https://sonarcloud.io",
+                sonar_scanner_api_base_url="https://api.sonarcloud.io",
+                sonar_region="us",
+            )
+            self.assertEqual(expected, api.to_api_configuration(input_config))
