@@ -18,6 +18,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 from pathlib import Path
+from unittest import mock
+from unittest.mock import MagicMock, patch
 
 from pyfakefs.fake_filesystem_unittest import TestCase
 from pysonar_scanner.configuration.pyproject_toml import TomlConfigurationLoader
@@ -89,7 +91,11 @@ class TestTomlFile(TestCase):
 
         self.assertEqual(len(properties.sonar_properties), 0)
 
-    def test_load_malformed_toml_file(self):
+    @patch("pysonar_scanner.configuration.pyproject_toml.app_logging.get_logger")
+    def test_load_malformed_toml_file(self, mock_get_logger):
+        mock_logger = MagicMock()
+        mock_get_logger.return_value = mock_logger
+
         self.fs.create_file(
             "pyproject.toml",
             contents="""
@@ -100,6 +106,10 @@ class TestTomlFile(TestCase):
         properties = TomlConfigurationLoader.load(Path("."))
 
         self.assertEqual(len(properties.sonar_properties), 0)
+        mock_logger.warning.assert_called_once_with(
+            "There was an error reading the pyproject.toml file. No properties from the TOML file were extracted.",
+            mock.ANY,
+        )
 
     def test_load_toml_with_nested_values(self):
         self.fs.create_file(

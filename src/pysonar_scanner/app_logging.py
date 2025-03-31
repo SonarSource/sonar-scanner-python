@@ -26,3 +26,7 @@ def setup() -> None:
 
 def configure_logging_level(verbose: bool) -> None:
     logging.getLogger().setLevel(logging.DEBUG if verbose else logging.INFO)
+
+
+def get_logger() -> logging.Logger:
+    return logging.getLogger()

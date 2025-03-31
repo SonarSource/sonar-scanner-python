@@ -48,19 +48,22 @@ def scan():
 
 def do_scan():
     app_logging.setup()
-
+    app_logging.get_logger().info("Starting Pysonar, the Sonar scanner CLI for Python")
     config = ConfigurationLoader.load()
     set_logging_options(config)
+    app_logging.get_logger().debug(f"Loaded configuration: {config}")
 
     ConfigurationLoader.check_configuration(config)
 
     api = build_api(config)
     check_version(api)
     update_config_with_api_urls(config, api.base_urls)
+    app_logging.get_logger().debug(f"Configuration after update from API URL: {config}")
 
     cache_manager = cache.get_cache(config)
     scanner = create_scanner_engine(api, cache_manager, config)
 
+    app_logging.get_logger().info("Starting the analysis...")
     return scanner.run(config)
 
 
@@ -75,9 +78,12 @@ def build_api(config: dict[str, any]) -> SonarQubeApi:
 
 
 def check_version(api: SonarQubeApi):
+    app_logging.get_logger().info("Checking SonarQube version...")
     if api.is_sonar_qube_cloud():
+        app_logging.get_logger().info("Analysis will be run on SonarQube Cloud")
         return
     version = api.get_analysis_version()
+    app_logging.get_logger().info("Analysis will be run on SonarQube version %s", version)
     if not version.does_support_bootstrapping():
         raise SQTooOldException(
             f"This scanner only supports SonarQube versions >= {MIN_SUPPORTED_SQ_VERSION}. \n"
@@ -95,8 +101,10 @@ def update_config_with_api_urls(config, base_urls: BaseUrls):
 
 
 def create_scanner_engine(api, cache_manager, config):
+    app_logging.get_logger().info("Creating the scanner engine...")
     jre_path = create_jre(api, cache_manager, config)
     config[SONAR_SCANNER_JAVA_EXE_PATH] = str(jre_path.path)
+    app_logging.get_logger().debug(f"JRE path: {jre_path.path}")
     scanner_engine_path = ScannerEngineProvisioner(api, cache_manager).provision()
     scanner = ScannerEngine(jre_path, scanner_engine_path)
     return scanner

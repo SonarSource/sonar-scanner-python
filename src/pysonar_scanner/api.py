@@ -24,6 +24,7 @@ from typing import NoReturn, Optional, TypedDict
 import requests
 import requests.auth
 
+from pysonar_scanner import app_logging
 from pysonar_scanner.configuration.properties import (
     SONAR_HOST_URL,
     SONAR_SCANNER_SONARCLOUD_URL,
@@ -231,7 +232,7 @@ class SonarQubeApi:
         This method can raise a SonarQubeApiException if the server doesn't respond successfully.
         Alternative, if the file IO fails, an IOError or OSError can be raised.
         """
-
+        app_logging.get_logger().info("Download the analysis engine...")
         try:
             res = requests.get(
                 f"{self.base_urls.api_base_url}/analysis/engine",

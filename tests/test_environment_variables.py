@@ -17,8 +17,9 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+from json import JSONDecodeError
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from pysonar_scanner.configuration import environment_variables
 from pysonar_scanner.configuration.properties import (
@@ -105,12 +106,21 @@ class TestEnvironmentVariables(unittest.TestCase):
             self.assertEqual(len(properties), 2)
             self.assertDictEqual(properties, expected_properties)
 
-    def test_invalid_json_params(self):
+    @patch("pysonar_scanner.configuration.environment_variables.app_logging.get_logger")
+    def test_invalid_json_params(self, mock_get_logger):
+        mock_logger = MagicMock()
+        mock_get_logger.return_value = mock_logger
+
         env = {"SONAR_SCANNER_JSON_PARAMS": '{"sonar.token": "json-token"'}
         with patch.dict("os.environ", env, clear=True):
             properties = environment_variables.load()
             self.assertEqual(len(properties), 0)
             self.assertDictEqual(properties, {})
+
+        mock_logger.warning.assert_called_once_with(
+            "The JSON in SONAR_SCANNER_JSON_PARAMS environment variable is invalid. The other environment variables will still be loaded.",
+            unittest.mock.ANY,
+        )
 
     def test_environment_variables_priority_over_json_params(self):
         env = {

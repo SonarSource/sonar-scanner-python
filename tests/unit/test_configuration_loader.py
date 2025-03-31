@@ -18,7 +18,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import os
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pyfakefs.fake_filesystem_unittest as pyfakefs
 

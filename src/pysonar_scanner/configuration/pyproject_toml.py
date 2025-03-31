@@ -20,6 +20,7 @@
 from pathlib import Path
 from typing import Dict
 import os
+from pysonar_scanner import app_logging
 import tomli
 
 from pysonar_scanner.configuration import properties
@@ -49,9 +50,11 @@ class TomlConfigurationLoader:
             # Look for general project configuration
             project_properties = TomlConfigurationLoader.__read_project_properties(toml_dict)
             return TomlProperties(sonar_properties, project_properties)
-        except Exception:
-            # If there's any error parsing the TOML file, return empty TomlProperties
-            # SCANPY-135: We should log the pyproject.toml parsing error
+        except Exception as e:
+            app_logging.get_logger().warning(
+                "There was an error reading the pyproject.toml file. No properties from the TOML file were extracted.",
+                e,
+            )
             return TomlProperties({}, {})
 
     @staticmethod
