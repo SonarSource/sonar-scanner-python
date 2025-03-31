@@ -79,7 +79,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_BOOTSTRAP_START_TIME: configuration[SONAR_SCANNER_BOOTSTRAP_START_TIME],
             SONAR_VERBOSE: False,
             SONAR_SCANNER_SKIP_JRE_PROVISIONING: False,
-            SONAR_PROJECT_BASE_DIR: "/my_analysis_directory",
+            SONAR_PROJECT_BASE_DIR: os.getcwd(),
             SONAR_SCANNER_CONNECT_TIMEOUT: 5,
             SONAR_SCANNER_SOCKET_TIMEOUT: 60,
             SONAR_SCANNER_RESPONSE_TIMEOUT: 0,
