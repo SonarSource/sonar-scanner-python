@@ -18,6 +18,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 from pathlib import Path
+from typing import Any
 
 from pysonar_scanner.configuration.cli import CliConfigurationLoader
 from pysonar_scanner.configuration.pyproject_toml import TomlConfigurationLoader
@@ -28,13 +29,13 @@ from pysonar_scanner.configuration import sonar_project_properties, environment_
 from pysonar_scanner.exceptions import MissingKeyException
 
 
-def get_static_default_properties() -> dict[Key, any]:
+def get_static_default_properties() -> dict[Key, Any]:
     return {prop.name: prop.default_value for prop in PROPERTIES if prop.default_value is not None}
 
 
 class ConfigurationLoader:
     @staticmethod
-    def load() -> dict[Key, any]:
+    def load() -> dict[Key, Any]:
         # each property loader is required to return NO default values.
         # E.g. if no property has been set, an empty dict must be returned.
         # Default values should be set through the get_static_default_properties() method
@@ -57,7 +58,7 @@ class ConfigurationLoader:
         return resolved_properties
 
 
-def get_token(config: dict[Key, any]) -> str:
+def get_token(config: dict[Key, Any]) -> str:
     if SONAR_TOKEN not in config:
         raise MissingKeyException(f'Missing property "{SONAR_TOKEN}"')
     return config[SONAR_TOKEN]

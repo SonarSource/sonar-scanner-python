@@ -18,7 +18,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 from pathlib import Path
-from typing import Dict
+from typing import Any, Dict
 import os
 import tomli
 
@@ -84,7 +84,7 @@ class TomlConfigurationLoader:
         return project_properties
 
     @staticmethod
-    def __flatten_config_dict(config: dict[str, any], prefix: str) -> dict[str, any]:
+    def __flatten_config_dict(config: dict[str, Any], prefix: str) -> dict[str, Any]:
         """Flatten nested dictionaries into dot notation keys"""
         result = {}
         for key, value in config.items():

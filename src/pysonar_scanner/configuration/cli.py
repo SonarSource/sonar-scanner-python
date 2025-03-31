@@ -18,6 +18,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import argparse
+from typing import Any
 
 from pysonar_scanner.configuration import properties
 from pysonar_scanner.exceptions import UnexpectedCliArgument
@@ -26,7 +27,7 @@ from pysonar_scanner.exceptions import UnexpectedCliArgument
 class CliConfigurationLoader:
 
     @classmethod
-    def load(cls) -> dict[str, any]:
+    def load(cls) -> dict[str, Any]:
         args, unknown_args = cls.__parse_cli_args()
         config = {}
         for prop in properties.PROPERTIES:
