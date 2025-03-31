@@ -54,9 +54,11 @@ class JREResolvedPath:
 
 
 class JREProvisioner:
-    def __init__(self, api: SonarQubeApi, cache: Cache):
+    def __init__(self, api: SonarQubeApi, cache: Cache, sonar_scanner_os: str, sonar_scanner_arch: str):
         self.api = api
         self.cache = cache
+        self.sonar_scanner_os = sonar_scanner_os
+        self.sonar_scanner_arch = sonar_scanner_arch
 
     def provision(self) -> JREResolvedPath:
         jre, resolved_path = self.__attempt_provisioning_jre_with_retry()
@@ -68,7 +70,7 @@ class JREProvisioner:
             jre_and_resolved_path = self.__attempt_provisioning_jre()
         if jre_and_resolved_path is None:
             raise ChecksumException(
-                f"Failed to download and verify JRE for {utils.get_os().value} and {utils.get_arch().value}"
+                f"Failed to download and verify JRE for {self.sonar_scanner_os} and {self.sonar_scanner_arch}"
             )
 
         return jre_and_resolved_path
@@ -84,10 +86,10 @@ class JREProvisioner:
         return (jre, jre_path) if jre_path is not None else None
 
     def __get_available_jre(self) -> JRE:
-        jres = self.api.get_analysis_jres(os=utils.get_os(), arch=utils.get_arch())
+        jres = self.api.get_analysis_jres(os=self.sonar_scanner_os, arch=self.sonar_scanner_arch)
         if len(jres) == 0:
             raise NoJreAvailableException(
-                f"No JREs are available for {utils.get_os().value} and {utils.get_arch().value}"
+                f"No JREs are available for {self.sonar_scanner_os} and {self.sonar_scanner_arch}"
             )
         return jres[0]
 

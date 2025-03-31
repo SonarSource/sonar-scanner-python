@@ -80,9 +80,9 @@ class SQApiMocker:
     def mock_analysis_jres(
         self,
         body: Optional[list[dict]] = None,
-        os_matcher: Optional[str] = None,
-        arch_matcher: Optional[str] = None,
         status: int = 200,
+        os_matcher: Optional[str] = "linux",
+        arch_matcher: Optional[str] = "x64",
     ) -> responses.BaseResponse:
         return self.rsps.get(
             url=f"{self.api_url}/analysis/jres",

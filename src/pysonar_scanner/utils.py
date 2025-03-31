@@ -23,6 +23,9 @@ import platform
 import typing
 from enum import Enum
 
+OsStr = typing.Literal["windows", "linux", "mac", "alpine", "other"]
+ArchStr = typing.Literal["x64", "aarch64", "other"]
+
 
 def remove_trailing_slash(url: str) -> str:
     return url.rstrip("/ ").lstrip()
@@ -36,11 +39,11 @@ def calculate_checksum(filehandle: typing.BinaryIO) -> str:
 
 
 class Os(Enum):
-    WINDOWS = "windows"
-    LINUX = "linux"
-    MACOS = "mac"
-    ALPINE = "alpine"
-    OTHER = "other"
+    WINDOWS: OsStr = "windows"
+    LINUX: OsStr = "linux"
+    MACOS: OsStr = "mac"
+    ALPINE: OsStr = "alpine"
+    OTHER: OsStr = "other"
 
 
 def get_os() -> Os:
@@ -70,9 +73,9 @@ def get_os() -> Os:
 
 
 class Arch(Enum):
-    X64 = "x64"
-    AARCH64 = "aarch64"
-    OTHER = "other"
+    X64: ArchStr = "x64"
+    AARCH64: ArchStr = "aarch64"
+    OTHER: ArchStr = "other"
 
 
 def get_arch() -> Arch:
