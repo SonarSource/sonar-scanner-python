@@ -60,7 +60,7 @@ The the following keys should be present:
 
 To debug the sonar-scanner being run in the its, the ITs have to be run with `poetry run pytest tests/its --its --debug-its`
 
-The `pysonar-scanner` process will wait until VSCode or any other debug adapter protocol client connects on the port `5678`.
+The `pysonar` process will wait until VSCode or any other debug adapter protocol client connects on the port `5678`.
 
 For VSCode, add the following launch configuration in the `configurations` array:
 ```json

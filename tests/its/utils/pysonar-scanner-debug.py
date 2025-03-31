@@ -18,7 +18,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 """
-This module is the entry point for debugging the pysonar-scanner in the its.
+This module is the entry point for debugging the pysonar scanner in the its.
 The pysonar-scanner-debug is started with the working directory set to the root of the project, so that python
 (and pydebug by extension) can find the pysonar-scanner-debug module. However, since the scanner should run in the
  analyzed project, the working directory is changed to the root of the analyzed project before running the scanner.

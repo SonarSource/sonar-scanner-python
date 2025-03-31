@@ -81,7 +81,7 @@ class CliClient:
 
     def __run_analysis_normal(self, workdir: pathlib.Path, params: list[str], token: str) -> CompletedProcess:
         command = [
-            "pysonar-scanner",
+            "pysonar",
             f"--sonar-host-url={self.sq_client.base_url}",
             f"--token={token}",
             *params,
