@@ -29,7 +29,6 @@ linux_container_definition: &LINUX_CONTAINER_DEFINITION
   cpu: 3
   memory: 8G
 
-
 win_vm_definition: &WINDOWS_VM_DEFINITION
   ec2_instance:
     experimental: true # see https://github.com/cirruslabs/cirrus-ci-docs/issues/1051
@@ -94,6 +93,31 @@ poetry_cache_template: &POETRY_CACHE
   <<: *POETRY_TEMPLATE
   eks_container:
     <<: *LINUX_CONTAINER_DEFINITION
+
+
+.poetry_macos_template: &POETRY_MACOS_TEMPLATE
+  <<: *POETRY_CACHE
+  jfrog_install_script:
+    - brew install jfrog-cli
+    - jf intro
+  poetry_install_script:
+    - brew install poetry
+    - poetry config keyring.enabled false # Keyring is locked in macOS VM and not needed for downloading dependencies
+    - jfrog config add repox --artifactory-url "$ARTIFACTORY_URL" --access-token "$ARTIFACTORY_PRIVATE_ACCESS_TOKEN"
+    - jfrog poetry-config --server-id-resolve repox --repo-resolve sonarsource-pypi
+    - jfrog poetry install --build-name="$CIRRUS_REPO_NAME" --build-number="$CI_BUILD_NUMBER"
+
+macos_worker_template: &MACOS_WORKER_DEFINITION
+  persistent_worker:
+    isolation:
+      tart:
+        image: ghcr.io/cirruslabs/macos-sonoma-xcode:latest
+        cpu: 3
+        memory: 6G
+    resources:
+      tart-vms: 1
+    labels:
+      envname: prod
 
 mend_scan_task:
   <<: *POETRY_LINUX_TEMPLATE
@@ -171,6 +195,26 @@ qa_task:
   qa_script:
     - poetry run pytest tests/
 
+qa_macos_task:
+  alias: qa_macos
+  only_if: $CIRRUS_CRON == "macos-its-cron"
+  name: "[macOS] Run tests"
+  <<: [*MACOS_WORKER_DEFINITION, *POETRY_MACOS_TEMPLATE]
+  env:
+    PATH: "/Users/admin/.local/bin:$PATH"
+  install_uv_script:
+    - brew install uv
+  test_39_script:
+    - .cirrus/run_macos_tests.sh "3.9.18"
+  test_310_script:
+    - .cirrus/run_macos_tests.sh "3.10.13"
+  test_311_script:
+    - .cirrus/run_macos_tests.sh "3.11.7"
+  test_312_script:
+    - .cirrus/run_macos_tests.sh "3.12.1"
+  test_313_script:
+    - .cirrus/run_macos_tests.sh "3.13.2"
+
 qa_windows_task:
   name: "Test Windows"
   <<: *POETRY_WIN_INSTALL
@@ -194,15 +238,20 @@ its_task:
     fingerprint_script: echo "sonarqube-$SONARQUBE_VERSION"
   <<: *POETRY_LINUX_TEMPLATE
   its_script:
-    - unzip -q sonarqube_cache/sonarqube.zip -d sonarqube
-    - cd $(ls -d sonarqube/*/)
-    - ./bin/linux-x86-64/sonar.sh start
-    - cd -
-    - jfrog poetry-config --server-id-resolve repox --repo-resolve sonarsource-pypi
-    - jfrog poetry install
-    - unset SONAR_TOKEN
-    - unset SONAR_HOST_URL
-    - poetry run pytest --its tests/its 
+    - .cirrus/run_its.sh
+
+its_macos_task:
+  name: "[macOS] Integration Tests"
+  alias: its_macos
+  only_if: $CIRRUS_CRON == "macos-its-cron"
+  # the macOS workers are only available from Monday 06:45 CEST to Friday 20:00 CEST (see https://xtranet-sonarsource.atlassian.net/wiki/spaces/Platform/pages/3447980037/MacOS+Persistent+Workers+User+Guide+-+Cirrus+CI)
+  <<: [*MACOS_WORKER_DEFINITION, *POETRY_MACOS_TEMPLATE]
+  sonarqube_cache:
+    folder: sonarqube_cache/
+    populate_script: mkdir -p sonarqube_cache && wget -q https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-$SONARQUBE_VERSION.zip -O sonarqube_cache/sonarqube.zip
+    fingerprint_script: echo "sonarqube-$SONARQUBE_VERSION"
+  its_script:
+    - .cirrus/run_its.sh
 
 promote_task:
   depends_on:
