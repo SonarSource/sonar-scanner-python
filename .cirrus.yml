@@ -157,7 +157,9 @@ analysis_linux_task:
   alias: analysis
   name: "NEXT Analysis"
   analysis_script:
+    - poetry install
     - poetry run pytest --cov-report=xml:coverage.xml --cov-config=pyproject.toml --cov=src --cov-branch tests
+    - poetry run mypy src/ > mypy-report.txt || true # mypy exits with 1 if there are errors
     - uv venv
     - source .venv/bin/activate
     - uv pip install pysonar-scanner
