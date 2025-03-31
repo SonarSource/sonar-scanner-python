@@ -144,10 +144,10 @@ class ScannerEngine:
         return CmdExecutor(cmd, properties_str).execute()
 
     def __build_command(self, jre_path: JREResolvedPath, scanner_engine_path: pathlib.Path) -> list[str]:
-        cmd = []
-        cmd.append(jre_path.path)
+        cmd: list[str] = []
+        cmd.append(str(jre_path.path))
         cmd.append("-jar")
-        cmd.append(scanner_engine_path)
+        cmd.append(str(scanner_engine_path))
         return cmd
 
     def __config_to_json(self, config: dict[str, Any]) -> str:

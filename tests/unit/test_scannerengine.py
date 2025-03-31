@@ -152,14 +152,15 @@ class TestScannerEngineWithFake(pyfakefs.TestCase):
                 ]
             }
         )
+        java_path = pathlib.Path("jre/bin/java")
         jre_resolve_path_mock = Mock()
-        jre_resolve_path_mock.path = pathlib.Path("jre/bin/java")
+        jre_resolve_path_mock.path = java_path
         scanner_engine_mock = pathlib.Path("/test/scanner-engine.jar")
 
         scannerengine.ScannerEngine(jre_resolve_path_mock, scanner_engine_mock).run(config)
 
         execute_mock.assert_called_once_with(
-            [pathlib.Path("jre/bin/java"), "-jar", pathlib.Path("/test/scanner-engine.jar")], expected_std_in
+            [str(java_path), "-jar", str(pathlib.Path("/test/scanner-engine.jar"))], expected_std_in
         )
 
 
