@@ -69,9 +69,7 @@ class JREProvisioner:
         if jre_and_resolved_path is None:
             jre_and_resolved_path = self.__attempt_provisioning_jre()
         if jre_and_resolved_path is None:
-            raise ChecksumException(
-                f"Failed to download and verify JRE for {self.sonar_scanner_os} and {self.sonar_scanner_arch}"
-            )
+            raise ChecksumException.create("JRE")
 
         return jre_and_resolved_path
 
@@ -129,7 +127,9 @@ class JREProvisioner:
             with tarfile.open(file_path, "r:gz") as tar_ref:
                 tar_ref.extractall(unzip_dir, filter="data")
         else:
-            raise UnsupportedArchiveFormat(f"Unsupported archive format: {file_path.suffix}")
+            raise UnsupportedArchiveFormat(
+                f"Received JRE is packaged as an unsupported archive format: {file_path.suffix}"
+            )
 
 
 @dataclass(frozen=True)

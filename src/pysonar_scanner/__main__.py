@@ -74,13 +74,15 @@ def build_api(config: dict[str, any]) -> SonarQubeApi:
     return SonarQubeApi(base_urls, token)
 
 
-def check_version(api):
+def check_version(api: SonarQubeApi):
     if api.is_sonar_qube_cloud():
         return
     version = api.get_analysis_version()
     if not version.does_support_bootstrapping():
         raise SQTooOldException(
-            f"Only SonarQube versions >= {MIN_SUPPORTED_SQ_VERSION} are supported, but got {version}"
+            f"This scanner only supports SonarQube versions >= {MIN_SUPPORTED_SQ_VERSION}. \n"
+            f"The server at {api.base_urls.base_url} is on version {version}\n"
+            "Please either upgrade your SonarQube server or use the Sonar Scanner CLI (see https://docs.sonarsource.com/sonarqube-server/latest/analyzing-source-code/scanners/sonarscanner/)."
         )
 
 

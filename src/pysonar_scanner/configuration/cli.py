@@ -37,7 +37,7 @@ class CliConfigurationLoader:
         # Handle unknown args starting with '-D'
         for arg in unknown_args:
             if not arg.startswith("-D"):
-                raise UnexpectedCliArgument(f"Unexpected argument: {arg}")
+                raise UnexpectedCliArgument(f"Unexpected argument: {arg}\nRun with --help for more information.")
             key_value = arg[2:].split("=", 1)
             if len(key_value) == 2:
                 key, value = key_value
