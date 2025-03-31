@@ -452,6 +452,30 @@ class CliConfigurationLoader:
             help="Equivalent to -Dsonar.python.xunit.skipDetails",
         )
         parser.add_argument(
+            "--sonar-python-mypy-report-paths",
+            "-Dsonar.python.mypy.reportPaths",
+            type=str,
+            help="Comma-separated mypy report paths, relative to project's root",
+        )
+        parser.add_argument(
+            "--sonar-python-bandit-report-paths",
+            "-Dsonar.python.bandit.reportPaths",
+            type=str,
+            help="Comma-separated bandit report paths, relative to project's root",
+        )
+        parser.add_argument(
+            "--sonar-python-flake8-report-paths",
+            "-Dsonar.python.flake8.reportPaths",
+            type=str,
+            help="Comma-separated flake8 report paths, relative to project's root",
+        )
+        parser.add_argument(
+            "--sonar-python-ruff-report-paths",
+            "-Dsonar.python.ruff.reportPaths",
+            type=str,
+            help="Comma-separated ruff report paths, relative to project's root",
+        )
+        parser.add_argument(
             "--sonar-modules", "-Dsonar.modules", type=str, help="Comma-delimited list of modules to analyze"
         )
 

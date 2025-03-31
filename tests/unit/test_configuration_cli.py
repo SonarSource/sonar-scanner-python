@@ -25,6 +25,10 @@ from io import StringIO
 from pysonar_scanner.configuration.configuration_loader import CliConfigurationLoader
 from pysonar_scanner.configuration.properties import (
     SONAR_HOST_URL,
+    SONAR_PYTHON_BANDIT_REPORT_PATHS,
+    SONAR_PYTHON_FLAKE8_REPORT_PATHS,
+    SONAR_PYTHON_MYPY_REPORT_PATHS,
+    SONAR_PYTHON_RUFF_REPORT_PATHS,
     SONAR_REGION,
     SONAR_SCANNER_API_BASE_URL,
     SONAR_SCANNER_ARCH,
@@ -151,6 +155,10 @@ EXPECTED_CONFIGURATION = {
     SONAR_PYTHON_SKIP_UNCHANGED: True,
     SONAR_PYTHON_XUNIT_REPORT_PATH: "path/to/xunit/report",
     SONAR_PYTHON_XUNIT_SKIP_DETAILS: True,
+    SONAR_PYTHON_MYPY_REPORT_PATHS: "path/to/mypy/reports",
+    SONAR_PYTHON_BANDIT_REPORT_PATHS: "path/to/bandit/reports",
+    SONAR_PYTHON_FLAKE8_REPORT_PATHS: "path/to/flake8/reports",
+    SONAR_PYTHON_RUFF_REPORT_PATHS: "path/to/ruff/reports",
     SONAR_MODULES: "module1,module2",
 }
 
@@ -328,6 +336,14 @@ class TestCliConfigurationLoader(unittest.TestCase):
             "--sonar-python-xunit-report-path",
             "path/to/xunit/report",
             "--sonar-python-xunit-skip-details",
+            "--sonar-python-mypy-report-paths",
+            "path/to/mypy/reports",
+            "--sonar-python-bandit-report-paths",
+            "path/to/bandit/reports",
+            "--sonar-python-flake8-report-paths",
+            "path/to/flake8/reports",
+            "--sonar-python-ruff-report-paths",
+            "path/to/ruff/reports",
             "--sonar-modules",
             "module1,module2",
         ],
@@ -401,6 +417,10 @@ class TestCliConfigurationLoader(unittest.TestCase):
             "-Dsonar.python.skipUnchanged=true",
             "-Dsonar.python.xunit.reportPath=path/to/xunit/report",
             "-Dsonar.python.xunit.skipDetails=true",
+            "-Dsonar.python.mypy.reportPaths=path/to/mypy/reports",
+            "-Dsonar.python.bandit.reportPaths=path/to/bandit/reports",
+            "-Dsonar.python.flake8.reportPaths=path/to/flake8/reports",
+            "-Dsonar.python.ruff.reportPaths=path/to/ruff/reports",
             "-Dsonar.modules=module1,module2",
         ],
     )
