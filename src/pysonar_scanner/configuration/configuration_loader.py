@@ -19,6 +19,7 @@
 #
 import logging
 from pathlib import Path
+from typing import Any
 
 from pysonar_scanner.configuration.cli import CliConfigurationLoader
 from pysonar_scanner.configuration.pyproject_toml import TomlConfigurationLoader
@@ -29,13 +30,13 @@ from pysonar_scanner.configuration import sonar_project_properties, environment_
 from pysonar_scanner.exceptions import MissingProperty, MissingPropertyException
 
 
-def get_static_default_properties() -> dict[Key, any]:
+def get_static_default_properties() -> dict[Key, Any]:
     return {prop.name: prop.default_value for prop in PROPERTIES if prop.default_value is not None}
 
 
 class ConfigurationLoader:
     @staticmethod
-    def load() -> dict[Key, any]:
+    def load() -> dict[Key, Any]:
         logging.debug("Loading configuration properties...")
 
         # each property loader is required to return NO default values.
@@ -72,7 +73,7 @@ class ConfigurationLoader:
             raise MissingPropertyException.from_missing_keys(*missing_keys)
 
 
-def get_token(config: dict[Key, any]) -> str:
+def get_token(config: dict[Key, Any]) -> str:
     if SONAR_TOKEN not in config:
         raise MissingPropertyException(f'Missing property "{SONAR_TOKEN}"')
     return config[SONAR_TOKEN]

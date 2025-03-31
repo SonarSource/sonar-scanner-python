@@ -19,6 +19,7 @@
 #
 
 import logging
+from typing import Any
 from pysonar_scanner import app_logging
 from pysonar_scanner import cache
 from pysonar_scanner import exceptions
@@ -71,7 +72,7 @@ def set_logging_options(config):
     app_logging.configure_logging_level(verbose=config.get(SONAR_VERBOSE, False))
 
 
-def build_api(config: dict[str, any]) -> SonarQubeApi:
+def build_api(config: dict[str, Any]) -> SonarQubeApi:
     token = configuration_loader.get_token(config)
     base_urls = get_base_urls(config)
     return SonarQubeApi(base_urls, token)
@@ -109,7 +110,7 @@ def create_scanner_engine(api, cache_manager, config):
     return scanner
 
 
-def create_jre(api, cache, config: dict[str, any]) -> JREResolvedPath:
+def create_jre(api, cache, config: dict[str, Any]) -> JREResolvedPath:
     jre_provisioner = JREProvisioner(api, cache, config[SONAR_SCANNER_OS], config[SONAR_SCANNER_ARCH])
     jre_resolver = JREResolver(JREResolverConfiguration.from_dict(config), jre_provisioner)
     return jre_resolver.resolve_jre()

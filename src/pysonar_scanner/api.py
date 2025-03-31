@@ -19,7 +19,7 @@
 #
 import typing
 from dataclasses import dataclass
-from typing import NoReturn, Optional, TypedDict
+from typing import Any, NoReturn, Optional, TypedDict
 
 import requests
 import requests.auth
@@ -124,7 +124,7 @@ ApiConfiguration = TypedDict(
 )
 
 
-def to_api_configuration(config_dict: dict[Key, any]) -> ApiConfiguration:
+def to_api_configuration(config_dict: dict[Key, Any]) -> ApiConfiguration:
     return {
         SONAR_HOST_URL: config_dict.get(SONAR_HOST_URL, ""),
         SONAR_SCANNER_SONARCLOUD_URL: config_dict.get(SONAR_SCANNER_SONARCLOUD_URL, ""),
@@ -133,7 +133,7 @@ def to_api_configuration(config_dict: dict[Key, any]) -> ApiConfiguration:
     }
 
 
-def get_base_urls(config_dict: dict[Key, any]) -> BaseUrls:
+def get_base_urls(config_dict: dict[Key, Any]) -> BaseUrls:
     def is_sq_cloud_url(api_config: ApiConfiguration, sonar_host_url: str) -> bool:
         sq_cloud_url = api_config[SONAR_SCANNER_SONARCLOUD_URL] or GLOBAL_SONARCLOUD_URL
         return remove_trailing_slash(sonar_host_url) in [remove_trailing_slash(sq_cloud_url), US_SONARCLOUD_URL]

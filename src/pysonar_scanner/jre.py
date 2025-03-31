@@ -23,7 +23,7 @@ import shutil
 import tarfile
 import zipfile
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Optional
 
 from pysonar_scanner import utils
 from pysonar_scanner.api import JRE, SonarQubeApi
@@ -148,7 +148,7 @@ class JREResolverConfiguration:
     sonar_scanner_os: Optional[str]
 
     @staticmethod
-    def from_dict(config_dict: dict[Key, any]) -> "JREResolverConfiguration":
+    def from_dict(config_dict: dict[Key, Any]) -> "JREResolverConfiguration":
         return JREResolverConfiguration(
             sonar_scanner_java_exe_path=config_dict.get(SONAR_SCANNER_JAVA_EXE_PATH, None),
             sonar_scanner_skip_jre_provisioning=config_dict.get(SONAR_SCANNER_SKIP_JRE_PROVISIONING, False),

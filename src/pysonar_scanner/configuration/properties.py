@@ -20,7 +20,7 @@
 import time
 import argparse
 from dataclasses import dataclass
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 Key = str
 
@@ -106,10 +106,10 @@ class Property:
     name: Key
     """name in the format of `sonar.scanner.appVersion`"""
 
-    default_value: Optional[any]
+    default_value: Optional[Any]
     """default value for the property; if None, no default value is set"""
 
-    cli_getter: Optional[Callable[[argparse.Namespace], any]] = None
+    cli_getter: Optional[Callable[[argparse.Namespace], Any]] = None
     """function to get the value from the CLI arguments namespace. If None, the property is not settable via CLI"""
 
     def python_name(self) -> str:

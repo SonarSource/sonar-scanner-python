@@ -17,7 +17,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-from typing import TypedDict
+from typing import Any, TypedDict
 
 import io
 
@@ -73,7 +73,7 @@ class TestApi(unittest.TestCase):
     def test_get_base_urls(self):
         class TestCaseDict(TypedDict):
             name: str
-            config: dict[Key, any]
+            config: dict[Key, Any]
             expected: BaseUrls
 
         cases: list[TestCaseDict] = [
@@ -204,7 +204,7 @@ class TestApi(unittest.TestCase):
     def test_inconsistent_urls_raises_exception(self):
         class TestCaseDict(TypedDict):
             name: str
-            config: dict[Key, any]
+            config: dict[Key, Any]
             expected: str
 
         cases: list[TestCaseDict] = [
