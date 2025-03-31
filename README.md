@@ -1,4 +1,4 @@
-# pysonar-scanner
+# pysonar
 A wrapper around SonarScanner CLI, available on PyPI.
 
 # Disclaimer 
@@ -15,12 +15,12 @@ These changes include configuration parameter names.
 
 Install with pip:
 ```
-pip install pysonar-scanner
+pip install pysonar
 ```
 
 # Usage
 
-Once installed, the `pysonar-scanner` can be run from the command line to perform an analysis.
+Once installed, the `pysonar` scanner can be run from the command line to perform an analysis.
 It assumes a running SonarQube server or a project configured on SonarCloud.
 
 ## Setting up analysis properties
@@ -28,7 +28,7 @@ It assumes a running SonarQube server or a project configured on SonarCloud.
 In order for the analysis to run, analysis properties need to be defined. 
 There are multiple ways of providing these properties, described below in descending order of priority:
 
-* Through CLI arguments to the `pysonar-scanner` command
+* Through CLI arguments to the `pysonar` command
 * Under the `[tool.sonar]` key of the `pyproject.toml` file
 * Through common properties extracted from the `pyproject.toml`
 * In a dedicated `sonar-project.properties` file
@@ -36,13 +36,13 @@ There are multiple ways of providing these properties, described below in descen
 
 ### Through CLI arguments
 
-Analysis properties can be provided as CLI arguments to the `pysonar-scanner` command.
+Analysis properties can be provided as CLI arguments to the `pysonar` command.
 They follow the same convention as when running the SonarScanner CLI directly 
 (see [documentation](https://docs.sonarsource.com/sonarqube/9.9/analyzing-source-code/scanners/sonarscanner/#running-from-zip-file)).
 This means that analysis properties provided that way should be prepended with `-D`, for instance:
 
 ```
-$ pysonar-scanner -Dsonar.login=myAuthenticationToken 
+$ pysonar -Dsonar.login=myAuthenticationToken 
 ```
 
 You can use all the argument allowed by __SonarScanner__. 
@@ -79,13 +79,13 @@ By default, the scanner will expect the `pyproject.toml` file to be present in t
 However, its path can be provided manually through the `toml.path` ([SCANPY-40](https://sonarsource.atlassian.net/jira/software/c/projects/PYSCAN/issues/PYSCAN-40)) CLI argument as well as through the `sonar.projectHome` argument. For instance:
 
 ```
-pysonar-scanner -Dtoml.path="path/to/pyproject.toml"
+pysonar --toml.path "path/to/pyproject.toml"
 ```
 
 Or:
 
 ```
-pysonar-scanner -Dsonar.projectHome="path/to/projectHome"
+pysonar --sonar-project-home "path/to/projectHome"
 ```
 
 
@@ -127,7 +127,7 @@ It is also possible to define configure the scanner through environment variable
 
 ```
 $ export SONAR_HOST_URL="http://localhost:9000"
-$ pysonar-scanner 
+$ pysonar 
 ```
 
 See the __SonarScanner__ [documentation](https://docs.sonarsource.com/sonarqube/9.9/analyzing-source-code/scanners/sonarscanner/) for more information.
@@ -137,7 +137,7 @@ See the __SonarScanner__ [documentation](https://docs.sonarsource.com/sonarqube/
 To install the latest pre-released version of Sonar Scanner Python. Execute the following command: 
 
 ```shell
-pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pysonar-scanner
+pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pysonar
 ```
 
 # License

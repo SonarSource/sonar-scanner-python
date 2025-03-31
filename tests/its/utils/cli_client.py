@@ -60,7 +60,7 @@ class CliClient:
             "--listen",
             str(DEBUGPY_PORT),
             "-m",
-            "tests.its.utils.pysonar-scanner-debug",
+            "tests.its.utils.pysonar-debug",
             f"--sonar-host-url={self.sq_client.base_url}",
             f"--token={token}",
             *params,
@@ -81,7 +81,7 @@ class CliClient:
 
     def __run_analysis_normal(self, workdir: pathlib.Path, params: list[str], token: str) -> CompletedProcess:
         command = [
-            "pysonar-scanner",
+            "pysonar",
             f"--sonar-host-url={self.sq_client.base_url}",
             f"--token={token}",
             *params,
