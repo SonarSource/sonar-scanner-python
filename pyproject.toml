@@ -47,6 +47,7 @@ pytest-cov = '6.0.0'
 pytest-subtests = "^0.14.1"
 pytest-docker = "^3.2.0"
 debugpy = "^1.8.13"
+types-requests = "^2.32.0.20250328"
 
 [[tool.poetry.packages]]
 from = 'src'
