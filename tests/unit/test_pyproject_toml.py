@@ -65,6 +65,33 @@ class TestTomlFile(TestCase):
         self.assertEqual(properties.sonar_properties.get("sonar.projectKey"), "my-project")
         self.assertEqual(properties.sonar_properties.get("sonar.projectName"), "My Project")
 
+    @patch("pysonar_scanner.configuration.pyproject_toml.logging")
+    def test_load_toml_file_kebab_case_unknown_properties(self, mock_logging):
+        self.fs.create_file(
+            "pyproject.toml",
+            contents="""
+            [tool.sonar]
+            coverage-report-paths = "coverage.xml"
+            some-unknown-property = "some-value"
+            nested-property.some-nested-key = "nested-value"
+            """,
+        )
+        properties = TomlConfigurationLoader.load(Path("."))
+
+        self.assertEqual(properties.sonar_properties.get("sonar.coverageReportPaths"), "coverage.xml")
+        self.assertEqual(properties.sonar_properties.get("sonar.someUnknownProperty"), "some-value")
+        self.assertEqual(properties.sonar_properties.get("sonar.nestedProperty.someNestedKey"), "nested-value")
+
+        mock_logging.debug.assert_any_call(
+            "Converting kebab-case property 'sonar.coverage-report-paths' to camelCase: 'sonar.coverageReportPaths'"
+        )
+        mock_logging.debug.assert_any_call(
+            "Converting kebab-case property 'sonar.some-unknown-property' to camelCase: 'sonar.someUnknownProperty'"
+        )
+        mock_logging.debug.assert_any_call(
+            "Converting kebab-case property 'sonar.nested-property.some-nested-key' to camelCase: 'sonar.nestedProperty.someNestedKey'"
+        )
+
     def test_load_toml_file_without_sonar_section(self):
         self.fs.create_file(
             "pyproject.toml",

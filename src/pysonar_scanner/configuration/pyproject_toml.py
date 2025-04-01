@@ -63,7 +63,10 @@ class TomlConfigurationLoader:
             sonar_config = toml_dict["tool"]["sonar"]
             python_to_java_names = {prop.python_name(): prop.name for prop in properties.PROPERTIES}
             flattened_sonar_config = TomlConfigurationLoader.__flatten_config_dict(sonar_config, prefix="sonar.")
-            return {python_to_java_names.get(key, key): value for key, value in flattened_sonar_config.items()}
+            return {
+                python_to_java_names.get(key, TomlConfigurationLoader.__kebab_to_camel_case(key)): value
+                for key, value in flattened_sonar_config.items()
+            }
         return {}
 
     @staticmethod
@@ -104,3 +107,12 @@ class TomlConfigurationLoader:
             return ",".join(str(item) for item in property)
         else:
             return property
+
+    @staticmethod
+    def __kebab_to_camel_case(key: str) -> str:
+        if "-" in key:
+            parts = key.split("-")
+            result = parts[0] + "".join(word.capitalize() for word in parts[1:])
+            logging.debug(f"Converting kebab-case property '{key}' to camelCase: '{result}'")
+            return result
+        return key
