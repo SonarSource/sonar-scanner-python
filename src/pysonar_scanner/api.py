@@ -24,7 +24,6 @@ from typing import NoReturn, Optional, TypedDict
 import requests
 import requests.auth
 
-from pysonar_scanner import app_logging
 from pysonar_scanner.configuration.properties import (
     SONAR_HOST_URL,
     SONAR_SCANNER_SONARCLOUD_URL,

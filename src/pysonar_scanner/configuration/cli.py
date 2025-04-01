@@ -19,7 +19,6 @@
 #
 import argparse
 
-from pysonar_scanner import app_logging
 from pysonar_scanner.configuration import properties
 from pysonar_scanner.exceptions import UnexpectedCliArgument
 

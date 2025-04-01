@@ -20,7 +20,6 @@
 import logging
 from pathlib import Path
 
-from pysonar_scanner import app_logging
 from pysonar_scanner.configuration.cli import CliConfigurationLoader
 from pysonar_scanner.configuration.pyproject_toml import TomlConfigurationLoader
 from pysonar_scanner.configuration.properties import SONAR_PROJECT_KEY, SONAR_TOKEN, SONAR_PROJECT_BASE_DIR, Key

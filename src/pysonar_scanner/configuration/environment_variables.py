@@ -22,7 +22,6 @@ import os
 import json
 from typing import Dict
 
-from pysonar_scanner import app_logging
 from pysonar_scanner.configuration.properties import Key, PROPERTIES
 
 
