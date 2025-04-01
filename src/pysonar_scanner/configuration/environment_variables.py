@@ -17,6 +17,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+import logging
 import os
 import json
 from typing import Dict
@@ -50,11 +51,10 @@ def load_json_env_variables():
             json_properties = json.loads(json_params)
             properties.update(json_properties)
         except json.JSONDecodeError as e:
-            app_logging.get_logger().warning(
-                "The JSON in SONAR_SCANNER_JSON_PARAMS environment variable is invalid. The other environment variables will still be loaded.",
-                e,
+            logging.warning(
+                f"The JSON in SONAR_SCANNER_JSON_PARAMS environment variable is invalid. The other environment variables will still be loaded. Error : {e}"
             )
-
+    logging.debug("Loaded environment properties: " + ", ".join(f"{key}={value}" for key, value in properties.items()))
     return properties
 
 

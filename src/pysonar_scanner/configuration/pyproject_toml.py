@@ -17,6 +17,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+import logging
 from pathlib import Path
 from typing import Dict
 import os
@@ -40,8 +41,9 @@ class TomlConfigurationLoader:
     def load(base_dir: Path) -> TomlProperties:
         filepath = base_dir / "pyproject.toml"
         if not os.path.isfile(filepath):
+            logging.debug(f"No pyproject.toml at {filepath}")
             return TomlProperties({}, {})
-
+        logging.debug(f"pyproject.toml loaded from {filepath}")
         try:
             with open(filepath, "rb") as f:
                 toml_dict = tomli.load(f)
@@ -51,9 +53,8 @@ class TomlConfigurationLoader:
             project_properties = TomlConfigurationLoader.__read_project_properties(toml_dict)
             return TomlProperties(sonar_properties, project_properties)
         except Exception as e:
-            app_logging.get_logger().warning(
-                "There was an error reading the pyproject.toml file. No properties from the TOML file were extracted.",
-                e,
+            logging.warning(
+                f"There was an error reading the pyproject.toml file. No properties from the TOML file were extracted. Error: {e}"
             )
             return TomlProperties({}, {})
 

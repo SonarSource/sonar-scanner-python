@@ -17,6 +17,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+import logging
 import pathlib
 import shutil
 import tarfile
@@ -67,6 +68,7 @@ class JREProvisioner:
     def __attempt_provisioning_jre_with_retry(self) -> tuple[JRE, pathlib.Path]:
         jre_and_resolved_path = self.__attempt_provisioning_jre()
         if jre_and_resolved_path is None:
+            logging.warning("Something went wrong while provisionning the JRE. Retrying...")
             jre_and_resolved_path = self.__attempt_provisioning_jre()
         if jre_and_resolved_path is None:
             raise ChecksumException.create("JRE")

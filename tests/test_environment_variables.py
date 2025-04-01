@@ -106,10 +106,8 @@ class TestEnvironmentVariables(unittest.TestCase):
             self.assertEqual(len(properties), 2)
             self.assertDictEqual(properties, expected_properties)
 
-    @patch("pysonar_scanner.configuration.environment_variables.app_logging.get_logger")
-    def test_invalid_json_params(self, mock_get_logger):
-        mock_logger = MagicMock()
-        mock_get_logger.return_value = mock_logger
+    @patch("pysonar_scanner.configuration.environment_variables.logging")
+    def test_invalid_json_params(self, mock_logging):
 
         env = {"SONAR_SCANNER_JSON_PARAMS": '{"sonar.token": "json-token"'}
         with patch.dict("os.environ", env, clear=True):
@@ -117,9 +115,8 @@ class TestEnvironmentVariables(unittest.TestCase):
             self.assertEqual(len(properties), 0)
             self.assertDictEqual(properties, {})
 
-        mock_logger.warning.assert_called_once_with(
-            "The JSON in SONAR_SCANNER_JSON_PARAMS environment variable is invalid. The other environment variables will still be loaded.",
-            unittest.mock.ANY,
+        mock_logging.warning.assert_called_once_with(
+            "The JSON in SONAR_SCANNER_JSON_PARAMS environment variable is invalid. The other environment variables will still be loaded. Error : Expecting ',' delimiter: line 1 column 29 (char 28)",
         )
 
     def test_environment_variables_priority_over_json_params(self):
