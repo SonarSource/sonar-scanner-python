@@ -21,7 +21,6 @@ import logging
 from pathlib import Path
 from typing import Dict
 import os
-from pysonar_scanner import app_logging
 import tomli
 
 from pysonar_scanner.configuration import properties

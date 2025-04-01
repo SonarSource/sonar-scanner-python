@@ -25,7 +25,6 @@ from subprocess import Popen, PIPE
 from threading import Thread
 from typing import IO, Callable, Optional
 
-from pysonar_scanner import app_logging
 from pysonar_scanner.api import SonarQubeApi
 from pysonar_scanner.cache import Cache, CacheFile
 from pysonar_scanner.exceptions import ChecksumException
