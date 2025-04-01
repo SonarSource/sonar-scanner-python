@@ -34,6 +34,7 @@ requests = "^2.32.3"
 responses = "^0.25.6"
 pyfakefs = "^5.7.4"
 jproperties = "^2.1.2"
+shtab = "^1.7.1"
 
 [tool.poetry.group]
 [tool.poetry.group.dev]

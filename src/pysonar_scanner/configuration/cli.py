@@ -19,6 +19,8 @@
 #
 import argparse
 
+import shtab
+
 from pysonar_scanner.configuration import properties
 from pysonar_scanner.exceptions import UnexpectedCliArgument
 
@@ -54,6 +56,8 @@ class CliConfigurationLoader:
             description="Sonar scanner CLI for Python",
             epilog="Analysis properties not listed here will also be accepted, as long as they start with the -D prefix.",
         )
+
+        shtab.add_argument_to(parser, "--completion", help="Generate shell completion script")
 
         parser.add_argument(
             "-t",

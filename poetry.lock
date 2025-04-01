@@ -960,6 +960,26 @@ url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
 reference = "jfrog-server"
 
 [[package]]
+name = "shtab"
+version = "1.7.1"
+description = "Automagic shell tab completion for Python CLI applications"
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+files = [
+    {file = "shtab-1.7.1-py3-none-any.whl", hash = "sha256:32d3d2ff9022d4c77a62492b6ec875527883891e33c6b479ba4d41a51e259983"},
+    {file = "shtab-1.7.1.tar.gz", hash = "sha256:4e4bcb02eeb82ec45920a5d0add92eac9c9b63b2804c9196c1f1fdc2d039243c"},
+]
+
+[package.extras]
+dev = ["pytest (>=6)", "pytest-cov", "pytest-timeout"]
+
+[package.source]
+type = "legacy"
+url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
+reference = "jfrog-server"
+
+[[package]]
 name = "six"
 version = "1.17.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -1066,4 +1086,4 @@ reference = "jfrog-server"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9"
-content-hash = "e7c9b8fb35c2915f707b18ee5a1f14bd544b344d2219a46afb7057d8fb879792"
+content-hash = "4b18c56172446bdff3d60536e8fcbffe5696350d1bd2d94f4c638633f1464cd3"
