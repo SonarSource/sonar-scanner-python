@@ -84,6 +84,13 @@ class TestMain(pyfakefs.TestCase):
 
         self.assertEqual(expected_config, config)
 
+    @patch.object(ConfigurationLoader, "load")
+    def test_scan_with_exception(self, load_mock):
+        load_mock.side_effect = Exception("Test exception")
+
+        exitcode = scan()
+        self.assertEqual(1, exitcode)
+
     def test_version_check_outdated_sonarqube(self):
         sq_cloud_api = sq_api_utils.get_sq_server()
         sq_cloud_api.get_analysis_version = Mock(return_value=SQVersion.from_str("9.9.9"))

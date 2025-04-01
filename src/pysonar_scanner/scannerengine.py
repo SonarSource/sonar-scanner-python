@@ -119,7 +119,7 @@ class ScannerEngineProvisioner:
         if scanner_file is not None:
             return scanner_file.filepath
         else:
-            raise ChecksumException("Failed to download and verify scanner engine")
+            raise ChecksumException.create("scanner engine JAR")
 
     def __download_and_verify(self) -> Optional[CacheFile]:
         engine_info = self.api.get_analysis_engine()

@@ -21,11 +21,11 @@ from pathlib import Path
 
 from pysonar_scanner.configuration.cli import CliConfigurationLoader
 from pysonar_scanner.configuration.pyproject_toml import TomlConfigurationLoader
-from pysonar_scanner.configuration.properties import SONAR_TOKEN, SONAR_PROJECT_BASE_DIR, Key
+from pysonar_scanner.configuration.properties import SONAR_PROJECT_KEY, SONAR_TOKEN, SONAR_PROJECT_BASE_DIR, Key
 from pysonar_scanner.configuration.properties import PROPERTIES
 from pysonar_scanner.configuration import sonar_project_properties, environment_variables, dynamic_defaults_loader
 
-from pysonar_scanner.exceptions import MissingKeyException
+from pysonar_scanner.exceptions import MissingProperty, MissingPropertyException
 
 
 def get_static_default_properties() -> dict[Key, any]:
@@ -56,8 +56,20 @@ class ConfigurationLoader:
         resolved_properties.update(cli_properties)
         return resolved_properties
 
+    @staticmethod
+    def check_configuration(config: dict[Key, any]) -> None:
+        missing_keys = []
+        if SONAR_TOKEN not in config:
+            missing_keys.append(MissingProperty(SONAR_TOKEN, "--token"))
+
+        if SONAR_PROJECT_KEY not in config:
+            missing_keys.append(MissingProperty(SONAR_PROJECT_KEY, "--project-key"))
+
+        if len(missing_keys) > 0:
+            raise MissingPropertyException.from_missing_keys(*missing_keys)
+
 
 def get_token(config: dict[Key, any]) -> str:
     if SONAR_TOKEN not in config:
-        raise MissingKeyException(f'Missing property "{SONAR_TOKEN}"')
+        raise MissingPropertyException(f'Missing property "{SONAR_TOKEN}"')
     return config[SONAR_TOKEN]

@@ -51,8 +51,9 @@ from pysonar_scanner.configuration.properties import (
     SONAR_SCANNER_ARCH,
     SONAR_SCANNER_OS,
 )
-from pysonar_scanner.exceptions import MissingKeyException
 from pysonar_scanner.utils import Arch, Os
+from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader, SONAR_PROJECT_BASE_DIR
+from pysonar_scanner.exceptions import MissingPropertyException
 
 
 # Mock utils.get_os and utils.get_arch at the module level
@@ -116,7 +117,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
         with self.subTest("Token is present"):
             self.assertEqual(configuration_loader.get_token({SONAR_TOKEN: "myToken"}), "myToken")
 
-        with self.subTest("Token is absent"), self.assertRaises(MissingKeyException):
+        with self.subTest("Token is absent"), self.assertRaises(MissingPropertyException):
             configuration_loader.get_token({})
 
     @patch("sys.argv", ["myscript.py", "--token", "myToken", "--sonar-project-key", "myProjectKey"])
@@ -428,3 +429,21 @@ class TestConfigurationLoader(pyfakefs.TestCase):
         self.assertEqual(configuration["another.unknown.property"], "anotherValue")
         self.assertEqual(configuration[SONAR_TOKEN], "myToken")
         self.assertEqual(configuration[SONAR_PROJECT_KEY], "myProjectKey")
+
+    def test_check_configuration(self, mock_get_os, mock_get_arch):
+        with self.subTest("Both values present"):
+            ConfigurationLoader.check_configuration({SONAR_TOKEN: "", SONAR_PROJECT_KEY: ""})
+
+        with self.subTest("missing keys"):
+            with self.assertRaises(MissingPropertyException) as cm:
+                ConfigurationLoader.check_configuration({SONAR_PROJECT_KEY: "myKey"})
+            self.assertIn(SONAR_TOKEN, str(cm.exception))
+
+            with self.assertRaises(MissingPropertyException) as cm:
+                ConfigurationLoader.check_configuration({SONAR_TOKEN: "myToken"})
+            self.assertIn(SONAR_PROJECT_KEY, str(cm.exception))
+
+            with self.assertRaises(MissingPropertyException) as cm:
+                ConfigurationLoader.check_configuration({})
+            self.assertIn(SONAR_PROJECT_KEY, str(cm.exception))
+            self.assertIn(SONAR_TOKEN, str(cm.exception))

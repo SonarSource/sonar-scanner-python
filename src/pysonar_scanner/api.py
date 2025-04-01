@@ -19,7 +19,7 @@
 #
 import typing
 from dataclasses import dataclass
-from typing import Optional, TypedDict
+from typing import NoReturn, Optional, TypedDict
 
 import requests
 import requests.auth
@@ -31,8 +31,12 @@ from pysonar_scanner.configuration.properties import (
     SONAR_REGION,
     Key,
 )
-from pysonar_scanner.exceptions import MissingKeyException, SonarQubeApiException, InconsistentConfiguration
 from pysonar_scanner.utils import remove_trailing_slash, OsStr, ArchStr
+from pysonar_scanner.exceptions import (
+    SonarQubeApiException,
+    InconsistentConfiguration,
+    SonarQubeApiUnauthroizedException,
+)
 
 GLOBAL_SONARCLOUD_URL = "https://sonarcloud.io"
 US_SONARCLOUD_URL = "https://sonarqube.us"
@@ -98,18 +102,15 @@ class JRE:
 
     @staticmethod
     def from_dict(dict: dict) -> "JRE":
-        try:
-            return JRE(
-                id=dict["id"],
-                filename=dict["filename"],
-                sha256=dict["sha256"],
-                java_path=dict["javaPath"],
-                os=dict["os"],
-                arch=dict["arch"],
-                download_url=dict.get("downloadUrl", None),
-            )
-        except KeyError as e:
-            raise MissingKeyException(f"Missing key in dictionary {dict}") from e
+        return JRE(
+            id=dict["id"],
+            filename=dict["filename"],
+            sha256=dict["sha256"],
+            java_path=dict["javaPath"],
+            os=dict["os"],
+            arch=dict["arch"],
+            download_url=dict.get("downloadUrl", None),
+        )
 
 
 ApiConfiguration = TypedDict(
@@ -188,6 +189,16 @@ class SonarQubeApi:
         self.base_urls = base_urls
         self.auth = BearerAuth(token)
 
+    def __raise_exception(self, exception: Exception) -> NoReturn:
+        if (
+            isinstance(exception, requests.RequestException)
+            and exception.response is not None
+            and exception.response.status_code == 401
+        ):
+            raise SonarQubeApiUnauthroizedException.create_default(self.base_urls.base_url) from exception
+        else:
+            raise SonarQubeApiException("Error while fetching the analysis version") from exception
+
     def is_sonar_qube_cloud(self) -> bool:
         return self.base_urls.is_sonar_qube_cloud
 
@@ -200,7 +211,7 @@ class SonarQubeApi:
             res.raise_for_status()
             return SQVersion.from_str(res.text)
         except requests.RequestException as e:
-            raise SonarQubeApiException("Error while fetching the analysis version") from e
+            self.__raise_exception(e)
 
     def get_analysis_engine(self) -> EngineInfo:
         try:
@@ -213,7 +224,7 @@ class SonarQubeApi:
                 raise SonarQubeApiException("Invalid response from the server")
             return EngineInfo(filename=json["filename"], sha256=json["sha256"])
         except requests.RequestException as e:
-            raise SonarQubeApiException("Error while fetching the analysis engine information") from e
+            self.__raise_exception(e)
 
     def download_analysis_engine(self, handle: typing.BinaryIO) -> None:
         """
@@ -229,7 +240,7 @@ class SonarQubeApi:
             )
             self.__download_file(res, handle)
         except requests.RequestException as e:
-            raise SonarQubeApiException("Error while fetching the analysis engine") from e
+            self.__raise_exception(e)
 
     def get_analysis_jres(self, os: OsStr, arch: ArchStr) -> list[JRE]:
         try:
@@ -243,8 +254,8 @@ class SonarQubeApi:
             res.raise_for_status()
             json_array = res.json()
             return [JRE.from_dict(jre) for jre in json_array]
-        except (requests.RequestException, MissingKeyException) as e:
-            raise SonarQubeApiException("Error while fetching the analysis version") from e
+        except (requests.RequestException, KeyError) as e:
+            self.__raise_exception(e)
 
     def download_analysis_jre(self, id: str, handle: typing.BinaryIO) -> None:
         """
@@ -260,7 +271,7 @@ class SonarQubeApi:
             )
             self.__download_file(res, handle)
         except requests.RequestException as e:
-            raise SonarQubeApiException("Error while fetching the JRE") from e
+            self.__raise_exception(e)
 
     def __download_file(self, res: requests.Response, handle: typing.BinaryIO) -> None:
         res.raise_for_status()

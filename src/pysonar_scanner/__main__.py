@@ -20,6 +20,7 @@
 
 from pysonar_scanner import app_logging
 from pysonar_scanner import cache
+from pysonar_scanner import exceptions
 from pysonar_scanner.api import get_base_urls, SonarQubeApi, BaseUrls, MIN_SUPPORTED_SQ_VERSION
 from pysonar_scanner.configuration import configuration_loader
 from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader
@@ -39,10 +40,19 @@ from pysonar_scanner.scannerengine import ScannerEngine, ScannerEngineProvisione
 
 
 def scan():
+    try:
+        return do_scan()
+    except Exception as e:
+        return exceptions.log_error(e)
+
+
+def do_scan():
     app_logging.setup()
 
     config = ConfigurationLoader.load()
     set_logging_options(config)
+
+    ConfigurationLoader.check_configuration(config)
 
     api = build_api(config)
     check_version(api)
@@ -64,13 +74,15 @@ def build_api(config: dict[str, any]) -> SonarQubeApi:
     return SonarQubeApi(base_urls, token)
 
 
-def check_version(api):
+def check_version(api: SonarQubeApi):
     if api.is_sonar_qube_cloud():
         return
     version = api.get_analysis_version()
     if not version.does_support_bootstrapping():
         raise SQTooOldException(
-            f"Only SonarQube versions >= {MIN_SUPPORTED_SQ_VERSION} are supported, but got {version}"
+            f"This scanner only supports SonarQube versions >= {MIN_SUPPORTED_SQ_VERSION}. \n"
+            f"The server at {api.base_urls.base_url} is on version {version}\n"
+            "Please either upgrade your SonarQube server or use the Sonar Scanner CLI (see https://docs.sonarsource.com/sonarqube-server/latest/analyzing-source-code/scanners/sonarscanner/)."
         )
 
 
