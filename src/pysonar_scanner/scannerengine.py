@@ -25,6 +25,7 @@ from subprocess import Popen, PIPE
 from threading import Thread
 from typing import IO, Callable, Optional
 
+from pysonar_scanner import app_logging
 from pysonar_scanner.api import SonarQubeApi
 from pysonar_scanner.cache import Cache, CacheFile
 from pysonar_scanner.exceptions import ChecksumException
@@ -115,6 +116,7 @@ class ScannerEngineProvisioner:
         if scanner_file is not None:
             return scanner_file.filepath
         # Retry once in case the checksum failed due to the scanner engine being updated between getting the checksum and downloading the jar
+        logging.warning("Something went wrong while downloading the scanner engine. Retrying...")
         scanner_file = self.__download_and_verify()
         if scanner_file is not None:
             return scanner_file.filepath
@@ -125,6 +127,7 @@ class ScannerEngineProvisioner:
         engine_info = self.api.get_analysis_engine()
         cache_file = self.cache.get_file(engine_info.filename, engine_info.sha256)
         if not cache_file.is_valid():
+            logging.debug("No valid cached analysis engine jar was found")
             self.__download_scanner_engine(cache_file)
         return cache_file if cache_file.is_valid() else None
 
@@ -140,7 +143,9 @@ class ScannerEngine:
 
     def run(self, config: dict[str, any]):
         cmd = self.__build_command(self.jre_path, self.scanner_engine_path)
+        logging.debug(f"Command: {cmd}")
         properties_str = self.__config_to_json(config)
+        logging.debug(f"Properties: {properties_str}")
         return CmdExecutor(cmd, properties_str).execute()
 
     def __build_command(self, jre_path: JREResolvedPath, scanner_engine_path: pathlib.Path) -> list[str]:

@@ -17,6 +17,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+import logging
 from pathlib import Path
 from typing import Dict
 import os
@@ -26,8 +27,10 @@ from jproperties import Properties
 def load(base_dir: Path) -> Dict[str, str]:
     filepath = base_dir / "sonar-project.properties"
     if not os.path.isfile(filepath):
+        logging.debug(f"no sonar-project.properties file found at {filepath}")
         return {}
 
+    logging.debug(f"sonar-project.properties loaded from {filepath}")
     props = Properties()
     with open(filepath, "rb") as f:
         props.load(f)

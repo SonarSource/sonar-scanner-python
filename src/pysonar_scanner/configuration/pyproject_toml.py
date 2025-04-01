@@ -17,9 +17,11 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+import logging
 from pathlib import Path
 from typing import Dict
 import os
+from pysonar_scanner import app_logging
 import tomli
 
 from pysonar_scanner.configuration import properties
@@ -39,8 +41,9 @@ class TomlConfigurationLoader:
     def load(base_dir: Path) -> TomlProperties:
         filepath = base_dir / "pyproject.toml"
         if not os.path.isfile(filepath):
+            logging.debug(f"No pyproject.toml at {filepath}")
             return TomlProperties({}, {})
-
+        logging.debug(f"pyproject.toml loaded from {filepath}")
         try:
             with open(filepath, "rb") as f:
                 toml_dict = tomli.load(f)
@@ -49,9 +52,10 @@ class TomlConfigurationLoader:
             # Look for general project configuration
             project_properties = TomlConfigurationLoader.__read_project_properties(toml_dict)
             return TomlProperties(sonar_properties, project_properties)
-        except Exception:
-            # If there's any error parsing the TOML file, return empty TomlProperties
-            # SCANPY-135: We should log the pyproject.toml parsing error
+        except Exception as e:
+            logging.warning(
+                f"There was an error reading the pyproject.toml file. No properties from the TOML file were extracted. Error: {e}"
+            )
             return TomlProperties({}, {})
 
     @staticmethod
