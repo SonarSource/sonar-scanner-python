@@ -111,14 +111,27 @@ class Property:
     cli_getter: Optional[Callable[[argparse.Namespace], any]] = None
     """function to get the value from the CLI arguments namespace. If None, the property is not settable via CLI"""
 
-    def python_name(self) -> str:
-        """Convert Java-style camel case name to Python-style kebab-case name."""
-        result = []
-        for i, char in enumerate(self.name):
-            if char.isupper() and i > 0:
-                result.append("-")
-            result.append(char.lower())
-        return "".join(result)
+    def python_names(self) -> list[str]:
+        """Convert Java-style camel case name to Python-style kebab-case names.
+        Additionally, if the property has 4 or more parts and the second part is 'python',
+        generate an alternative name omitting the 'python' part."""
+        parts = self.name.split(".")
+        kebab_parts = []
+        for part in parts:
+            kebab_part = []
+            for i, char in enumerate(part):
+                if char.isupper() and i > 0:
+                    kebab_part.append("-")
+                kebab_part.append(char.lower())
+            kebab_parts.append("".join(kebab_part))
+
+        names = [".".join(kebab_parts)]
+
+        if len(parts) >= 4 and parts[1] == "python":
+            alt_parts = [kebab_parts[0]] + kebab_parts[2:]
+            names.append(".".join(alt_parts))
+
+        return names
 
     def env_variable_name(self) -> str:
         """Convert property name to environment variable name format.

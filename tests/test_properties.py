@@ -40,35 +40,40 @@ class TestProperties(unittest.TestCase):
         """Test conversion of property names to Python-style kebab-case names"""
         test_cases = [
             # Simple properties
-            (SONAR_HOST_URL, "sonar.host.url"),
-            (SONAR_TOKEN, "sonar.token"),
-            (SONAR_VERBOSE, "sonar.verbose"),
+            (SONAR_HOST_URL, ["sonar.host.url"]),
+            (SONAR_TOKEN, ["sonar.token"]),
+            (SONAR_VERBOSE, ["sonar.verbose"]),
             # CamelCase properties
-            (SONAR_SCANNER_APP_VERSION, "sonar.scanner.app-version"),
-            (SONAR_SCANNER_SOCKET_TIMEOUT, "sonar.scanner.socket-timeout"),
-            (SONAR_SCANNER_PROXY_PASSWORD, "sonar.scanner.proxy-password"),
+            (SONAR_SCANNER_APP_VERSION, ["sonar.scanner.app-version"]),
+            (SONAR_SCANNER_SOCKET_TIMEOUT, ["sonar.scanner.socket-timeout"]),
+            (SONAR_SCANNER_PROXY_PASSWORD, ["sonar.scanner.proxy-password"]),
             # Complex properties
-            (SONAR_SCANNER_INTERNAL_DUMP_TO_FILE, "sonar.scanner.internal.dump-to-file"),
-            (SONAR_PROJECT_KEY, "sonar.project-key"),
-            (SONAR_PROJECT_BASE_DIR, "sonar.project-base-dir"),
+            (SONAR_SCANNER_INTERNAL_DUMP_TO_FILE, ["sonar.scanner.internal.dump-to-file"]),
+            (SONAR_PROJECT_KEY, ["sonar.project-key"]),
+            (SONAR_PROJECT_BASE_DIR, ["sonar.project-base-dir"]),
+            # Python-specific properties with alternative names
+            ("sonar.python.pylint.reportPath", ["sonar.python.pylint.report-path", "sonar.pylint.report-path"]),
+            (
+                "sonar.python.coverage.reportPaths",
+                ["sonar.python.coverage.report-paths", "sonar.coverage.report-paths"],
+            ),
+            ("sonar.python.version", ["sonar.python.version"]),  # No alternative name (only 3 parts)
         ]
 
-        for name, expected_python_name in test_cases:
-            # Find property in PROPERTIES list
+        for name, expected_python_names in test_cases:
             prop = next((p for p in PROPERTIES if p.name == name), None)
             if prop:
                 self.assertEqual(
-                    prop.python_name(),
-                    expected_python_name,
-                    f"Failed to convert {name} to Python name, got {prop.python_name()}",
+                    prop.python_names(),
+                    expected_python_names,
+                    f"Failed to convert {name} to Python names, got {prop.python_names()}",
                 )
             else:
-                # Create test property if not in list
                 prop = Property(name=name, default_value=None)
                 self.assertEqual(
-                    prop.python_name(),
-                    expected_python_name,
-                    f"Failed to convert {name} to Python name, got {prop.python_name()}",
+                    prop.python_names(),
+                    expected_python_names,
+                    f"Failed to convert {name} to Python names, got {prop.python_names()}",
                 )
 
     def test_env_variable_name_conversion(self):

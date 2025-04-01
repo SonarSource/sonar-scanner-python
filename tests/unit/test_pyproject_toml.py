@@ -36,6 +36,8 @@ class TestTomlFile(TestCase):
             projectName = "My Project"
             sources = "src"
             exclusions = "**/generated/**/*,**/deprecated/**/*,**/testdata/**/*"
+            python.mypy.report-paths = "mypy-report.xml,my/other/mypy/report.xml"
+            ruff.report-paths = "ruff-report.xml,my/other/ruff/report.xml"
             some.unknownProperty = "unknown_property_value"
             """,
         )
@@ -44,6 +46,13 @@ class TestTomlFile(TestCase):
         self.assertEqual(properties.sonar_properties.get("sonar.projectKey"), "my-project")
         self.assertEqual(properties.sonar_properties.get("sonar.projectName"), "My Project")
         self.assertEqual(properties.sonar_properties.get("sonar.sources"), "src")
+        self.assertEqual(properties.sonar_properties.get("sonar.sources"), "src")
+        self.assertEqual(
+            properties.sonar_properties.get("sonar.python.mypy.reportPaths"), "mypy-report.xml,my/other/mypy/report.xml"
+        )
+        self.assertEqual(
+            properties.sonar_properties.get("sonar.python.ruff.reportPaths"), "ruff-report.xml,my/other/ruff/report.xml"
+        )
         self.assertEqual(
             properties.sonar_properties.get("sonar.exclusions"), "**/generated/**/*,**/deprecated/**/*,**/testdata/**/*"
         )

@@ -58,7 +58,9 @@ class TomlConfigurationLoader:
     def __read_sonar_properties(toml_dict) -> Dict[str, str]:
         if "tool" in toml_dict and "sonar" in toml_dict["tool"]:
             sonar_config = toml_dict["tool"]["sonar"]
-            python_to_java_names = {prop.python_name(): prop.name for prop in properties.PROPERTIES}
+            python_to_java_names = {
+                python_name: prop.name for prop in properties.PROPERTIES for python_name in prop.python_names()
+            }
             flattened_sonar_config = TomlConfigurationLoader.__flatten_config_dict(sonar_config, prefix="sonar.")
             return {python_to_java_names.get(key, key): value for key, value in flattened_sonar_config.items()}
         return {}
