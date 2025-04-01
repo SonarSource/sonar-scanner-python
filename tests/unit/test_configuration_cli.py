@@ -192,6 +192,43 @@ class TestCliConfigurationLoader(unittest.TestCase):
                 }
                 self.assertDictEqual(configuration, expected_configuration)
 
+    def test_alternative_report_cli_args(self):
+        base_args = ["myscript.py", "-t", "myToken", "--sonar-project-key", "myProjectKey"]
+        report_args = [
+            "--bandit-report-paths",
+            "path/to/bandit/reports",
+            "--flake8-report-paths",
+            "path/to/flake8/reports",
+            "--mypy-report-paths",
+            "path/to/mypy/reports",
+            "--pylint-report-path",
+            "path/to/pylint/report",
+            "--coverage-report-paths",
+            "path/to/coverage/reports",
+            "--xunit-report-path",
+            "path/to/xunit/report",
+            "--ruff-report-paths",
+            "path/to/ruff/reports",
+            "--xunit-skip-details",
+        ]
+
+        expected_configuration = {
+            SONAR_TOKEN: "myToken",
+            SONAR_PROJECT_KEY: "myProjectKey",
+            SONAR_PYTHON_BANDIT_REPORT_PATHS: "path/to/bandit/reports",
+            SONAR_PYTHON_FLAKE8_REPORT_PATHS: "path/to/flake8/reports",
+            SONAR_PYTHON_MYPY_REPORT_PATHS: "path/to/mypy/reports",
+            SONAR_PYTHON_PYLINT_REPORT_PATH: "path/to/pylint/report",
+            SONAR_PYTHON_COVERAGE_REPORT_PATHS: "path/to/coverage/reports",
+            SONAR_PYTHON_XUNIT_REPORT_PATH: "path/to/xunit/report",
+            SONAR_PYTHON_RUFF_REPORT_PATHS: "path/to/ruff/reports",
+            SONAR_PYTHON_XUNIT_SKIP_DETAILS: True,
+        }
+
+        with patch("sys.argv", base_args + report_args), patch("sys.stderr", new=StringIO()):
+            configuration = CliConfigurationLoader.load()
+            self.assertDictEqual(configuration, expected_configuration)
+
     def test_multiple_alias_cli_args(self):
         alternatives = [
             ["-t", "overwrittenToken", "--sonar-token", "sonarToken"],
