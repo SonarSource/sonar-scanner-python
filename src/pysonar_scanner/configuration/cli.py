@@ -413,12 +413,14 @@ class CliConfigurationLoader:
         )
         parser.add_argument(
             "--sonar-python-pylint-report-path",
+            "--pylint-report-path",
             "-Dsonar.python.pylint.reportPath",
             type=str,
             help="Path to third-parties issues report file for pylint",
         )
         parser.add_argument(
             "--sonar-python-coverage-report-paths",
+            "--coverage-report-paths",
             "-Dsonar.python.coverage.reportPaths",
             type=str,
             help="Comma-delimited list of paths to coverage reports in the Cobertura XML format.",
@@ -436,12 +438,14 @@ class CliConfigurationLoader:
         )
         parser.add_argument(
             "--sonar-python-xunit-report-path",
+            "--xunit-report-path",
             "-Dsonar.python.xunit.reportPath",
             type=str,
             help="Path to the report of test execution, relative to project's root",
         )
         parser.add_argument(
             "--sonar-python-xunit-skip-details",
+            "--xunit-skip-details",
             type=bool,
             action=argparse.BooleanOptionalAction,
             help="When enabled, the test execution statistics is provided only on project level",
@@ -450,6 +454,34 @@ class CliConfigurationLoader:
             "-Dsonar.python.xunit.skipDetails",
             type=bool,
             help="Equivalent to -Dsonar.python.xunit.skipDetails",
+        )
+        parser.add_argument(
+            "--sonar-python-mypy-report-paths",
+            "--mypy-report-paths",
+            "-Dsonar.python.mypy.reportPaths",
+            type=str,
+            help="Comma-separated mypy report paths, relative to project's root",
+        )
+        parser.add_argument(
+            "--sonar-python-bandit-report-paths",
+            "--bandit-report-paths",
+            "-Dsonar.python.bandit.reportPaths",
+            type=str,
+            help="Comma-separated bandit report paths, relative to project's root",
+        )
+        parser.add_argument(
+            "--sonar-python-flake8-report-paths",
+            "--flake8-report-paths",
+            "-Dsonar.python.flake8.reportPaths",
+            type=str,
+            help="Comma-separated flake8 report paths, relative to project's root",
+        )
+        parser.add_argument(
+            "--sonar-python-ruff-report-paths",
+            "--ruff-report-paths",
+            "-Dsonar.python.ruff.reportPaths",
+            type=str,
+            help="Comma-separated ruff report paths, relative to project's root",
         )
         parser.add_argument(
             "--sonar-modules", "-Dsonar.modules", type=str, help="Comma-delimited list of modules to analyze"
