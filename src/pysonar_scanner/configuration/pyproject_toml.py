@@ -111,5 +111,9 @@ class TomlConfigurationLoader:
 
     @staticmethod
     def __kebab_to_camel_case(key: str) -> str:
-        parts = key.split("-")
-        return parts[0] + "".join(word.capitalize() for word in parts[1:])
+        if "-" in key:
+            parts = key.split("-")
+            result = parts[0] + "".join(word.capitalize() for word in parts[1:])
+            logging.debug(f"Converting kebab-case property '{key}' to camelCase: '{result}'")
+            return result
+        return key
