@@ -300,6 +300,17 @@ class TestSonarQubeApi(unittest.TestCase):
             mocker.mock_analysis_engine(filename=engine_info.filename, sha256=engine_info.sha256)
             self.assertEqual(self.sq.get_analysis_engine(), engine_info)
 
+        with self.subTest("get_analysis_engine with downloadUrl"), sq_api_mocker() as mocker:
+            engine_info = EngineInfo(
+                filename="sonar-scanner-engine-shaded-8.9.0.43852-all.jar",
+                sha256="1234567890",
+                download_url="https://example.com",
+            )
+            mocker.mock_analysis_engine(
+                filename=engine_info.filename, sha256=engine_info.sha256, download_url="https://example.com"
+            )
+            self.assertEqual(self.sq.get_analysis_engine(), engine_info)
+
         with (
             self.subTest("get_analysis_engine returns error"),
             sq_api_mocker() as mocker,
@@ -440,7 +451,7 @@ class TestSonarQubeApi(unittest.TestCase):
             # since the api is not mocked, requests will throw an exception
             self.sq.download_analysis_jre(jre_id, io.BytesIO())
 
-    def test_download_analysis_jre_from_url(self):
+    def test_download_file_from_url(self):
         jre_url = "https://sonarcloud.io/jres/OpenJDK17U-jre_x64_alpine-linux_hotspot_17.0.11_9.tar.gz"
         jre_file_content = b"fake_jre_binary"
         with self.subTest("download_jre_from_url without auth works"), sq_api_mocker() as mocker:

@@ -182,6 +182,7 @@ class BearerAuth(requests.auth.AuthBase):
 class EngineInfo:
     filename: str
     sha256: str
+    download_url: Optional[str] = None
 
 
 class SonarQubeApi:
@@ -222,7 +223,9 @@ class SonarQubeApi:
             json = res.json()
             if "filename" not in json or "sha256" not in json:
                 raise SonarQubeApiException("Invalid response from the server")
-            return EngineInfo(filename=json["filename"], sha256=json["sha256"])
+            return EngineInfo(
+                filename=json["filename"], sha256=json["sha256"], download_url=json.get("downloadUrl", None)
+            )
         except requests.RequestException as e:
             self.__raise_exception(e)
 

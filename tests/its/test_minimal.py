@@ -28,7 +28,7 @@ pytestmark = pytest.mark.its
 
 
 def test_minimal_project(sonarqube_client: SonarQubeClient, cli: CliClient):
-    process = cli.run_analysis(sources_dir="minimal")
+    process = cli.run_analysis(sources_dir="minimal", params=["--verbose"])
     assert process.returncode == 0, str(process.stdout)
 
     data = sonarqube_client.get_project_issues("minimal")

@@ -20,6 +20,8 @@
 import contextlib
 from typing import Optional
 
+from click import Option
+
 from pysonar_scanner import utils
 from pysonar_scanner.api import JRE, BaseUrls, SonarQubeApi
 import responses
@@ -52,7 +54,11 @@ class SQApiMocker:
         return self.rsps.get(url=f"{self.api_url}/analysis/version", body=version, status=status)
 
     def mock_analysis_engine(
-        self, filename: Optional[str] = None, sha256: Optional[str] = None, status: int = 200
+        self,
+        filename: Optional[str] = None,
+        sha256: Optional[str] = None,
+        download_url: Optional[str] = None,
+        status: int = 200,
     ) -> responses.BaseResponse:
         def prepare_json_obj() -> dict:
             json_response = {}
@@ -60,6 +66,8 @@ class SQApiMocker:
                 json_response["filename"] = filename
             if sha256:
                 json_response["sha256"] = sha256
+            if download_url:
+                json_response["downloadUrl"] = download_url
             return json_response
 
         return self.rsps.get(
