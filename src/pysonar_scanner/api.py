@@ -41,6 +41,8 @@ from pysonar_scanner.exceptions import (
 GLOBAL_SONARCLOUD_URL = "https://sonarcloud.io"
 US_SONARCLOUD_URL = "https://sonarqube.us"
 
+UNAUTHORIZED_STATUS_CODES = (401, 403)
+
 ACCEPT_JSON = {"Accept": "application/json"}
 ACCEPT_OCTET_STREAM = {"Accept": "application/octet-stream"}
 
@@ -197,7 +199,7 @@ class SonarQubeApi:
         if (
             isinstance(exception, requests.RequestException)
             and exception.response is not None
-            and exception.response.status_code == 401
+            and exception.response.status_code in UNAUTHORIZED_STATUS_CODES
         ):
             raise SonarQubeApiUnauthroizedException.create_default(self.base_urls.base_url) from exception
         else:
