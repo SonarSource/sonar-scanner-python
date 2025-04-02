@@ -50,6 +50,11 @@ class CliConfigurationLoader:
 
     @classmethod
     def __parse_cli_args(cls) -> tuple[argparse.Namespace, list[str]]:
+        parser = cls.__create_parser()
+        return parser.parse_known_args()
+
+    @classmethod
+    def __create_parser(cls):
         parser = argparse.ArgumentParser(
             description="Sonar scanner CLI for Python",
             epilog="Analysis properties not listed here will also be accepted, as long as they start with the -D prefix.",
@@ -493,4 +498,4 @@ class CliConfigurationLoader:
             "--sonar-modules", "-Dsonar.modules", type=str, help="Comma-delimited list of modules to analyze"
         )
 
-        return parser.parse_known_args()
+        return parser

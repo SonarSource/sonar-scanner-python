@@ -1,15 +1,10 @@
 # pysonar
-A wrapper around SonarScanner CLI, available on PyPI.
-
-# Disclaimer 
-
-This project is currently in beta and APIs are subject to change. 
-These changes include configuration parameter names.
+A Python scanner for SonarQube, available on PyPI.
 
 # Requirements
 
- - SonarQube v9.9 or higher
- - Python 3.8 or above
+ - SonarQube v10.6 or above
+ - Python 3.9 or above
 
 # Installation
 
@@ -28,25 +23,33 @@ It assumes a running SonarQube server or a project configured on SonarCloud.
 In order for the analysis to run, analysis properties need to be defined. 
 There are multiple ways of providing these properties, described below in descending order of priority:
 
-* Through CLI arguments to the `pysonar` command
-* Under the `[tool.sonar]` key of the `pyproject.toml` file
-* Through common properties extracted from the `pyproject.toml`
-* In a dedicated `sonar-project.properties` file
-* Through environment variables
+1. Through CLI arguments to the `pysonar` command
+2. Environment variables for individual properties (e.g. `SONAR_TOKEN`, `SONAR_VERBOSE`, `SONAR_HOST_URL`, ...)
+3. Generic environment variable `SONAR_SCANNER_JSON_PARAMS` 
+4. Under the `[tool.sonar]` key of the `pyproject.toml` file
+5. In a dedicated `sonar-project.properties` file
+6. Through common properties extracted from the `pyproject.toml`
 
 ### Through CLI arguments
 
 Analysis properties can be provided as CLI arguments to the `pysonar` command.
-They follow the same convention as when running the SonarScanner CLI directly 
-(see [documentation](https://docs.sonarsource.com/sonarqube/9.9/analyzing-source-code/scanners/sonarscanner/#running-from-zip-file)).
+They can be provided in a similar way as when running the SonarScanner CLI directly 
+(see [documentation](https://docs.sonarsource.com/sonarqube-server/2025.1/analyzing-source-code/scanners/sonarscanner/#running-from-zip-file)).
 This means that analysis properties provided that way should be prepended with `-D`, for instance:
 
 ```
-$ pysonar -Dsonar.login=myAuthenticationToken 
+$ pysonar -Dsonar.token=myAuthenticationToken 
 ```
 
-You can use all the argument allowed by __SonarScanner__. 
-For more information on __SonarScanner__ please refer to the [SonarScanner documentation](https://docs.sonarsource.com/sonarqube/9.9/analyzing-source-code/scanners/sonarscanner/)
+You can use all the arguments allowed by __SonarScanner__. 
+For more information on __SonarScanner__ please refer to the [SonarScanner documentation](https://docs.sonarsource.com/sonarqube-server/2025.1/analyzing-source-code/analysis-parameters/).
+
+Additionally, some common properties can be provided using a shorter alias, such as:
+```
+pysonar --token "MyToken"
+```
+
+See [CLI_ARGS](https://github.com/SonarSource/sonar-scanner-python/blob/master/CLI_ARGS.md) for more details.
 
 ### With a pyproject.toml file
 
@@ -70,37 +73,43 @@ projectKey=my:project
 #sourceEncoding=UTF-8
 ```
 
-The configuration parameters can be found in the [SonarQube documentation](https://docs.sonarsource.com/sonarqube/9.9/analyzing-source-code/analysis-parameters/).
+The configuration parameters can be found in the [SonarQube documentation](https://docs.sonarsource.com/sonarqube-server/2025.1/analyzing-source-code/analysis-parameters/).
 
 In the `pyproject.toml` file the prefix `sonar.` for parameter keys should be omitted. 
 For example, `sonar.scm.provider` in the documentation will become `scm.provider` in the `pyproject.toml` file.
 
-By default, the scanner will expect the `pyproject.toml` file to be present in the current directory. 
-However, its path can be provided manually through the `toml.path` ([SCANPY-40](https://sonarsource.atlassian.net/jira/software/c/projects/PYSCAN/issues/PYSCAN-40)) CLI argument as well as through the `sonar.projectHome` argument. For instance:
+Properties in `pyproject.toml` files are expected to be provided in camel case. However, kebab case is also accepted:
 
 ```
-pysonar --toml.path "path/to/pyproject.toml"
+[tool.sonar]
+project-key=My Project key # valid alias for projectKey
+```
+
+By default, the scanner will expect the `pyproject.toml` file to be present in the current directory. However, its path can be provided manually through the `toml-path` CLI argument as well as through the `sonar.projectBaseDir` argument. For instance:
+
+```
+pysonar --toml-path "path/to/pyproject.toml"
 ```
 
 Or:
 
 ```
-pysonar --sonar-project-home "path/to/projectHome"
+pysonar --sonar-project-base-dir "path/to/projectBaseDir"
 ```
 
+Or:
+
+```
+pysonar -Dsonar.projectBaseDir="path/to/projectBaseDir"
+```
 
 ### Through project properties extracted from the `pyproject.toml`
 
-When a `pyproject.toml` file is available, it is possible to set the `-read-project-config` flag
-to allow the scanner to deduce analysis properties from the project configuration.
-
-This is currently supported only for projects using `poetry`.
-
-The Sonar scanner will then use the project name and version defined through Poetry, they won't have to be duplicated under a dedicated `tool.sonar` section.
+When a `pyproject.toml` file is available, the scanner can deduce analysis properties from the project configuration. This is currently supported only for projects using `poetry`.
 
 ### With a sonar-project.properties file
 
-Exactly like [__SonarScanner__](https://docs.sonarsource.com/sonarqube/9.9/analyzing-source-code/scanners/sonarscanner/),
+Exactly like [__SonarScanner__](https://docs.sonarsource.com/sonarqube-server/2025.1/analyzing-source-code/scanners/sonarscanner/),
 the analysis can also be configured with a `sonar-project.properties` file:
 
 ```
@@ -130,7 +139,7 @@ $ export SONAR_HOST_URL="http://localhost:9000"
 $ pysonar 
 ```
 
-See the __SonarScanner__ [documentation](https://docs.sonarsource.com/sonarqube/9.9/analyzing-source-code/scanners/sonarscanner/) for more information.
+See the __SonarScanner__ [documentation](https://docs.sonarsource.com/sonarqube-server/2025.1/setup-and-upgrade/environment-variables/) for more information.
 
 # Installation from testPyPI
 
