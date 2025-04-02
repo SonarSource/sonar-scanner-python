@@ -107,7 +107,9 @@ class JREProvisioner:
             elif jre.id is not None:
                 self.api.download_analysis_jre(jre.id, f)
             else:
-                raise JreProvisioningException("JRE ID and download URL are both None")
+                raise JreProvisioningException(
+                    "Failed to download the JRE using SonarQube. If this problem persists, you can use the option --sonar-scanner-java-exe-path to use your own local JRE."
+                )
 
         return cache_file.filepath if cache_file.is_valid() else None
 
