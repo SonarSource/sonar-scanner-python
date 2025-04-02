@@ -61,7 +61,7 @@ class ConfigurationLoader:
         return resolved_properties
 
     @staticmethod
-    def check_configuration(config: dict[Key, any]) -> None:
+    def check_configuration(config: dict[Key, Any]) -> None:
         missing_keys = []
         if SONAR_TOKEN not in config:
             missing_keys.append(MissingProperty(SONAR_TOKEN, "--token"))
