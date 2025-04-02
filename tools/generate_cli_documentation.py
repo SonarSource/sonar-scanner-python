@@ -19,7 +19,7 @@ def generate_cli_docs():
 
     # Group arguments by category
     categories = {
-        "Authentication": ["token", "sonar_host_url", "sonar_region"],
+        "Authentication": ["token", "sonar_host_url", "sonar_region", "sonar_organization"],
         "Project Configuration": [
             "sonar_project_key",
             "sonar_project_name",

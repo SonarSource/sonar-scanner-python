@@ -4,7 +4,7 @@ A Python scanner for SonarQube, available on PyPI.
 # Requirements
 
  - SonarQube v10.6 or above
- - Python 3.8 or above
+ - Python 3.9 or above
 
 # Installation
 
@@ -100,7 +100,7 @@ pysonar --sonar-project-base-dir "path/to/projectBaseDir"
 Or:
 
 ```
-pysonar --sonar-projectBaseDir "path/to/projectBaseDir"
+pysonar -Dsonar.projectBaseDir="path/to/projectBaseDir"
 ```
 
 ### Through project properties extracted from the `pyproject.toml`

@@ -5,6 +5,7 @@
 | Option | Description |
 | ------ | ----------- |
 | `--sonar-host-url`, `-Dsonar.host.url` | SonarQube Server base URL. For example, http://localhost:9000 for a local instance of SonarQube Server |
+| `--sonar-organization`, `-Dsonar.organization` | The key of the organization to which the project belongs |
 | `--sonar-region`, `-Dsonar.region` | The region to contact, only for SonarQube Cloud |
 | `-t`, `--token`, `--sonar-token`, `-Dsonar.token` | Token used to authenticate against the SonarQube Server or SonarQube Cloud |
 
