@@ -44,7 +44,12 @@ $ pysonar -Dsonar.token=myAuthenticationToken
 You can use all the arguments allowed by __SonarScanner__. 
 For more information on __SonarScanner__ please refer to the [SonarScanner documentation](https://docs.sonarsource.com/sonarqube-server/2025.1/analyzing-source-code/analysis-parameters/).
 
-Additionally, some common properties can be provided using  
+Additionally, some common properties can be provided using a shorter alias, such as:
+```
+pysonar --token "MyToken"
+```
+
+See [CLI_ARGS](https://github.com/SonarSource/sonar-scanner-python/blob/master/CLI_ARGS.md) for more details.
 
 ### With a pyproject.toml file
 
