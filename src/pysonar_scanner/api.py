@@ -41,6 +41,9 @@ from pysonar_scanner.exceptions import (
 GLOBAL_SONARCLOUD_URL = "https://sonarcloud.io"
 US_SONARCLOUD_URL = "https://sonarqube.us"
 
+ACCEPT_JSON = {"Accept": "application/json"}
+ACCEPT_OCTET_STREAM = {"Accept": "application/octet-stream"}
+
 
 @dataclass(frozen=True)
 class SQVersion:
@@ -216,9 +219,7 @@ class SonarQubeApi:
 
     def get_analysis_engine(self) -> EngineInfo:
         try:
-            res = requests.get(
-                f"{self.base_urls.api_base_url}/analysis/engine", headers={"Accept": "application/json"}, auth=self.auth
-            )
+            res = requests.get(f"{self.base_urls.api_base_url}/analysis/engine", headers=ACCEPT_JSON, auth=self.auth)
             res.raise_for_status()
             json = res.json()
             if "filename" not in json or "sha256" not in json:
@@ -237,7 +238,7 @@ class SonarQubeApi:
         try:
             res = requests.get(
                 f"{self.base_urls.api_base_url}/analysis/engine",
-                headers={"Accept": "application/octet-stream"},
+                headers=ACCEPT_OCTET_STREAM,
                 auth=self.auth,
             )
             self.__download_file(res, handle)
@@ -250,7 +251,7 @@ class SonarQubeApi:
             res = requests.get(
                 f"{self.base_urls.api_base_url}/analysis/jres",
                 auth=self.auth,
-                headers={"Accept": "application/json"},
+                headers=ACCEPT_JSON,
                 params=params,
             )
             res.raise_for_status()
@@ -268,7 +269,7 @@ class SonarQubeApi:
         try:
             res = requests.get(
                 f"{self.base_urls.api_base_url}/analysis/jres/{id}",
-                headers={"Accept": "application/octet-stream"},
+                headers=ACCEPT_OCTET_STREAM,
                 auth=self.auth,
             )
             self.__download_file(res, handle)
