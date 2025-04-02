@@ -78,7 +78,7 @@ poetry_win_install: &POETRY_WIN_INSTALL
 poetry_cache_template: &POETRY_CACHE
   poetry_cache:
     folder: ~/.cache/poetry/
-    fingerprint_script: cat poetry.lock 
+    fingerprint_script: cat poetry.lock
 
 .poetry_template: &POETRY_TEMPLATE
   <<: *POETRY_CACHE
@@ -151,6 +151,14 @@ formatting_task:
     - poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d src/
     - poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d tests/
     - git diff --name-only --exit-code ./src ./tests
+
+documentation_task:
+  <<: *POETRY_LINUX_TEMPLATE
+  alias: documentation
+  name: "CLI Documentation"
+  cli_docs_script:
+    - poetry run python tools/generate_cli_documentation.py
+    - git diff --exit-code CLI_ARGS.md
 
 analysis_linux_task:
   <<: *POETRY_LINUX_TEMPLATE
