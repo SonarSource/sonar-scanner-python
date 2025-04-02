@@ -28,6 +28,7 @@ SONAR_HOST_URL: Key = "sonar.host.url"
 SONAR_SCANNER_SONARCLOUD_URL: Key = "sonar.scanner.sonarcloudUrl"
 SONAR_SCANNER_API_BASE_URL: Key = "sonar.scanner.apiBaseUrl"
 SONAR_REGION: Key = "sonar.region"
+SONAR_ORGANIZATION: Key = "sonar.organization"
 SONAR_SCANNER_APP: Key = "sonar.scanner.app"
 SONAR_SCANNER_APP_VERSION: Key = "sonar.scanner.appVersion"
 SONAR_SCANNER_BOOTSTRAP_START_TIME: Key = "sonar.scanner.bootstrapStartTime"
@@ -177,6 +178,11 @@ PROPERTIES: list[Property] = [
         name=SONAR_REGION, 
         default_value=None, 
         cli_getter=lambda args: args.sonar_region
+    ),
+    Property(
+        name=SONAR_ORGANIZATION, 
+        default_value=None, 
+        cli_getter=lambda args: args.sonar_organization
     ),
     Property(
         name=SONAR_SCANNER_SONARCLOUD_URL,

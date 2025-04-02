@@ -111,6 +111,12 @@ class CliConfigurationLoader:
             help="The region to contact, only for SonarQube Cloud",
         )
         parser.add_argument(
+            "--sonar-organization",
+            "-Dsonar.organization",
+            type=str,
+            help="The key of the organization to which the project belongs",
+        )
+        parser.add_argument(
             "--sonar-user-home", "-Dsonar.userHome", type=str, help="Base sonar directory, ~/.sonar by default"
         )
 

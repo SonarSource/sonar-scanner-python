@@ -25,6 +25,7 @@ from io import StringIO
 from pysonar_scanner.configuration.configuration_loader import CliConfigurationLoader
 from pysonar_scanner.configuration.properties import (
     SONAR_HOST_URL,
+    SONAR_ORGANIZATION,
     SONAR_PYTHON_BANDIT_REPORT_PATHS,
     SONAR_PYTHON_FLAKE8_REPORT_PATHS,
     SONAR_PYTHON_MYPY_REPORT_PATHS,
@@ -126,6 +127,7 @@ EXPECTED_CONFIGURATION = {
     SONAR_SCANNER_JAVA_OPTS: "mySonarScannerJavaOpts",
     SONAR_SCANNER_METADATA_FILEPATH: "myMetadataFilepath",
     SONAR_REGION: "us",
+    SONAR_ORGANIZATION: "mySonarOrganization",
     SONAR_USER_HOME: "mySonarUserHome",
     SONAR_FILESIZE_LIMIT: 1000,
     SONAR_CPD_PYTHON_MINIMUM_TOKENS: 15,
@@ -277,6 +279,8 @@ class TestCliConfigurationLoader(unittest.TestCase):
             "mySonarHostUrl",
             "--sonar-region",
             "us",
+            "--sonar-organization",
+            "mySonarOrganization",
             "--sonar-user-home",
             "mySonarUserHome",
             "--sonar-scanner-cloud-url",
@@ -424,6 +428,7 @@ class TestCliConfigurationLoader(unittest.TestCase):
             "-Dsonar.scanner.javaOpts=mySonarScannerJavaOpts",
             "-Dsonar.scanner.metadataFilepath=myMetadataFilepath",
             "-Dsonar.region=us",
+            "-Dsonar.organization=mySonarOrganization",
             "-Dsonar.userHome=mySonarUserHome",
             "-Dsonar.projectBaseDir=mySonarProjectBaseDir",
             "-Dsonar.filesize.limit=1000",
