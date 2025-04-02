@@ -105,6 +105,22 @@ class SQApiMocker:
             match=[matchers.header_matcher({"Accept": "application/octet-stream"})],
         )
 
+    def mock_download_url(
+        self,
+        url: str,
+        body: bytes = b"",
+        status: int = 200,
+        redirect_url: Optional[str] = None,
+    ) -> responses.BaseResponse:
+
+        return self.rsps.get(
+            url=url,
+            body=body,
+            headers={"Location": redirect_url} if redirect_url else None,
+            status=status,
+            match=[matchers.header_matcher({"Accept": "application/octet-stream"})],
+        )
+
     def mock_server_version(self, version: str = "", status: int = 200) -> responses.BaseResponse:
         return self.rsps.get(url=f"{self.base_url}/api/server/version", body=version, status=status)
 

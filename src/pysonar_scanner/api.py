@@ -92,7 +92,7 @@ class BaseUrls:
 
 @dataclass(frozen=True)
 class JRE:
-    id: str
+    id: Optional[str]
     filename: str
     sha256: str
     java_path: str
@@ -103,7 +103,7 @@ class JRE:
     @staticmethod
     def from_dict(dict: dict) -> "JRE":
         return JRE(
-            id=dict["id"],
+            id=dict.get("id", None),
             filename=dict["filename"],
             sha256=dict["sha256"],
             java_path=dict["javaPath"],
@@ -267,6 +267,20 @@ class SonarQubeApi:
                 f"{self.base_urls.api_base_url}/analysis/jres/{id}",
                 headers={"Accept": "application/octet-stream"},
                 auth=self.auth,
+            )
+            self.__download_file(res, handle)
+        except requests.RequestException as e:
+            self.__raise_exception(e)
+
+    def download_file_from_url(self, url: str, handle: typing.BinaryIO) -> None:
+        """
+        This method can raise a SonarQubeApiException if the server doesn't respond successfully.
+        Alternative, if the file IO fails, an IOError or OSError can be raised.
+        """
+        try:
+            res = requests.get(
+                url,
+                headers=ACCEPT_OCTET_STREAM,
             )
             self.__download_file(res, handle)
         except requests.RequestException as e:
