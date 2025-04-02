@@ -102,7 +102,14 @@ class JREProvisioner:
         cache_file.filepath.unlink(missing_ok=True)
 
         with cache_file.open(mode="wb") as f:
-            self.api.download_analysis_jre(jre.id, f)
+            if jre.download_url is not None:
+                self.api.download_file_from_url(jre.download_url, f)
+            elif jre.id is not None:
+                self.api.download_analysis_jre(jre.id, f)
+            else:
+                raise JreProvisioningException(
+                    "Failed to download the JRE using SonarQube. If this problem persists, you can use the option --sonar-scanner-java-exe-path to use your own local JRE."
+                )
 
         return cache_file.filepath if cache_file.is_valid() else None
 

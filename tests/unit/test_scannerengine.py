@@ -183,6 +183,18 @@ class TestScannerEngineProvisioner(pyfakefs.TestCase):
             self.assertTrue(self.test_file_path.exists())
             self.assertEqual(self.test_file_path.read_bytes(), self.test_file_content)
 
+    def test_happy_path_with_download_url(self):
+        with sq_api_utils.sq_api_mocker() as mocker:
+            mocker.mock_analysis_engine(
+                filename="scanner-engine.jar", sha256=self.test_file_checksum, download_url="http://example.com"
+            )
+            mocker.mock_download_url(url="http://example.com", body=self.test_file_content)
+
+            ScannerEngineProvisioner(self.api, self.cache).provision()
+
+            self.assertTrue(self.test_file_path.exists())
+            self.assertEqual(self.test_file_path.read_bytes(), self.test_file_content)
+
     def test_scanner_engine_is_cached(self):
         with sq_api_utils.sq_api_mocker(assert_all_requests_are_fired=False) as mocker:
             engine_info_rsps = mocker.mock_analysis_engine(

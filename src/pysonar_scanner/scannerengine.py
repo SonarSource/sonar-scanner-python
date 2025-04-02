@@ -25,7 +25,7 @@ from subprocess import Popen, PIPE
 from threading import Thread
 from typing import IO, Callable, Optional
 
-from pysonar_scanner.api import SonarQubeApi
+from pysonar_scanner.api import EngineInfo, SonarQubeApi
 from pysonar_scanner.cache import Cache, CacheFile
 from pysonar_scanner.exceptions import ChecksumException
 from pysonar_scanner.jre import JREResolvedPath
@@ -127,12 +127,15 @@ class ScannerEngineProvisioner:
         cache_file = self.cache.get_file(engine_info.filename, engine_info.sha256)
         if not cache_file.is_valid():
             logging.debug("No valid cached analysis engine jar was found")
-            self.__download_scanner_engine(cache_file)
+            self.__download_scanner_engine(cache_file, engine_info)
         return cache_file if cache_file.is_valid() else None
 
-    def __download_scanner_engine(self, cache_file: CacheFile) -> None:
+    def __download_scanner_engine(self, cache_file: CacheFile, engine_info: EngineInfo) -> None:
         with cache_file.open(mode="wb") as f:
-            self.api.download_analysis_engine(f)
+            if engine_info.download_url is not None:
+                self.api.download_file_from_url(engine_info.download_url, f)
+            else:
+                self.api.download_analysis_engine(f)
 
 
 class ScannerEngine:

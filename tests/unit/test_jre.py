@@ -20,6 +20,7 @@
 import io
 import pathlib
 import tarfile
+from typing import cast
 from unittest.mock import Mock, patch
 from typing_extensions import TypedDict
 import unittest
@@ -32,7 +33,12 @@ from pysonar_scanner.configuration.properties import (
     SONAR_SCANNER_OS,
     SONAR_SCANNER_SKIP_JRE_PROVISIONING,
 )
-from pysonar_scanner.exceptions import ChecksumException, NoJreAvailableException, UnsupportedArchiveFormat
+from pysonar_scanner.exceptions import (
+    ChecksumException,
+    JreProvisioningException,
+    NoJreAvailableException,
+    UnsupportedArchiveFormat,
+)
 from pysonar_scanner.jre import JREProvisioner, JREResolvedPath, JREResolver, JREResolverConfiguration
 from pysonar_scanner.utils import Os, Arch
 from tests.unit import sq_api_utils
@@ -78,6 +84,16 @@ class TestJREProvisioner(pyfakefs.TestCase):
             os=Os.LINUX.value,
             arch=Arch.AARCH64.value,
             download_url=None,
+        )
+
+        self.zip_jre_with_download_url = JRE(
+            id="zip_jre",
+            filename=self.zip_name,
+            sha256=self.zip_checksum,
+            java_path="java",
+            os=Os.LINUX.value,
+            arch=Arch.AARCH64.value,
+            download_url="https://scanner.sonarqube.us/jres/OpenJDK17U-jre_x64_alpine-linux_hotspot_17.0.11_9.tar.gz",
         )
 
     def __setup_tar_file(self):
@@ -153,6 +169,41 @@ class TestJREProvisioner(pyfakefs.TestCase):
                 self.assertTrue(unziped_dir.exists())
                 self.assertTrue((unziped_dir / "readme.md").exists())
                 self.assertEqual((unziped_dir / "readme.md").read_bytes(), b"hello world")
+
+    def test_download_jre_with_download_url(self, get_os_mock, get_arch_mock):
+        jre = self.zip_jre_with_download_url
+        with sq_api_utils.sq_api_mocker() as mocker:
+            mocker.mock_analysis_jres(body=[sq_api_utils.jre_to_dict(jre)])
+            mocker.mock_download_url(url=cast(str, jre.download_url), body=self.zip_bytes, status=200)
+
+            provisioner = JREProvisioner(self.api, self.cache, utils.get_os().value, utils.get_arch().value)
+            jre_path = provisioner.provision()
+
+            cache_file = self.cache.get_file(jre.filename, self.zip_checksum)
+            self.assertTrue(cache_file.is_valid())
+
+            unziped_dir = self.cache.get_file_path("jre.zip_unzip")
+            self.assertEqual(jre_path, JREResolvedPath(unziped_dir / "java"))
+
+            self.assertTrue(unziped_dir.exists())
+            self.assertTrue((unziped_dir / "readme.md").exists())
+            self.assertEqual((unziped_dir / "readme.md").read_bytes(), b"hello world")
+
+    def test_downloaind_jre_with_neither_download_url_nor_id(self, *args):
+        jre = JRE(
+            id=None,
+            filename="jre.zip",
+            sha256=self.zip_checksum,
+            java_path="java",
+            os=Os.LINUX.value,
+            arch=Arch.AARCH64.value,
+            download_url=None,
+        )
+        with self.assertRaises(JreProvisioningException), sq_api_utils.sq_api_mocker() as mocker:
+            mocker.mock_analysis_jres(body=[sq_api_utils.jre_to_dict(jre)])
+
+            provisioner = JREProvisioner(self.api, self.cache, utils.get_os().value, utils.get_arch().value)
+            provisioner.provision()
 
     def test_invalid_checksum(self, *args):
         with self.assertRaises(ChecksumException), sq_api_utils.sq_api_mocker() as mocker:

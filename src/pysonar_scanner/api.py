@@ -41,6 +41,11 @@ from pysonar_scanner.exceptions import (
 GLOBAL_SONARCLOUD_URL = "https://sonarcloud.io"
 US_SONARCLOUD_URL = "https://sonarqube.us"
 
+UNAUTHORIZED_STATUS_CODES = (401, 403)
+
+ACCEPT_JSON = {"Accept": "application/json"}
+ACCEPT_OCTET_STREAM = {"Accept": "application/octet-stream"}
+
 
 @dataclass(frozen=True)
 class SQVersion:
@@ -92,7 +97,7 @@ class BaseUrls:
 
 @dataclass(frozen=True)
 class JRE:
-    id: str
+    id: Optional[str]
     filename: str
     sha256: str
     java_path: str
@@ -103,7 +108,7 @@ class JRE:
     @staticmethod
     def from_dict(dict: dict) -> "JRE":
         return JRE(
-            id=dict["id"],
+            id=dict.get("id", None),
             filename=dict["filename"],
             sha256=dict["sha256"],
             java_path=dict["javaPath"],
@@ -182,6 +187,7 @@ class BearerAuth(requests.auth.AuthBase):
 class EngineInfo:
     filename: str
     sha256: str
+    download_url: Optional[str] = None
 
 
 class SonarQubeApi:
@@ -193,7 +199,7 @@ class SonarQubeApi:
         if (
             isinstance(exception, requests.RequestException)
             and exception.response is not None
-            and exception.response.status_code == 401
+            and exception.response.status_code in UNAUTHORIZED_STATUS_CODES
         ):
             raise SonarQubeApiUnauthroizedException.create_default(self.base_urls.base_url) from exception
         else:
@@ -215,14 +221,14 @@ class SonarQubeApi:
 
     def get_analysis_engine(self) -> EngineInfo:
         try:
-            res = requests.get(
-                f"{self.base_urls.api_base_url}/analysis/engine", headers={"Accept": "application/json"}, auth=self.auth
-            )
+            res = requests.get(f"{self.base_urls.api_base_url}/analysis/engine", headers=ACCEPT_JSON, auth=self.auth)
             res.raise_for_status()
             json = res.json()
             if "filename" not in json or "sha256" not in json:
                 raise SonarQubeApiException("Invalid response from the server")
-            return EngineInfo(filename=json["filename"], sha256=json["sha256"])
+            return EngineInfo(
+                filename=json["filename"], sha256=json["sha256"], download_url=json.get("downloadUrl", None)
+            )
         except requests.RequestException as e:
             self.__raise_exception(e)
 
@@ -234,7 +240,7 @@ class SonarQubeApi:
         try:
             res = requests.get(
                 f"{self.base_urls.api_base_url}/analysis/engine",
-                headers={"Accept": "application/octet-stream"},
+                headers=ACCEPT_OCTET_STREAM,
                 auth=self.auth,
             )
             self.__download_file(res, handle)
@@ -247,7 +253,7 @@ class SonarQubeApi:
             res = requests.get(
                 f"{self.base_urls.api_base_url}/analysis/jres",
                 auth=self.auth,
-                headers={"Accept": "application/json"},
+                headers=ACCEPT_JSON,
                 params=params,
             )
             res.raise_for_status()
@@ -265,8 +271,22 @@ class SonarQubeApi:
         try:
             res = requests.get(
                 f"{self.base_urls.api_base_url}/analysis/jres/{id}",
-                headers={"Accept": "application/octet-stream"},
+                headers=ACCEPT_OCTET_STREAM,
                 auth=self.auth,
+            )
+            self.__download_file(res, handle)
+        except requests.RequestException as e:
+            self.__raise_exception(e)
+
+    def download_file_from_url(self, url: str, handle: typing.BinaryIO) -> None:
+        """
+        This method can raise a SonarQubeApiException if the server doesn't respond successfully.
+        Alternative, if the file IO fails, an IOError or OSError can be raised.
+        """
+        try:
+            res = requests.get(
+                url,
+                headers=ACCEPT_OCTET_STREAM,
             )
             self.__download_file(res, handle)
         except requests.RequestException as e:

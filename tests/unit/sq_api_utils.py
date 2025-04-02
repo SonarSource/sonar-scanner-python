@@ -52,7 +52,11 @@ class SQApiMocker:
         return self.rsps.get(url=f"{self.api_url}/analysis/version", body=version, status=status)
 
     def mock_analysis_engine(
-        self, filename: Optional[str] = None, sha256: Optional[str] = None, status: int = 200
+        self,
+        filename: Optional[str] = None,
+        sha256: Optional[str] = None,
+        download_url: Optional[str] = None,
+        status: int = 200,
     ) -> responses.BaseResponse:
         def prepare_json_obj() -> dict:
             json_response = {}
@@ -60,6 +64,8 @@ class SQApiMocker:
                 json_response["filename"] = filename
             if sha256:
                 json_response["sha256"] = sha256
+            if download_url:
+                json_response["downloadUrl"] = download_url
             return json_response
 
         return self.rsps.get(
@@ -99,6 +105,22 @@ class SQApiMocker:
     ) -> responses.BaseResponse:
         return self.rsps.get(
             url=f"{self.api_url}/analysis/jres/{id}",
+            body=body,
+            headers={"Location": redirect_url} if redirect_url else None,
+            status=status,
+            match=[matchers.header_matcher({"Accept": "application/octet-stream"})],
+        )
+
+    def mock_download_url(
+        self,
+        url: str,
+        body: bytes = b"",
+        status: int = 200,
+        redirect_url: Optional[str] = None,
+    ) -> responses.BaseResponse:
+
+        return self.rsps.get(
+            url=url,
             body=body,
             headers={"Location": redirect_url} if redirect_url else None,
             status=status,
