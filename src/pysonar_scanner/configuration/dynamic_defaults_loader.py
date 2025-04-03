@@ -18,13 +18,13 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import os
-from typing import Dict
+from typing import Any, Dict
 
 from pysonar_scanner.configuration.properties import Key, SONAR_SCANNER_OS, SONAR_SCANNER_ARCH, SONAR_PROJECT_BASE_DIR
 from pysonar_scanner import utils
 
 
-def load() -> Dict[Key, any]:
+def load() -> Dict[Key, Any]:
     """
     Load dynamically computed default properties
     """

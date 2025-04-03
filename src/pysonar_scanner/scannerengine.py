@@ -23,7 +23,7 @@ import pathlib
 from dataclasses import dataclass
 from subprocess import Popen, PIPE
 from threading import Thread
-from typing import IO, Callable, Optional
+from typing import IO, Any, Callable, Optional
 
 from pysonar_scanner.api import EngineInfo, SonarQubeApi
 from pysonar_scanner.cache import Cache, CacheFile
@@ -143,7 +143,7 @@ class ScannerEngine:
         self.jre_path = jre_path
         self.scanner_engine_path = scanner_engine_path
 
-    def run(self, config: dict[str, any]):
+    def run(self, config: dict[str, Any]):
         cmd = self.__build_command(self.jre_path, self.scanner_engine_path)
         logging.debug(f"Command: {cmd}")
         properties_str = self.__config_to_json(config)
@@ -151,12 +151,12 @@ class ScannerEngine:
         return CmdExecutor(cmd, properties_str).execute()
 
     def __build_command(self, jre_path: JREResolvedPath, scanner_engine_path: pathlib.Path) -> list[str]:
-        cmd = []
-        cmd.append(jre_path.path)
+        cmd: list[str] = []
+        cmd.append(str(jre_path.path))
         cmd.append("-jar")
-        cmd.append(scanner_engine_path)
+        cmd.append(str(scanner_engine_path))
         return cmd
 
-    def __config_to_json(self, config: dict[str, any]) -> str:
+    def __config_to_json(self, config: dict[str, Any]) -> str:
         scanner_properties = [{"key": k, "value": v} for k, v in config.items()]
         return json.dumps({"scannerProperties": scanner_properties})

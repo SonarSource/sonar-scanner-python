@@ -39,11 +39,11 @@ def calculate_checksum(filehandle: typing.BinaryIO) -> str:
 
 
 class Os(Enum):
-    WINDOWS: OsStr = "windows"
-    LINUX: OsStr = "linux"
-    MACOS: OsStr = "mac"
-    ALPINE: OsStr = "alpine"
-    OTHER: OsStr = "other"
+    WINDOWS = "windows"
+    LINUX = "linux"
+    MACOS = "mac"
+    ALPINE = "alpine"
+    OTHER = "other"
 
 
 def get_os() -> Os:
@@ -73,9 +73,9 @@ def get_os() -> Os:
 
 
 class Arch(Enum):
-    X64: ArchStr = "x64"
-    AARCH64: ArchStr = "aarch64"
-    OTHER: ArchStr = "other"
+    X64 = "x64"
+    AARCH64 = "aarch64"
+    OTHER = "other"
 
 
 def get_arch() -> Arch:

@@ -19,7 +19,7 @@
 #
 import typing
 from dataclasses import dataclass
-from typing import NoReturn, Optional, TypedDict
+from typing import Any, NoReturn, Optional
 
 import requests
 import requests.auth
@@ -118,24 +118,26 @@ class JRE:
         )
 
 
-ApiConfiguration = TypedDict(
-    "ApiConfiguration",
-    {SONAR_HOST_URL: str, SONAR_SCANNER_SONARCLOUD_URL: str, SONAR_SCANNER_API_BASE_URL: str, SONAR_REGION: str},
-)
+@dataclass(frozen=True)
+class ApiConfiguration:
+    sonar_host_url: str
+    sonar_scanner_sonarcloud_url: str
+    sonar_scanner_api_base_url: str
+    sonar_region: str
 
 
-def to_api_configuration(config_dict: dict[Key, any]) -> ApiConfiguration:
-    return {
-        SONAR_HOST_URL: config_dict.get(SONAR_HOST_URL, ""),
-        SONAR_SCANNER_SONARCLOUD_URL: config_dict.get(SONAR_SCANNER_SONARCLOUD_URL, ""),
-        SONAR_SCANNER_API_BASE_URL: config_dict.get(SONAR_SCANNER_API_BASE_URL, ""),
-        SONAR_REGION: config_dict.get(SONAR_REGION, ""),
-    }
+def to_api_configuration(config_dict: dict[Key, Any]) -> ApiConfiguration:
+    return ApiConfiguration(
+        sonar_host_url=config_dict.get(SONAR_HOST_URL, ""),
+        sonar_scanner_sonarcloud_url=config_dict.get(SONAR_SCANNER_SONARCLOUD_URL, ""),
+        sonar_scanner_api_base_url=config_dict.get(SONAR_SCANNER_API_BASE_URL, ""),
+        sonar_region=config_dict.get(SONAR_REGION, ""),
+    )
 
 
-def get_base_urls(config_dict: dict[Key, any]) -> BaseUrls:
+def get_base_urls(config_dict: dict[Key, Any]) -> BaseUrls:
     def is_sq_cloud_url(api_config: ApiConfiguration, sonar_host_url: str) -> bool:
-        sq_cloud_url = api_config[SONAR_SCANNER_SONARCLOUD_URL] or GLOBAL_SONARCLOUD_URL
+        sq_cloud_url = api_config.sonar_scanner_sonarcloud_url or GLOBAL_SONARCLOUD_URL
         return remove_trailing_slash(sonar_host_url) in [remove_trailing_slash(sq_cloud_url), US_SONARCLOUD_URL]
 
     def is_blank(str) -> bool:
@@ -143,8 +145,8 @@ def get_base_urls(config_dict: dict[Key, any]) -> BaseUrls:
 
     api_config: ApiConfiguration = to_api_configuration(config_dict)
 
-    sonar_host_url = remove_trailing_slash(api_config[SONAR_HOST_URL])
-    region = api_config[SONAR_REGION]
+    sonar_host_url = remove_trailing_slash(api_config.sonar_host_url)
+    region = api_config.sonar_region
     if region and region != "us":
         raise InconsistentConfiguration(
             f"Invalid region '{region}'. Valid regions are: 'us'. "
@@ -158,11 +160,11 @@ def get_base_urls(config_dict: dict[Key, any]) -> BaseUrls:
     if is_blank(sonar_host_url) or is_sq_cloud_url(api_config, sonar_host_url):
         default_url = US_SONARCLOUD_URL if region == "us" else GLOBAL_SONARCLOUD_URL
         default_api_base_url = "https://api.sonarqube.us" if region == "us" else "https://api.sonarcloud.io"
-        sonar_host_url = api_config[SONAR_SCANNER_SONARCLOUD_URL] or default_url
-        api_base_url = api_config[SONAR_SCANNER_API_BASE_URL] or default_api_base_url
+        sonar_host_url = api_config.sonar_scanner_sonarcloud_url or default_url
+        api_base_url = api_config.sonar_scanner_api_base_url or default_api_base_url
         return BaseUrls(base_url=sonar_host_url, api_base_url=api_base_url, is_sonar_qube_cloud=True)
     else:
-        api_base_url = api_config[SONAR_SCANNER_API_BASE_URL] or f"{sonar_host_url}/api/v2"
+        api_base_url = api_config.sonar_scanner_api_base_url or f"{sonar_host_url}/api/v2"
         return BaseUrls(base_url=sonar_host_url, api_base_url=api_base_url, is_sonar_qube_cloud=False)
 
 
