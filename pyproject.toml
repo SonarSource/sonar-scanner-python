@@ -54,7 +54,7 @@ from = 'src'
 include = 'pysonar_scanner'
 
 [tool.poetry.scripts]
-pysonar = 'pysonar_scanner.__main__:scan'
+pysonar = 'pysonar_scanner.__main__:entry_point'
 
 [[tool.poetry.source]]
 name = 'jfrog-server'

@@ -47,6 +47,9 @@ def scan():
     except Exception as e:
         return exceptions.log_error(e)
 
+def entry_point():
+    # Ensure the exit code is properly returned to the shell
+    exit(scan())
 
 def do_scan():
     app_logging.setup()
