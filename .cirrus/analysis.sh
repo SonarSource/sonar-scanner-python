@@ -2,7 +2,7 @@
 
 function run_analysis {
   # extra analysis parameters are set in the 'sonar-project.properties'
-  pysonar-scanner \
+  pysonar \
   -Dsonar.host.url="$SONAR_HOST_URL" \
   -Dsonar.token="$SONAR_TOKEN" \
   -Dsonar.analysis.buildNumber=$CI_BUILD_NUMBER \
