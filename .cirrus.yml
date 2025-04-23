@@ -170,7 +170,7 @@ analysis_linux_task:
     - poetry run mypy src/ > mypy-report.txt || true # mypy exits with 1 if there are errors
     - uv venv
     - source .venv/bin/activate
-    - uv pip install pysonar-scanner
+    - uv pip install pysonar
     - . .cirrus/analysis.sh
   always:
     pytest_artifacts:
