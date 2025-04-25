@@ -58,6 +58,22 @@ win_ssd_and_clone:
       git reset --hard $CIRRUS_CHANGE_IN_REPO
     fi
 
+.jfrog__config_template: &JFROG_CONFIG_TEMPLATE
+  jfrog_config_script:
+    - $JF_ALIAS config add repox --artifactory-url "$ARTIFACTORY_URL" --access-token "$ARTIFACTORY_PRIVATE_ACCESS_TOKEN"
+    - $JF_ALIAS poetry-config --server-id-resolve repox --repo-resolve sonarsource-pypi
+    - $JF_ALIAS poetry install --build-name="$CIRRUS_REPO_NAME" --build-number="$CI_BUILD_NUMBER"
+
+.jfrog_windows_config_template: &JFROG_WIN_CONFIG_TEMPLATE
+  env:
+    JF_ALIAS: "jf"
+  <<: *JFROG_CONFIG_TEMPLATE
+
+.jfrog_MAC_LINUX_config_template: &JFROG_MAC_LINUX_CONFIG_TEMPLATE
+  env:
+    JF_ALIAS: "jfrog"
+  <<: *JFROG_CONFIG_TEMPLATE
+
 poetry_win_install: &POETRY_WIN_INSTALL
   <<: *WINDOWS_VM_DEFINITION
   <<: *WIN_SSD_AND_CLONE
@@ -71,9 +87,7 @@ poetry_win_install: &POETRY_WIN_INSTALL
     - source cirrus-env QA
     - pip install poetry=="$POETRY_VERSION"
     - source set_poetry_build_version "$CI_BUILD_NUMBER"
-    - jf config add repox --artifactory-url "$ARTIFACTORY_URL" --access-token "$ARTIFACTORY_PRIVATE_ACCESS_TOKEN"
-    - jf poetry-config --server-id-resolve repox --repo-resolve sonarsource-pypi
-    - jf poetry install --build-name="$CIRRUS_REPO_NAME" --build-number="$CI_BUILD_NUMBER"
+  <<: *JFROG_WIN_CONFIG_TEMPLATE
 
 poetry_cache_template: &POETRY_CACHE
   poetry_cache:
@@ -85,9 +99,7 @@ poetry_cache_template: &POETRY_CACHE
   poetry_install_script:
     - source set_poetry_build_version "$CI_BUILD_NUMBER"
     - echo "PROJECT_VERSION=$PROJECT_VERSION" >> $CIRRUS_ENV
-    - jfrog config add repox --artifactory-url "$ARTIFACTORY_URL" --access-token "$ARTIFACTORY_PRIVATE_ACCESS_TOKEN"
-    - jfrog poetry-config --server-id-resolve repox --repo-resolve sonarsource-pypi
-    - jfrog poetry install --build-name="$CIRRUS_REPO_NAME" --build-number="$CI_BUILD_NUMBER"
+  <<: *JFROG_MAC_LINUX_CONFIG_TEMPLATE
 
 .poetry_linux_template: &POETRY_LINUX_TEMPLATE
   <<: *POETRY_TEMPLATE
@@ -102,9 +114,7 @@ poetry_cache_template: &POETRY_CACHE
   poetry_install_script:
     - brew install poetry
     - poetry config keyring.enabled false # Keyring is locked in macOS VM and not needed for downloading dependencies
-    - jfrog config add repox --artifactory-url "$ARTIFACTORY_URL" --access-token "$ARTIFACTORY_PRIVATE_ACCESS_TOKEN"
-    - jfrog poetry-config --server-id-resolve repox --repo-resolve sonarsource-pypi
-    - jfrog poetry install --build-name="$CIRRUS_REPO_NAME" --build-number="$CI_BUILD_NUMBER"
+  <<: *JFROG_MAC_LINUX_CONFIG_TEMPLATE
 
 macos_worker_template: &MACOS_WORKER_DEFINITION
   persistent_worker:
@@ -159,13 +169,14 @@ documentation_task:
     - poetry run python tools/generate_cli_documentation.py
     - git diff --exit-code CLI_ARGS.md
 
-# For NEXT analysis we don't need to set the build versions
 analysis_linux_task:
   <<: *POETRY_CACHE
   eks_container:
     <<: *LINUX_CONTAINER_DEFINITION
   alias: analysis
   name: "NEXT Analysis"
+  # For NEXT analysis we don't need to set the build versions, but we still need to access jfrog to recover the dependencies
+  <<: *JFROG_MAC_LINUX_CONFIG_TEMPLATE
   analysis_script:
     - poetry install
     - poetry run pytest --cov-report=xml:coverage.xml --cov-config=pyproject.toml --cov=src --cov-branch tests
