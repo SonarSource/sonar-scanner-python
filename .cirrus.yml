@@ -94,7 +94,6 @@ poetry_cache_template: &POETRY_CACHE
   eks_container:
     <<: *LINUX_CONTAINER_DEFINITION
 
-
 .poetry_macos_template: &POETRY_MACOS_TEMPLATE
   <<: *POETRY_CACHE
   jfrog_install_script:
@@ -160,8 +159,11 @@ documentation_task:
     - poetry run python tools/generate_cli_documentation.py
     - git diff --exit-code CLI_ARGS.md
 
+# For NEXT analysis we don't need to set the build versions
 analysis_linux_task:
-  <<: *POETRY_LINUX_TEMPLATE
+  <<: *POETRY_CACHE
+  eks_container:
+    <<: *LINUX_CONTAINER_DEFINITION
   alias: analysis
   name: "NEXT Analysis"
   analysis_script:
