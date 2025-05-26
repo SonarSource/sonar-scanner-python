@@ -194,10 +194,14 @@ analysis_linux_task:
 qa_task:
   alias: qa
   matrix:
-    - name: "Test Python 3.9"
+    - name: "Test Python 3.9.18"
       eks_container:
         docker_arguments:
           PYTHON_VERSION: 3.9.18
+    - name: "Test Python 3.9.6"
+      eks_container:
+        docker_arguments:
+          PYTHON_VERSION: 3.9.6
     - name: "Test Python 3.10"
       eks_container:
         docker_arguments:
