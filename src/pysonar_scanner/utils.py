@@ -20,6 +20,8 @@
 import hashlib
 import pathlib
 import platform
+import sys
+import tarfile
 import typing
 from enum import Enum
 
@@ -89,3 +91,11 @@ def get_arch() -> Arch:
 
 def filter_none_values(dictionary: dict) -> dict:
     return {k: v for k, v in dictionary.items() if v is not None}
+
+
+def extract_tar(path: pathlib.Path, target_dir: pathlib.Path):
+    with tarfile.open(path, "r:gz") as tar_ref:
+        if sys.version_info >= (3, 12):
+            tar_ref.extractall(target_dir, filter="data")
+        else:
+            tar_ref.extractall(target_dir)
