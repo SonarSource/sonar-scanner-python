@@ -135,8 +135,7 @@ class JREProvisioner:
             with zipfile.ZipFile(file_path, "r") as zip_ref:
                 zip_ref.extractall(unzip_dir)
         elif file_path.suffix in [".gz", ".tgz"]:
-            with tarfile.open(file_path, "r:gz") as tar_ref:
-                tar_ref.extractall(unzip_dir, filter="data")
+            utils.extract_tar(file_path, unzip_dir)
         else:
             raise UnsupportedArchiveFormat(
                 f"Received JRE is packaged as an unsupported archive format: {file_path.suffix}"

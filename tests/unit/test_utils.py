@@ -23,7 +23,7 @@ import unittest
 import unittest.mock
 import pyfakefs.fake_filesystem_unittest as pyfakefs
 
-from pysonar_scanner.utils import Arch, Os, get_arch, get_os, remove_trailing_slash, calculate_checksum
+from pysonar_scanner.utils import Arch, Os, get_arch, get_os, remove_trailing_slash, calculate_checksum, extract_tar
 
 
 class TestUtils(unittest.TestCase):
@@ -132,3 +132,31 @@ class TestCalculateChecksum(unittest.TestCase):
             calculate_checksum(BytesIO(b"test test")),
             "03ffdf45276dd38ffac79b0e9c6c14d89d9113ad783d5922580f4c66a3305591",
         )
+
+
+class TestExtractTar(unittest.TestCase):
+    def setUp(self):
+        self.test_path = pathlib.Path("/fake/path/archive.tar.gz")
+        self.test_target_dir = pathlib.Path("/fake/target/dir")
+
+    @unittest.mock.patch("tarfile.open")
+    @unittest.mock.patch("sys.version_info", (3, 12, 0))
+    def test_extract_tar_python_3_12_or_higher(self, mock_open):
+        mock_tar = unittest.mock.MagicMock()
+        mock_open.return_value.__enter__.return_value = mock_tar
+
+        extract_tar(self.test_path, self.test_target_dir)
+
+        mock_open.assert_called_once_with(self.test_path, "r:gz")
+        mock_tar.extractall.assert_called_once_with(self.test_target_dir, filter="data")
+
+    @unittest.mock.patch("tarfile.open")
+    @unittest.mock.patch("sys.version_info", (3, 11, 0))
+    def test_extract_tar_python_older_than_3_12(self, mock_open):
+        mock_tar = unittest.mock.MagicMock()
+        mock_open.return_value.__enter__.return_value = mock_tar
+
+        extract_tar(self.test_path, self.test_target_dir)
+
+        mock_open.assert_called_once_with(self.test_path, "r:gz")
+        mock_tar.extractall.assert_called_once_with(self.test_target_dir)
