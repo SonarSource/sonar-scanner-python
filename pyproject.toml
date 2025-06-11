@@ -10,7 +10,7 @@ keywords = ['sonar', 'sonarqube', 'sonarcloud', 'cleancode']
 license = 'LGPL-3.0-only'
 name = 'pysonar-scanner'
 readme = 'README.md'
-version = "0.2.0"
+version = "0.3.0"
 dynamic = ["dependencies"]
 
 [project.urls]

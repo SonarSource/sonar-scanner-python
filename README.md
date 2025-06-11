@@ -1,9 +1,20 @@
 # pysonar-scanner
+**DEPRECATION NOTICE:**
+
+This application is no longer actively maintained and has been deprecated in favor of `pysonar`. `pysonar` offers a more Pythonic experience and support for newer versions of SonarQube.
+
+**Please migrate to `pysonar` for all future development.**
+
+You can install it via pip:
+`pip install pysonar`
+
+# Former README
+
 A wrapper around SonarScanner CLI, available on PyPI.
 
-# Disclaimer 
+# Disclaimer
 
-This project is currently in beta and APIs are subject to change. 
+This project is currently in beta and APIs are subject to change.
 These changes include configuration parameter names.
 
 # Requirements
