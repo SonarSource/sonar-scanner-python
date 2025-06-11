@@ -18,10 +18,34 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import logging
+import sys
+
+
+class LevelFilter(logging.Filter):
+    def __init__(self, level):
+        super().__init__()
+        self.__level = level
+
+    def filter(self, record):
+        return record.levelno < self.__level
 
 
 def setup() -> None:
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    logger = logging.getLogger()
+
+    non_error_handler = logging.StreamHandler(sys.stdout)
+    non_error_handler.setLevel(logging.DEBUG)
+    non_error_handler.addFilter(LevelFilter(logging.ERROR))
+
+    error_handler = logging.StreamHandler(sys.stderr)
+    error_handler.setLevel(logging.ERROR)
+
+    formatter = logging.Formatter("%(levelname)s: %(message)s")
+    non_error_handler.setFormatter(formatter)
+    error_handler.setFormatter(formatter)
+
+    logger.addHandler(non_error_handler)
+    logger.addHandler(error_handler)
 
 
 def configure_logging_level(verbose: bool) -> None:
