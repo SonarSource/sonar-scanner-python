@@ -56,6 +56,7 @@ SONAR_SCANNER_PROXY_USER: Key = "sonar.scanner.proxyUser"
 SONAR_SCANNER_PROXY_PASSWORD: Key = "sonar.scanner.proxyPassword"
 SONAR_SCANNER_METADATA_FILEPATH: Key = "sonar.scanner.metadataFilePath"
 SONAR_SCANNER_JAVA_OPTS: Key = "sonar.scanner.javaOpts"
+SONAR_SCANNER_JAVA_HEAP_SIZE: Key = "sonar.scanner.javaHeapSize"
 SONAR_PROJECT_BASE_DIR: Key = "sonar.projectBaseDir"
 SONAR_PROJECT_KEY: Key = "sonar.projectKey"
 SONAR_PROJECT_NAME: Key = "sonar.projectName"
@@ -298,6 +299,11 @@ PROPERTIES: list[Property] = [
         name=SONAR_SCANNER_JAVA_OPTS, 
         default_value=None, 
         cli_getter=lambda args: args.sonar_scanner_java_opts
+    ),
+    Property(
+        name=SONAR_SCANNER_JAVA_HEAP_SIZE,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_scanner_java_heap_size
     ),
     Property(
         name=SONAR_SCANNER_METADATA_FILEPATH,

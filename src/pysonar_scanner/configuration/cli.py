@@ -179,6 +179,13 @@ class CliConfigurationLoader:
             type=str,
             help="Arguments provided to the JVM when running the scanner",
         )
+        parser.add_argument(
+            "--sonar-scanner-java-heap-size",
+            "--java-heap-size",
+            "-Dsonar.scanner.javaHeapSize",
+            type=str,
+            help="Arguments specifies the heap size provided to the JVM when running the scanner",
+        )
 
         parser.add_argument(
             "--sonar-scanner-internal-dump-to-file",

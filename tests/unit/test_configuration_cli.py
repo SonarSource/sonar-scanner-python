@@ -38,6 +38,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_SCANNER_INTERNAL_SQ_VERSION,
     SONAR_SCANNER_JAVA_EXE_PATH,
     SONAR_SCANNER_JAVA_OPTS,
+    SONAR_SCANNER_JAVA_HEAP_SIZE,
     SONAR_SCANNER_KEYSTORE_PASSWORD,
     SONAR_SCANNER_KEYSTORE_PATH,
     SONAR_SCANNER_OS,
@@ -125,6 +126,7 @@ EXPECTED_CONFIGURATION = {
     SONAR_SCANNER_SKIP_JRE_PROVISIONING: True,
     SONAR_SCANNER_JAVA_EXE_PATH: "mySonarScannerJavaExePath",
     SONAR_SCANNER_JAVA_OPTS: "mySonarScannerJavaOpts",
+    SONAR_SCANNER_JAVA_HEAP_SIZE: "8000Mb",
     SONAR_SCANNER_METADATA_FILEPATH: "myMetadataFilepath",
     SONAR_REGION: "us",
     SONAR_ORGANIZATION: "mySonarOrganization",
@@ -181,8 +183,16 @@ class TestCliConfigurationLoader(unittest.TestCase):
 
     def test_alternative_cli_args(self):
         alternatives = [
-            ["-t", "myToken", "-v", "--project-key", "myProjectKey"],
-            ["--sonar-token", "myToken", "--sonar-verbose", "--sonar-project-key", "myProjectKey"],
+            ["-t", "myToken", "-v", "--project-key", "myProjectKey", "--sonar-scanner-java-heap-size", "8000Mb"],
+            [
+                "--sonar-token",
+                "myToken",
+                "--sonar-verbose",
+                "--sonar-project-key",
+                "myProjectKey",
+                "--java-heap-size",
+                "8000Mb",
+            ],
         ]
         for alternative in alternatives:
             with patch("sys.argv", ["myscript.py", *alternative]), patch("sys.stderr", new=StringIO()):
@@ -191,6 +201,7 @@ class TestCliConfigurationLoader(unittest.TestCase):
                     SONAR_TOKEN: "myToken",
                     SONAR_VERBOSE: True,
                     SONAR_PROJECT_KEY: "myProjectKey",
+                    SONAR_SCANNER_JAVA_HEAP_SIZE: "8000Mb",
                 }
                 self.assertDictEqual(configuration, expected_configuration)
 
@@ -387,6 +398,8 @@ class TestCliConfigurationLoader(unittest.TestCase):
             "path/to/ruff/reports",
             "--sonar-modules",
             "module1,module2",
+            "--sonar-scanner-java-heap-size",
+            "8000Mb",
         ],
     )
     def test_all_cli_args(self):
@@ -464,6 +477,7 @@ class TestCliConfigurationLoader(unittest.TestCase):
             "-Dsonar.python.flake8.reportPaths=path/to/flake8/reports",
             "-Dsonar.python.ruff.reportPaths=path/to/ruff/reports",
             "-Dsonar.modules=module1,module2",
+            "-Dsonar.scanner.javaHeapSize=8000Mb",
         ],
     )
     def test_jvm_style_cli_args(self):
