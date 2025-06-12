@@ -24,6 +24,14 @@ from pysonar_scanner.configuration import properties
 from pysonar_scanner.exceptions import UnexpectedCliArgument
 
 
+class PyScannerHelpFormatter(argparse.HelpFormatter):
+    recommended_args = {"help", "token", "sonar_project_key"}
+
+    def _format_actions_usage(self, actions, groups):
+        filtered_actions = [action for action in actions if action.dest in PyScannerHelpFormatter.recommended_args]
+        return super()._format_actions_usage(filtered_actions, groups)
+
+
 class CliConfigurationLoader:
 
     @classmethod
@@ -59,6 +67,7 @@ class CliConfigurationLoader:
         parser = argparse.ArgumentParser(
             description="Sonar scanner CLI for Python",
             epilog="Analysis properties not listed here will also be accepted, as long as they start with the -D prefix.",
+            formatter_class=PyScannerHelpFormatter,
         )
 
         parser.add_argument(
