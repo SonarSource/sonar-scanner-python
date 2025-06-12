@@ -29,6 +29,7 @@ import pyfakefs.fake_filesystem_unittest as pyfakefs
 
 from pysonar_scanner import cache
 from pysonar_scanner import scannerengine
+from pysonar_scanner.configuration.properties import SONAR_SCANNER_JAVA_OPTS
 from pysonar_scanner.exceptions import ChecksumException
 from pysonar_scanner.scannerengine import (
     LogLine,
@@ -162,6 +163,122 @@ class TestScannerEngineWithFake(pyfakefs.TestCase):
         execute_mock.assert_called_once_with(
             [str(java_path), "-jar", str(pathlib.Path("/test/scanner-engine.jar"))], expected_std_in
         )
+
+    @patch("pysonar_scanner.scannerengine.CmdExecutor")
+    def test_command_building_with_java_opts_basic(self, execute_mock):
+        config = {
+            "sonar.token": "myToken",
+            "sonar.projectKey": "myProjectKey",
+            SONAR_SCANNER_JAVA_OPTS: "-Xmx1024m",
+        }
+
+        java_path = pathlib.Path("jre/bin/java")
+        jre_resolve_path_mock = Mock()
+        jre_resolve_path_mock.path = java_path
+        scanner_engine_mock = pathlib.Path("/test/scanner-engine.jar")
+
+        scannerengine.ScannerEngine(jre_resolve_path_mock, scanner_engine_mock).run(config)
+
+        called_args = execute_mock.call_args[0]
+        actual_command = called_args[0]
+
+        expected_command = [
+            str(java_path),
+            "-Xmx1024m",
+            "-jar",
+            str(scanner_engine_mock),
+        ]
+        self.assertEqual(actual_command, expected_command)
+
+    @patch("pysonar_scanner.scannerengine.CmdExecutor")
+    def test_command_building_with_java_opts_multiple(self, execute_mock):
+        config = {
+            "sonar.token": "myToken",
+            "sonar.projectKey": "myProjectKey",
+            SONAR_SCANNER_JAVA_OPTS: "-Xmx1024m -XX:MaxPermSize=256m",
+        }
+
+        java_path = pathlib.Path("jre/bin/java")
+        jre_resolve_path_mock = Mock()
+        jre_resolve_path_mock.path = java_path
+        scanner_engine_mock = pathlib.Path("/test/scanner-engine.jar")
+
+        scannerengine.ScannerEngine(jre_resolve_path_mock, scanner_engine_mock).run(config)
+
+        called_args = execute_mock.call_args[0]
+        actual_command = called_args[0]
+
+        expected_command = [
+            str(java_path),
+            "-Xmx1024m",
+            "-XX:MaxPermSize=256m",
+            "-jar",
+            str(scanner_engine_mock),
+        ]
+        self.assertEqual(actual_command, expected_command)
+
+    @patch("pysonar_scanner.scannerengine.CmdExecutor")
+    def test_java_opts_filtered_from_properties(self, execute_mock):
+        config = {
+            "sonar.token": "myToken",
+            "sonar.projectKey": "myProjectKey",
+            SONAR_SCANNER_JAVA_OPTS: "-Xmx1024m",
+            "sonar.host.url": "https://sonar.example.com",
+        }
+
+        java_path = pathlib.Path("jre/bin/java")
+        jre_resolve_path_mock = Mock()
+        jre_resolve_path_mock.path = java_path
+        scanner_engine_mock = pathlib.Path("/test/scanner-engine.jar")
+
+        scannerengine.ScannerEngine(jre_resolve_path_mock, scanner_engine_mock).run(config)
+
+        called_args = execute_mock.call_args[0]
+        actual_properties_str = called_args[1]
+        actual_properties = json.loads(actual_properties_str)
+
+        property_keys = [prop["key"] for prop in actual_properties["scannerProperties"]]
+        self.assertNotIn(SONAR_SCANNER_JAVA_OPTS, property_keys)
+
+    @patch("pysonar_scanner.scannerengine.CmdExecutor")
+    def test_java_opts_edge_cases(self, execute_mock):
+        java_path = pathlib.Path("jre/bin/java")
+        jre_resolve_path_mock = Mock()
+        jre_resolve_path_mock.path = java_path
+        scanner_engine_mock = pathlib.Path("/test/scanner-engine.jar")
+
+        test_cases = [
+            # (java_opts_value, expected_command_length, description)
+            (None, 3, "None java_opts"),
+            ("", 3, "Empty string java_opts"),
+            ("   ", 3, "Whitespace-only java_opts"),
+        ]
+
+        for java_opts_value, expected_length, description in test_cases:
+            with self.subTest(description=description):
+                execute_mock.reset_mock()
+
+                config = {
+                    "sonar.token": "myToken",
+                    "sonar.projectKey": "myProjectKey",
+                }
+                if java_opts_value is not None:
+                    config[SONAR_SCANNER_JAVA_OPTS] = java_opts_value
+
+                scannerengine.ScannerEngine(jre_resolve_path_mock, scanner_engine_mock).run(config)
+
+                called_args = execute_mock.call_args[0]
+                actual_command = called_args[0]
+
+                self.assertEqual(
+                    len(actual_command),
+                    expected_length,
+                    f"Expected command length {expected_length} for {description}",
+                )
+
+                self.assertEqual(actual_command[0], str(java_path))
+                self.assertEqual(actual_command[-2], "-jar")
+                self.assertEqual(actual_command[-1], str(scanner_engine_mock))
 
 
 class TestScannerEngineProvisioner(pyfakefs.TestCase):

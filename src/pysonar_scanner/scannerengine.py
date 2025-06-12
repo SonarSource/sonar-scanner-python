@@ -21,12 +21,14 @@ import json
 import logging
 import pathlib
 from dataclasses import dataclass
+import shlex
 from subprocess import Popen, PIPE
 from threading import Thread
 from typing import IO, Any, Callable, Optional
 
 from pysonar_scanner.api import EngineInfo, SonarQubeApi
 from pysonar_scanner.cache import Cache, CacheFile
+from pysonar_scanner.configuration.properties import SONAR_SCANNER_JAVA_OPTS
 from pysonar_scanner.exceptions import ChecksumException
 from pysonar_scanner.jre import JREResolvedPath
 
@@ -144,19 +146,35 @@ class ScannerEngine:
         self.scanner_engine_path = scanner_engine_path
 
     def run(self, config: dict[str, Any]):
-        cmd = self.__build_command(self.jre_path, self.scanner_engine_path)
+        # Extract Java options if present; they must influence the JVM invocation, not the scanner engine itself
+        java_opts = config.get(SONAR_SCANNER_JAVA_OPTS)
+
+        cmd = self.__build_command(self.jre_path, self.scanner_engine_path, java_opts)
         logging.debug(f"Command: {cmd}")
         properties_str = self.__config_to_json(config)
         logging.debug(f"Properties: {properties_str}")
         return CmdExecutor(cmd, properties_str).execute()
 
-    def __build_command(self, jre_path: JREResolvedPath, scanner_engine_path: pathlib.Path) -> list[str]:
+    def __build_command(
+        self,
+        jre_path: JREResolvedPath,
+        scanner_engine_path: pathlib.Path,
+        java_opts: Optional[str] = None,
+    ) -> list[str]:
         cmd: list[str] = []
         cmd.append(str(jre_path.path))
+
+        if java_opts:
+            cmd.extend(self.__decompose_java_opts(java_opts))
+
         cmd.append("-jar")
         cmd.append(str(scanner_engine_path))
         return cmd
 
     def __config_to_json(self, config: dict[str, Any]) -> str:
-        scanner_properties = [{"key": k, "value": v} for k, v in config.items()]
+        # SONAR_SCANNER_JAVA_OPTS are properties that shouldn't be passed to the engine, only to the JVM
+        scanner_properties = [{"key": k, "value": v} for k, v in config.items() if k != SONAR_SCANNER_JAVA_OPTS]
         return json.dumps({"scannerProperties": scanner_properties})
+
+    def __decompose_java_opts(self, java_opts: str) -> list[str]:
+        return shlex.split(java_opts.strip())
