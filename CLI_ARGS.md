@@ -73,6 +73,7 @@
 | `--sonar-scanner-internal-dump-to-file`, `-Dsonar.scanner.internal.dumpToFile` | Filename where the input to the scanner engine will be dumped. Useful for debugging |
 | `--sonar-scanner-internal-sq-version`, `-Dsonar.scanner.internal.sqVersion` | Emulate the result of the call to get SQ server version.  Useful for debugging with --sonar-scanner-internal-dump-to-file |
 | `--sonar-scanner-java-exe-path`, `-Dsonar.scanner.javaExePath` | If defined, the scanner engine will be run with this JRE |
+| `--sonar-scanner-java-heap-size`, `--java-heap-size`, `-Dsonar.scanner.javaHeapSize` | Arguments specifies the heap size provided to the JVM when running the scanner |
 | `--sonar-scanner-java-opts`, `-Dsonar.scanner.javaOpts` | Arguments provided to the JVM when running the scanner |
 | `--sonar-scanner-keystore-password`, `-Dsonar.scanner.keystorePassword` | Password to access the keystore |
 | `--sonar-scanner-keystore-path`, `-Dsonar.scanner.keystorePath` | Path to the keystore containing the client certificates used by the scanner. By default, <sonar.userHome>/ssl/keystore.p12 |

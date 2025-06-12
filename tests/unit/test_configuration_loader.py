@@ -37,6 +37,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_SCANNER_SKIP_JRE_PROVISIONING,
     SONAR_SCANNER_SOCKET_TIMEOUT,
     SONAR_SCANNER_TRUSTSTORE_PASSWORD,
+    SONAR_SCANNER_JAVA_HEAP_SIZE,
     SONAR_EXCLUSIONS,
     SONAR_SOURCES,
     SONAR_TESTS,
@@ -277,6 +278,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
                 project-name = "Custom Path Project"
                 sources = "src/main"
                 tests= "src/test"
+                scanner.javaHeapSize = "8000Mb"
                 """
             ),
         )
@@ -301,6 +303,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_OS: Os.LINUX.value,
             SONAR_SCANNER_ARCH: Arch.X64.value,
             TOML_PATH: "custom/path",
+            SONAR_SCANNER_JAVA_HEAP_SIZE: "8000Mb",
         }
         self.assertDictEqual(configuration, expected_configuration)
 
