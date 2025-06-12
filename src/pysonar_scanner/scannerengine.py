@@ -172,7 +172,7 @@ class ScannerEngine:
         return cmd
 
     def __config_to_json(self, config: dict[str, Any]) -> str:
-        # Remove sonar.scanner.javaOpts from the properties passed to the engine, as per guidelines
+        # SONAR_SCANNER_JAVA_OPTS are properties that shouldn't be passed to the engine, only to the JVM
         scanner_properties = [{"key": k, "value": v} for k, v in config.items() if k != SONAR_SCANNER_JAVA_OPTS]
         return json.dumps({"scannerProperties": scanner_properties})
 

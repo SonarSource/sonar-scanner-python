@@ -166,7 +166,6 @@ class TestScannerEngineWithFake(pyfakefs.TestCase):
 
     @patch("pysonar_scanner.scannerengine.CmdExecutor")
     def test_command_building_with_java_opts_basic(self, execute_mock):
-        """Test that java_opts are added to the command"""
         config = {
             "sonar.token": "myToken",
             "sonar.projectKey": "myProjectKey",
@@ -193,7 +192,6 @@ class TestScannerEngineWithFake(pyfakefs.TestCase):
 
     @patch("pysonar_scanner.scannerengine.CmdExecutor")
     def test_command_building_with_java_opts_multiple(self, execute_mock):
-        """Test java_opts with multiple space-separated arguments"""
         config = {
             "sonar.token": "myToken",
             "sonar.projectKey": "myProjectKey",
@@ -221,7 +219,6 @@ class TestScannerEngineWithFake(pyfakefs.TestCase):
 
     @patch("pysonar_scanner.scannerengine.CmdExecutor")
     def test_java_opts_filtered_from_properties(self, execute_mock):
-        """Test that SONAR_SCANNER_JAVA_OPTS is excluded from scanner properties JSON"""
         config = {
             "sonar.token": "myToken",
             "sonar.projectKey": "myProjectKey",
@@ -245,7 +242,6 @@ class TestScannerEngineWithFake(pyfakefs.TestCase):
 
     @patch("pysonar_scanner.scannerengine.CmdExecutor")
     def test_java_opts_edge_cases(self, execute_mock):
-        """Test edge cases for java_opts handling"""
         java_path = pathlib.Path("jre/bin/java")
         jre_resolve_path_mock = Mock()
         jre_resolve_path_mock.path = java_path
