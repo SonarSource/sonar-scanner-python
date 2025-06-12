@@ -15,7 +15,7 @@
 | ------ | ----------- |
 | `--sonar-project-base-dir`, `-Dsonar.projectBaseDir` | Directory containing the project to be analyzed. Default is the current directory |
 | `--sonar-project-description`, `-Dsonar.projectDescription` | Description of the project |
-| `--sonar-project-key`, `-Dsonar.projectKey` | Key of the project that usually corresponds to the project name in SonarQube |
+| `--sonar-project-key`, `--project-key`, `-Dsonar.projectKey` | Key of the project that usually corresponds to the project name in SonarQube |
 | `--sonar-project-name`, `-Dsonar.projectName` | Name of the project in SonarQube |
 | `--sonar-project-version`, `-Dsonar.projectVersion` | Version of the project |
 | `--sonar-sources`, `-Dsonar.sources` | The analysis scope for main source code (non-test code) in the project |

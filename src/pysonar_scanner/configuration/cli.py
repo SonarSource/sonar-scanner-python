@@ -71,6 +71,7 @@ class CliConfigurationLoader:
         )
         parser.add_argument(
             "--sonar-project-key",
+            "--project-key",
             "-Dsonar.projectKey",
             type=str,
             help="Key of the project that usually corresponds to the project name in SonarQube",

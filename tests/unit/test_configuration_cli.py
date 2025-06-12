@@ -181,7 +181,7 @@ class TestCliConfigurationLoader(unittest.TestCase):
 
     def test_alternative_cli_args(self):
         alternatives = [
-            ["-t", "myToken", "-v", "--sonar-project-key", "myProjectKey"],
+            ["-t", "myToken", "-v", "--project-key", "myProjectKey"],
             ["--sonar-token", "myToken", "--sonar-verbose", "--sonar-project-key", "myProjectKey"],
         ]
         for alternative in alternatives:
