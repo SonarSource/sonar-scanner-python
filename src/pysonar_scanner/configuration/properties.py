@@ -17,8 +17,8 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-import time
 import argparse
+import time
 from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
@@ -101,6 +101,9 @@ SONAR_PYTHON_FLAKE8_REPORT_PATHS = "sonar.python.flake8.reportPaths"
 SONAR_PYTHON_RUFF_REPORT_PATHS = "sonar.python.ruff.reportPaths"
 TOML_PATH: Key = "toml-path"
 
+# ============ DEPRECATED ==============
+SONAR_SCANNER_OPTS = "sonar.scanner.opts"
+
 
 @dataclass
 class Property:
@@ -112,6 +115,10 @@ class Property:
 
     cli_getter: Optional[Callable[[argparse.Namespace], Any]] = None
     """function to get the value from the CLI arguments namespace. If None, the property is not settable via CLI"""
+
+    deprecated: bool = False
+
+    deprecation_message: Optional[str] = None
 
     def python_name(self) -> str:
         """Convert Java-style camel case name to Python-style kebab-case name."""
@@ -524,6 +531,13 @@ PROPERTIES: list[Property] = [
         name=SONAR_MODULES,
         default_value=None,
         cli_getter=lambda args: args.sonar_modules
+    ),
+    Property(
+        name=SONAR_SCANNER_OPTS,
+        default_value=None,
+        cli_getter=None,
+        deprecated=True,
+        deprecation_message="SONAR_SCANNER_OPTS is deprecated, please use SONAR_SCANNER_JAVA_OPTS instead."
     )
 ]
 # fmt: on
