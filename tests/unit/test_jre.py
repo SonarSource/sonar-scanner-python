@@ -20,11 +20,11 @@
 import io
 import pathlib
 import tarfile
+import tempfile
 from typing import cast
 from unittest.mock import Mock, patch
 from typing_extensions import TypedDict
 import unittest
-import pyfakefs.fake_filesystem_unittest as pyfakefs
 
 from pysonar_scanner import cache, utils
 from pysonar_scanner.api import JRE
@@ -46,11 +46,21 @@ from tests.unit import sq_api_utils
 import zipfile
 
 
+
 @patch("pysonar_scanner.utils.get_os", return_value=Os.LINUX)
 @patch("pysonar_scanner.utils.get_arch", return_value=Arch.X64)
-class TestJREProvisioner(pyfakefs.TestCase):
+class TestJREProvisioner(unittest.TestCase):
     def setUp(self):
-        self.setUpPyfakefs(allow_root_user=False)
+        # Temporary directory representing the user home so that Cache uses it.
+        self._tmp_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp_dir.cleanup)
+
+        # Patch Path.home() so that cache.get_cache({}) operates inside our temp dir.
+        patcher_home = patch.object(
+            pathlib.Path, "home", return_value=pathlib.Path(self._tmp_dir.name)
+        )
+        self.addCleanup(patcher_home.stop)
+        patcher_home.start()
 
         self.cache = cache.get_cache({})
         self.api = sq_api_utils.get_sq_server()
@@ -58,7 +68,7 @@ class TestJREProvisioner(pyfakefs.TestCase):
         self.__setup_zip_file()
         self.__setup_tar_file()
 
-        self.other_jre = self.other_jre = JRE(
+        self.other_jre = JRE(
             id="2",
             filename="fake_jre.zip",
             sha256="fakechecksum",

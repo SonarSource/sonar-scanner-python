@@ -19,8 +19,7 @@
 #
 import pathlib
 from unittest.mock import patch, Mock
-
-from pyfakefs import fake_filesystem_unittest as pyfakefs
+import unittest
 
 from pysonar_scanner.__main__ import scan, check_version, create_jre
 from pysonar_scanner.api import SQVersion, SonarQubeApi
@@ -43,7 +42,7 @@ from pysonar_scanner.scannerengine import ScannerEngine, ScannerEngineProvisione
 from tests.unit import sq_api_utils
 
 
-class TestMain(pyfakefs.TestCase):
+class TestMain(unittest.TestCase):
 
     @patch.object(pathlib.Path, "home", return_value=pathlib.Path("home/user"))
     @patch.object(

@@ -18,9 +18,11 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import os
-from unittest.mock import MagicMock, patch
+import tempfile
+import pathlib
+from unittest.mock import patch
 
-import pyfakefs.fake_filesystem_unittest as pyfakefs
+import unittest
 
 from pysonar_scanner.configuration import configuration_loader
 from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader
@@ -53,24 +55,38 @@ from pysonar_scanner.configuration.properties import (
     SONAR_SCANNER_OS,
 )
 from pysonar_scanner.utils import Arch, Os
-from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader, SONAR_PROJECT_BASE_DIR
+from pysonar_scanner.configuration.configuration_loader import SONAR_PROJECT_BASE_DIR
 from pysonar_scanner.exceptions import MissingPropertyException
+from tests.helpers.fs_helpers import TempFS
 
 
 # Mock utils.get_os and utils.get_arch at the module level
 @patch("pysonar_scanner.utils.get_arch", return_value=Arch.X64)
 @patch("pysonar_scanner.utils.get_os", return_value=Os.LINUX)
-class TestConfigurationLoader(pyfakefs.TestCase):
+class TestConfigurationLoader(unittest.TestCase):
     def setUp(self):
         self.maxDiff = None
-        self.setUpPyfakefs()
+
+        # Isolated filesystem root
+        self._tmp_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp_dir.cleanup)
+
+        # Helper fs wrapper for create_file/create_dir compatibility
+        self.fs = TempFS(pathlib.Path(self._tmp_dir.name))
+
+        # Ensure tests start in that directory
+        self._orig_cwd = os.getcwd()
+        os.chdir(self._tmp_dir.name)
+        self.addCleanup(lambda: os.chdir(self._orig_cwd))
+
+        # Clear env vars for each test
         self.env_patcher = patch.dict("os.environ", {}, clear=True)
         self.env_patcher.start()
 
     @patch("sys.argv", ["myscript.py", "--token", "myToken", "--sonar-project-key", "myProjectKey"])
     def test_defaults(self, mock_get_os, mock_get_arch):
-        custom_dir = "/my_analysis_directory"
-        self.fs.create_dir(custom_dir)
+        custom_dir = pathlib.Path(self._tmp_dir.name) / "my_analysis_directory"
+        custom_dir.mkdir(parents=True)
         os.chdir(custom_dir)
         configuration = ConfigurationLoader.load()
         expected_configuration = {

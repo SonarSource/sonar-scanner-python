@@ -18,16 +18,27 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 from pathlib import Path
-from unittest import mock
-from unittest.mock import MagicMock, patch
+import os
+import tempfile
+import unittest
+from unittest.mock import patch
 
-from pyfakefs.fake_filesystem_unittest import TestCase
+from tests.helpers.fs_helpers import TempFS
 from pysonar_scanner.configuration.pyproject_toml import TomlConfigurationLoader
 
 
-class TestTomlFile(TestCase):
+class TestTomlFile(unittest.TestCase):
     def setUp(self):
-        self.setUpPyfakefs()
+        # Temporary working directory and helper fs.
+        self._tmp_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp_dir.cleanup)
+
+        # Switch cwd because loader relies on Path(".") calls.
+        self._orig_cwd = os.getcwd()
+        os.chdir(self._tmp_dir.name)
+        self.addCleanup(lambda: os.chdir(self._orig_cwd))
+
+        self.fs = TempFS(Path(self._tmp_dir.name))
 
     def test_load_toml_file_with_sonarqube_config(self):
         self.fs.create_file(
@@ -99,7 +110,7 @@ class TestTomlFile(TestCase):
             [tool.black]
             line-length = 88
             target-version = ["py38"]
-            
+
             [tool.isort]
             profile = "black"
             """,
@@ -140,7 +151,7 @@ class TestTomlFile(TestCase):
             contents="""
             [tool.sonar]
             projectKey = "my-project"
-            
+
             [tool.sonar.python]
             version = "3.9,3.10,3.11,3.12,3.13"
             coverage.reportPaths = "coverage.xml"

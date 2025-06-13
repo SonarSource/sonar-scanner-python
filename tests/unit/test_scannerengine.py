@@ -20,12 +20,12 @@
 import json
 import logging
 import pathlib
+import tempfile
 import unittest
 from subprocess import PIPE
-from unittest.mock import Mock
-from unittest.mock import patch, MagicMock
+from unittest.mock import Mock, patch, MagicMock
 
-import pyfakefs.fake_filesystem_unittest as pyfakefs
+from tests.helpers.fs_helpers import TempFS
 
 from pysonar_scanner import cache
 from pysonar_scanner import scannerengine
@@ -128,9 +128,8 @@ class TestCmdExecutor(unittest.TestCase):
             self.assertEqual(logs.output, ["WARNING:root:info2", "WARNING:root:a stacktrace"])
 
 
-class TestScannerEngineWithFake(pyfakefs.TestCase):
-    def setUp(self):
-        self.setUpPyfakefs()
+class TestScannerEngineWithFake(unittest.TestCase):
+    """These tests only rely on mocking CmdExecutor; no real FS required."""
 
     @patch("pysonar_scanner.scannerengine.CmdExecutor")
     def test_command_building(self, execute_mock):
@@ -281,15 +280,25 @@ class TestScannerEngineWithFake(pyfakefs.TestCase):
                 self.assertEqual(actual_command[-1], str(scanner_engine_mock))
 
 
-class TestScannerEngineProvisioner(pyfakefs.TestCase):
+class TestScannerEngineProvisioner(unittest.TestCase):
     def setUp(self):
-        self.setUpPyfakefs(allow_root_user=False)
+        # Real temporary directory for cache folder.
+        self._tmp_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp_dir.cleanup)
+
+        self.fs = TempFS(pathlib.Path(self._tmp_dir.name))
 
         self.api = sq_api_utils.get_sq_server()
-        self.cache = cache.Cache.create_cache(pathlib.Path("/some-folder/cache-folder"))
+
+        # Create a cache folder inside the temporary directory.
+        self.cache_folder = (
+            pathlib.Path(self._tmp_dir.name) / "some-folder" / "cache-folder"
+        )
+        self.cache = cache.Cache.create_cache(self.cache_folder)
+
         self.test_file_content = b"test content"
         self.test_file_checksum = "6ae8a75555209fd6c44157c0aed8016e763ff435a19cf186f76863140143ff72"
-        self.test_file_path = pathlib.Path("/some-folder/cache-folder/scanner-engine.jar")
+        self.test_file_path = self.cache_folder / "scanner-engine.jar"
 
     def test_happy_path(self):
         with sq_api_utils.sq_api_mocker() as mocker:
@@ -320,7 +329,9 @@ class TestScannerEngineProvisioner(pyfakefs.TestCase):
             )
             engine_download_rsps = mocker.mock_analysis_engine_download(status=500)
 
-            self.fs.create_file(self.test_file_path, contents=self.test_file_content)
+            # Pre-create a cached scanner-engine file so that the provisioner skips download.
+            self.test_file_path.parent.mkdir(parents=True, exist_ok=True)
+            self.test_file_path.write_bytes(self.test_file_content)
 
             ScannerEngineProvisioner(self.api, self.cache).provision()
 
@@ -356,6 +367,7 @@ class TestScannerEngineProvisioner(pyfakefs.TestCase):
             mocker.mock_analysis_engine(filename="scanner-engine.jar", sha256=self.test_file_checksum)
             mocker.mock_analysis_engine_download(body=self.test_file_content)
 
-            self.fs.chmod("/some-folder/cache-folder", mode=0o000, force_unix_mode=True)
+            # Simulate a permission error by making the cache folder read-only.
+            self.cache_folder.chmod(0o000)
 
             ScannerEngineProvisioner(self.api, self.cache).provision()

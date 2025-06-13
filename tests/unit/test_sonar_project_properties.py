@@ -18,14 +18,24 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 from pathlib import Path
+import os
+import tempfile
+import unittest
 
-import pyfakefs.fake_filesystem_unittest as pyfakefs
+from tests.helpers.fs_helpers import TempFS
 from pysonar_scanner.configuration import sonar_project_properties
 
 
-class TestPropertiesFile(pyfakefs.TestCase):
+class TestPropertiesFile(unittest.TestCase):
     def setUp(self):
-        self.setUpPyfakefs()
+        self._tmp_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp_dir.cleanup)
+
+        self._orig_cwd = os.getcwd()
+        os.chdir(self._tmp_dir.name)
+        self.addCleanup(lambda: os.chdir(self._orig_cwd))
+
+        self.fs = TempFS(Path(self._tmp_dir.name))
 
     def test_load_sonar_project_properties(self):
         self.fs.create_file(

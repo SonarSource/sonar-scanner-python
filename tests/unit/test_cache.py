@@ -18,12 +18,13 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import pathlib
+import tempfile
 import unittest
-import pyfakefs.fake_filesystem_unittest as pyfakefs
 
 from pysonar_scanner.cache import Cache, CacheFile
 import pysonar_scanner.cache as cache
 from pysonar_scanner.configuration.properties import SONAR_USER_HOME
+from tests.helpers.fs_helpers import TempFS
 
 
 class TestCacheFile(unittest.TestCase):
@@ -31,25 +32,31 @@ class TestCacheFile(unittest.TestCase):
         self.assertFalse(CacheFile(pathlib.Path("/tmp/none-existing-file"), checksum="123").is_valid())
 
 
-class TestCache(pyfakefs.TestCase):
+class TestCache(unittest.TestCase):
     def setUp(self):
-        self.setUpPyfakefs()
+        # Create a real, isolated temporary directory for each test run.
+        self._tmp_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp_dir.cleanup)
+
+        # Helper that mimics the subset of pyfakefs API used in these tests.
+        self.fs = TempFS(pathlib.Path(self._tmp_dir.name))
+
+        # Convenience root path for cache folder used in tests below.
+        self.cache_root = pathlib.Path(self._tmp_dir.name) / "folder1" / "folder2"
 
     def test_if_cache_folder_is_created(self):
-        cache_path = pathlib.Path("/folder1/folder2/")
-
-        cache = Cache.create_cache(cache_path)
-        self.assertTrue(self.fs.exists(cache_path))
-        self.assertEqual(cache.cache_folder, cache_path)
+        cache = Cache.create_cache(self.cache_root)
+        self.assertTrue(self.cache_root.exists())
+        self.assertEqual(cache.cache_folder, self.cache_root)
 
     def test_cache_constructor(self):
         with self.assertRaises(FileNotFoundError):
-            Cache(pathlib.Path("/folder1/folder2/"))
+            Cache(self.cache_root)
 
     def test_get_file(self):
-        cache = Cache.create_cache(pathlib.Path("/folder1/folder2/"))
+        cache = Cache.create_cache(self.cache_root)
         cache_file = cache.get_file("test", "123")
-        self.assertEqual(cache_file.filepath, pathlib.Path("/folder1/folder2/test"))
+        self.assertEqual(cache_file.filepath, self.cache_root / "test")
         self.assertEqual(cache_file.checksum, "123")
 
     def test_get_default(self):
@@ -59,7 +66,7 @@ class TestCache(pyfakefs.TestCase):
         self.assertEqual(cache.get_cache({SONAR_USER_HOME: "my/home"}).cache_folder, pathlib.Path("my/home") / "cache")
 
     def test_exists(self):
-        cache = Cache.create_cache(pathlib.Path("/folder1/folder2/"))
+        cache = Cache.create_cache(self.cache_root)
         cache_file = cache.get_file("test", "123")
         self.assertFalse(cache_file.exists())
 
