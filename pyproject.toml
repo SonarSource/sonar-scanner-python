@@ -30,7 +30,7 @@ relative_files = true
 [tool.poetry.dependencies]
 python = '>=3.9'
 tomli = '2.2.1'
-requests = "2.32.3"
+requests = "2.32.4"
 responses = "0.25.6"
 pyfakefs = "5.8.0"
 jproperties = "2.1.2"
