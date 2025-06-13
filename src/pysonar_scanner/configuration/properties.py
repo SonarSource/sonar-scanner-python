@@ -93,16 +93,16 @@ SONAR_SOURCE_ENCODING: Key = "sonar.sourceEncoding"
 SONAR_WORKING_DIRECTORY: Key = "sonar.working.directory"
 SONAR_SCM_FORCE_RELOAD_ALL: Key = "sonar.scm.forceReloadAll"
 SONAR_MODULES: Key = "sonar.modules"
-SONAR_PYTHON_XUNIT_REPORT_PATH = "sonar.python.xunit.reportPath"
-SONAR_PYTHON_XUNIT_SKIP_DETAILS = "sonar.python.xunit.skipDetails"
-SONAR_PYTHON_MYPY_REPORT_PATHS = "sonar.python.mypy.reportPaths"
-SONAR_PYTHON_BANDIT_REPORT_PATHS = "sonar.python.bandit.reportPaths"
-SONAR_PYTHON_FLAKE8_REPORT_PATHS = "sonar.python.flake8.reportPaths"
-SONAR_PYTHON_RUFF_REPORT_PATHS = "sonar.python.ruff.reportPaths"
+SONAR_PYTHON_XUNIT_REPORT_PATH: Key = "sonar.python.xunit.reportPath"
+SONAR_PYTHON_XUNIT_SKIP_DETAILS: Key = "sonar.python.xunit.skipDetails"
+SONAR_PYTHON_MYPY_REPORT_PATHS: Key = "sonar.python.mypy.reportPaths"
+SONAR_PYTHON_BANDIT_REPORT_PATHS: Key = "sonar.python.bandit.reportPaths"
+SONAR_PYTHON_FLAKE8_REPORT_PATHS: Key = "sonar.python.flake8.reportPaths"
+SONAR_PYTHON_RUFF_REPORT_PATHS: Key = "sonar.python.ruff.reportPaths"
 TOML_PATH: Key = "toml-path"
 
 # ============ DEPRECATED ==============
-SONAR_SCANNER_OPTS = "sonar.scanner.opts"
+SONAR_SCANNER_OPTS: Key = "sonar.scanner.opts"
 
 
 @dataclass
@@ -115,8 +115,6 @@ class Property:
 
     cli_getter: Optional[Callable[[argparse.Namespace], Any]] = None
     """function to get the value from the CLI arguments namespace. If None, the property is not settable via CLI"""
-
-    deprecated: bool = False
 
     deprecation_message: Optional[str] = None
 
@@ -536,7 +534,6 @@ PROPERTIES: list[Property] = [
         name=SONAR_SCANNER_OPTS,
         default_value=None,
         cli_getter=None,
-        deprecated=True,
         deprecation_message="SONAR_SCANNER_OPTS is deprecated, please use SONAR_SCANNER_JAVA_OPTS instead."
     )
 ]
