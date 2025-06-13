@@ -31,6 +31,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_TOKEN,
     SONAR_USER_HOME,
     SONAR_PROJECT_KEY,
+    SONAR_SCANNER_OPTS,
 )
 
 
@@ -134,3 +135,27 @@ class TestEnvironmentVariables(unittest.TestCase):
             }
             self.assertEqual(len(properties), 3)
             self.assertDictEqual(properties, expected_properties)
+
+    @patch("pysonar_scanner.configuration.environment_variables.logging")
+    def test_SONAR_SCANNER_OPTS(self, mock_logging):
+        env = {
+            "SONAR_TOKEN": "my-token",
+            "SONAR_HOST_URL": "https://sonarqube.example.com",
+            "SONAR_USER_HOME": "/custom/sonar/home",
+            "SONAR_SCANNER_OPTS": "-Xmx1024m -XX:MaxPermSize=256m",
+            "SONAR_REGION": "us",
+        }
+        with patch.dict("os.environ", env, clear=True):
+            properties = environment_variables.load()
+            expected_properties = {
+                SONAR_TOKEN: "my-token",
+                SONAR_HOST_URL: "https://sonarqube.example.com",
+                SONAR_USER_HOME: "/custom/sonar/home",
+                SONAR_SCANNER_OPTS: "-Xmx1024m -XX:MaxPermSize=256m",
+                SONAR_REGION: "us",
+            }
+            self.assertEqual(len(properties), 5)
+            self.assertDictEqual(properties, expected_properties)
+            mock_logging.warning.assert_called_once_with(
+                "SONAR_SCANNER_OPTS is deprecated, please use SONAR_SCANNER_JAVA_OPTS instead.",
+            )

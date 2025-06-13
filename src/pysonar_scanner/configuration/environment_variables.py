@@ -63,4 +63,6 @@ def load_properties_env_variables():
         env_var_name = prop.env_variable_name()
         if env_var_name in os.environ:
             properties[prop.name] = os.environ[env_var_name]
+            if prop.deprecation_message:
+                logging.warning(prop.deprecation_message)
     return properties

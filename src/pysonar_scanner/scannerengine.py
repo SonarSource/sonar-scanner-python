@@ -20,15 +20,18 @@
 import json
 import logging
 import pathlib
-from dataclasses import dataclass
 import shlex
-from subprocess import Popen, PIPE
+from dataclasses import dataclass
+from subprocess import PIPE, Popen
 from threading import Thread
 from typing import IO, Any, Callable, Optional
 
 from pysonar_scanner.api import EngineInfo, SonarQubeApi
 from pysonar_scanner.cache import Cache, CacheFile
-from pysonar_scanner.configuration.properties import SONAR_SCANNER_JAVA_OPTS
+from pysonar_scanner.configuration.properties import (
+    SONAR_SCANNER_JAVA_OPTS,
+    SONAR_SCANNER_OPTS,
+)
 from pysonar_scanner.exceptions import ChecksumException
 from pysonar_scanner.jre import JREResolvedPath
 
@@ -148,6 +151,7 @@ class ScannerEngine:
     def run(self, config: dict[str, Any]):
         # Extract Java options if present; they must influence the JVM invocation, not the scanner engine itself
         java_opts = config.get(SONAR_SCANNER_JAVA_OPTS)
+        java_opts = config.get(SONAR_SCANNER_OPTS) if not java_opts else java_opts
 
         cmd = self.__build_command(self.jre_path, self.scanner_engine_path, java_opts)
         logging.debug(f"Command: {cmd}")
@@ -173,7 +177,11 @@ class ScannerEngine:
 
     def __config_to_json(self, config: dict[str, Any]) -> str:
         # SONAR_SCANNER_JAVA_OPTS are properties that shouldn't be passed to the engine, only to the JVM
-        scanner_properties = [{"key": k, "value": v} for k, v in config.items() if k != SONAR_SCANNER_JAVA_OPTS]
+        scanner_properties = [
+            {"key": k, "value": v}
+            for k, v in config.items()
+            if k != SONAR_SCANNER_JAVA_OPTS and k != SONAR_SCANNER_OPTS
+        ]
         return json.dumps({"scannerProperties": scanner_properties})
 
     def __decompose_java_opts(self, java_opts: str) -> list[str]:

@@ -22,14 +22,15 @@ import logging
 import pathlib
 import unittest
 from subprocess import PIPE
-from unittest.mock import Mock
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
 import pyfakefs.fake_filesystem_unittest as pyfakefs
 
-from pysonar_scanner import cache
-from pysonar_scanner import scannerengine
-from pysonar_scanner.configuration.properties import SONAR_SCANNER_JAVA_OPTS
+from pysonar_scanner import cache, scannerengine
+from pysonar_scanner.configuration.properties import (
+    SONAR_SCANNER_JAVA_OPTS,
+    SONAR_SCANNER_OPTS,
+)
 from pysonar_scanner.exceptions import ChecksumException
 from pysonar_scanner.scannerengine import (
     LogLine,
@@ -48,7 +49,10 @@ class TestLogLine(unittest.TestCase):
     def test_with_stacktrace(self):
         line = '{"level":"INFO","message":"a message", "stacktrace":"a stacktrace"}'
         log_line = scannerengine.parse_log_line(line)
-        self.assertEqual(log_line, LogLine(level="INFO", message="a message", stacktrace="a stacktrace"))
+        self.assertEqual(
+            log_line,
+            LogLine(level="INFO", message="a message", stacktrace="a stacktrace"),
+        )
 
     def test_invalid_json(self):
         line = '"level":"INFO","message":"a message", "stacktrace":"a stacktrace"}'
@@ -62,7 +66,6 @@ class TestLogLine(unittest.TestCase):
 
 
 class TestCmdExecutor(unittest.TestCase):
-
     @patch("pysonar_scanner.scannerengine.Popen")
     def test_execute_successful(self, mock_popen):
         mock_process = MagicMock()
@@ -119,11 +122,17 @@ class TestCmdExecutor(unittest.TestCase):
         self.assertEqual(LogLine(level="UNKNOWN", message="").get_logging_level(), logging.INFO)
 
     def test_default_log_line_listener(self):
-        with self.subTest("log line without stacktrace"), self.assertLogs(level="INFO") as logs:
+        with (
+            self.subTest("log line without stacktrace"),
+            self.assertLogs(level="INFO") as logs,
+        ):
             scannerengine.default_log_line_listener(LogLine(level="INFO", message="info1", stacktrace=None))
             self.assertEqual(logs.output, ["INFO:root:info1"])
 
-        with self.subTest("log line with stacktrace"), self.assertLogs(level="INFO") as logs:
+        with (
+            self.subTest("log line with stacktrace"),
+            self.assertLogs(level="INFO") as logs,
+        ):
             default_log_line_listener(LogLine(level="WARN", message="info2", stacktrace="a stacktrace"))
             self.assertEqual(logs.output, ["WARNING:root:info2", "WARNING:root:a stacktrace"])
 
@@ -161,7 +170,8 @@ class TestScannerEngineWithFake(pyfakefs.TestCase):
         scannerengine.ScannerEngine(jre_resolve_path_mock, scanner_engine_mock).run(config)
 
         execute_mock.assert_called_once_with(
-            [str(java_path), "-jar", str(pathlib.Path("/test/scanner-engine.jar"))], expected_std_in
+            [str(java_path), "-jar", str(pathlib.Path("/test/scanner-engine.jar"))],
+            expected_std_in,
         )
 
     @patch("pysonar_scanner.scannerengine.CmdExecutor")
@@ -280,6 +290,61 @@ class TestScannerEngineWithFake(pyfakefs.TestCase):
                 self.assertEqual(actual_command[-2], "-jar")
                 self.assertEqual(actual_command[-1], str(scanner_engine_mock))
 
+    @patch("pysonar_scanner.scannerengine.CmdExecutor")
+    def test_command_building_with_scanner_opts(self, execute_mock):
+        config = {
+            "sonar.token": "myToken",
+            "sonar.projectKey": "myProjectKey",
+            SONAR_SCANNER_OPTS: "-Xmx1024m -XX:MaxPermSize=256m",
+        }
+
+        java_path = pathlib.Path("jre/bin/java")
+        jre_resolve_path_mock = Mock()
+        jre_resolve_path_mock.path = java_path
+        scanner_engine_mock = pathlib.Path("/test/scanner-engine.jar")
+
+        scannerengine.ScannerEngine(jre_resolve_path_mock, scanner_engine_mock).run(config)
+
+        called_args = execute_mock.call_args[0]
+        actual_command = called_args[0]
+
+        expected_command = [
+            str(java_path),
+            "-Xmx1024m",
+            "-XX:MaxPermSize=256m",
+            "-jar",
+            str(scanner_engine_mock),
+        ]
+        self.assertEqual(actual_command, expected_command)
+
+    @patch("pysonar_scanner.scannerengine.CmdExecutor")
+    def test_command_ignore_scanner_opts_for_java_opts(self, execute_mock):
+        config = {
+            "sonar.token": "myToken",
+            "sonar.projectKey": "myProjectKey",
+            SONAR_SCANNER_OPTS: "-Xmx512m -XX:MaxPermSize=128m",
+            SONAR_SCANNER_JAVA_OPTS: "-Xmx1024m -XX:MaxPermSize=256m",
+        }
+
+        java_path = pathlib.Path("jre/bin/java")
+        jre_resolve_path_mock = Mock()
+        jre_resolve_path_mock.path = java_path
+        scanner_engine_mock = pathlib.Path("/test/scanner-engine.jar")
+
+        scannerengine.ScannerEngine(jre_resolve_path_mock, scanner_engine_mock).run(config)
+
+        called_args = execute_mock.call_args[0]
+        actual_command = called_args[0]
+
+        expected_command = [
+            str(java_path),
+            "-Xmx1024m",
+            "-XX:MaxPermSize=256m",
+            "-jar",
+            str(scanner_engine_mock),
+        ]
+        self.assertEqual(actual_command, expected_command)
+
 
 class TestScannerEngineProvisioner(pyfakefs.TestCase):
     def setUp(self):
@@ -304,7 +369,9 @@ class TestScannerEngineProvisioner(pyfakefs.TestCase):
     def test_happy_path_with_download_url(self):
         with sq_api_utils.sq_api_mocker() as mocker:
             mocker.mock_analysis_engine(
-                filename="scanner-engine.jar", sha256=self.test_file_checksum, download_url="http://example.com"
+                filename="scanner-engine.jar",
+                sha256=self.test_file_checksum,
+                download_url="http://example.com",
             )
             mocker.mock_download_url(url="http://example.com", body=self.test_file_content)
 
@@ -331,7 +398,10 @@ class TestScannerEngineProvisioner(pyfakefs.TestCase):
             self.assertEqual(engine_download_rsps.call_count, 0)
 
     def test_checksum_is_invalid(self):
-        with self.assertRaises(ChecksumException), sq_api_utils.sq_api_mocker() as mocker:
+        with (
+            self.assertRaises(ChecksumException),
+            sq_api_utils.sq_api_mocker() as mocker,
+        ):
             mocker.mock_analysis_engine(filename="scanner-engine.jar", sha256="invalid-checksum")
             mocker.mock_analysis_engine_download(body=self.test_file_content)
 
