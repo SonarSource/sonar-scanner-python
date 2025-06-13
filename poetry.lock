@@ -690,14 +690,14 @@ reference = "jfrog-server"
 
 [[package]]
 name = "pytest-docker"
-version = "3.2.0"
+version = "3.2.2"
 description = "Simple pytest fixtures for Docker and Docker Compose based tests"
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
 files = [
-    {file = "pytest_docker-3.2.0-py3-none-any.whl", hash = "sha256:3e266db66887aa3611b2dfd86fb2a3b42f25f3a29d3f14b6e57a831e93a64f60"},
-    {file = "pytest_docker-3.2.0.tar.gz", hash = "sha256:3d6537564e1582cab39e6cc3d6f3d931e92398af62f8313fc826e436f8233e21"},
+    {file = "pytest_docker-3.2.2-py3-none-any.whl", hash = "sha256:2926033d48a10de611070fce17f6e67b9e81af2d8ccc59debbbf39872b8ebef9"},
+    {file = "pytest_docker-3.2.2.tar.gz", hash = "sha256:58ce79f3173209634bfff8ccaed2ce5593463d5272325c912e1b52a53154f452"},
 ]
 
 [package.dependencies]
@@ -1090,4 +1090,4 @@ reference = "jfrog-server"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9"
-content-hash = "17f83450a5d382352f578401df2db2f3f4c9e61ee392d4bafcc5508c372e9c21"
+content-hash = "5b1ff646372b44719c5f2f20fc2c2863cdc514610bcf0a5939de9a84b81f9ab4"
