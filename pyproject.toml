@@ -29,11 +29,11 @@ relative_files = true
 
 [tool.poetry.dependencies]
 python = '>=3.9'
-tomli = '^2.2.1'
-requests = "^2.32.3"
-responses = "^0.25.6"
-pyfakefs = "^5.7.4"
-jproperties = "^2.1.2"
+tomli = '2.2.1'
+requests = "2.32.3"
+responses = "0.25.6"
+pyfakefs = "^5.8.0"
+jproperties = "2.1.2"
 
 [tool.poetry.group]
 [tool.poetry.group.dev]
