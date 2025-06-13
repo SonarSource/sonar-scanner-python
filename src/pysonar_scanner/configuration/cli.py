@@ -170,7 +170,7 @@ class CliConfigurationLoader:
             "--sonar-modules", "-Dsonar.modules", type=str, help="Comma-delimited list of modules to analyze"
         )
 
-        server_connection_group = parser.add_argument_group("SonarQube Server Connection")
+        server_connection_group = parser.add_argument_group("SonarQube Connection")
         server_connection_group.add_argument(
             "--sonar-host-url",
             "-Dsonar.host.url",
@@ -342,6 +342,12 @@ class CliConfigurationLoader:
             type=bool,
             help="Equivalent to --sonar-scm-force-reload-all",
         )
+        scanner_behavior_group.add_argument(
+            "--sonar-python-skip-unchanged",
+            type=bool,
+            action=argparse.BooleanOptionalAction,
+            help="Override the SonarQube configuration of skipping or not the analysis of unchanged Python files",
+        )
 
         jvm_group = parser.add_argument_group("JVM Settings")
         jvm_group.add_argument(
@@ -448,7 +454,7 @@ class CliConfigurationLoader:
             help="Overrides the revision, for instance, the Git sha1, displayed in analysis results",
         )
 
-        reports_group = parser.add_argument_group("3rd party report arguments")
+        reports_group = parser.add_argument_group("3rd party reports arguments")
         reports_group.add_argument(
             "--sonar-python-pylint-report-path",
             "--pylint-report-path",
@@ -462,12 +468,6 @@ class CliConfigurationLoader:
             "-Dsonar.python.coverage.reportPaths",
             type=str,
             help="Comma-delimited list of paths to coverage reports in the Cobertura XML format.",
-        )
-        reports_group.add_argument(
-            "--sonar-python-skip-unchanged",
-            type=bool,
-            action=argparse.BooleanOptionalAction,
-            help="Override the SonarQube configuration of skipping or not the analysis of unchanged Python files",
         )
         reports_group.add_argument(
             "-Dsonar.python.skipUnchanged",
