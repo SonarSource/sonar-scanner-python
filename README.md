@@ -132,7 +132,7 @@ sonar.projectKey=my:project
 
 ### Through environment variables
 
-It is also possible to define configure the scanner through environment variables:
+It is also possible to configure the scanner through environment variables:
 
 ```
 $ export SONAR_HOST_URL="http://localhost:9000"
@@ -151,6 +151,6 @@ pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://
 
 # License
 
-Copyright 2011-2024 SonarSource.
+Copyright 2011-2025 SonarSource.
 
 Licensed under the [GNU Lesser General Public License, Version 3.0](http://www.gnu.org/licenses/lgpl.txt)
