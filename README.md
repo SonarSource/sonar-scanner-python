@@ -143,7 +143,7 @@ See the __SonarScanner__ [documentation](https://docs.sonarsource.com/sonarqube-
 
 # Feedback
 
-For feedback and issues regarding `pysonar`, do not hesitate to contact us through our [Community](https://community.sonarsource.com/tag/python).
+For feedback and issues regarding `pysonar`, do not hesitate to contact us through our [Community](https://community.sonarsource.com/tag/scanner).
 
 # Installation from testPyPI
 
