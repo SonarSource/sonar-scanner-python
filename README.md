@@ -141,6 +141,10 @@ $ pysonar
 
 See the __SonarScanner__ [documentation](https://docs.sonarsource.com/sonarqube-server/2025.1/setup-and-upgrade/environment-variables/) for more information.
 
+# Feedback
+
+For feedback and issues regarding `pysonar`, do not hesitate to contact us through our [Community](https://community.sonarsource.com/tag/scanner).
+
 # Installation from testPyPI
 
 To install the latest pre-released version of Sonar Scanner Python. Execute the following command: 
