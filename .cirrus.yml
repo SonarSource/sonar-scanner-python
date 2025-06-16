@@ -13,23 +13,36 @@ env:
   SONARQUBE_VERSION: 25.3.0.104237
   # Use bash (instead of sh on linux or cmd.exe on windows)
   CIRRUS_SHELL: bash
+  JF_ALIAS: "jfrog"
 
 only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && ($CIRRUS_PR != "" || $CIRRUS_BRANCH == 'master' || $CIRRUS_BRANCH =~ "branch-.*")
 linux_container_definition: &LINUX_CONTAINER_DEFINITION
-  dockerfile: .cirrus/poetry.Dockerfile
-  cluster_name: ${CIRRUS_CLUSTER_NAME}
-  region: eu-central-1
-  namespace: default
-  builder_role: cirrus-builder
-  builder_image: docker-builder-v*
-  builder_instance_type: t3.small
-  use_in_memory_disk: true
-  docker_arguments:
-    CIRRUS_AWS_ACCOUNT: ${CIRRUS_AWS_ACCOUNT}
-  cpu: 3
-  memory: 8G
+  eks_container:
+    dockerfile: .cirrus/poetry.Dockerfile
+    cluster_name: ${CIRRUS_CLUSTER_NAME}
+    region: eu-central-1
+    namespace: default
+    builder_role: cirrus-builder
+    builder_image: docker-builder-v*
+    builder_instance_type: t3.small
+    use_in_memory_disk: true
+    docker_arguments:
+      CIRRUS_AWS_ACCOUNT: ${CIRRUS_AWS_ACCOUNT}
+    cpu: 3
+    memory: 8G
+
+mend_container_definition: &MEND_CONTAINER_DEFINITION
+  eks_container:
+    image: ${CIRRUS_AWS_ACCOUNT}.dkr.ecr.eu-central-1.amazonaws.com/base:j21-latest
+    region: eu-central-1
+    cluster_name: ${CIRRUS_CLUSTER_NAME}
+    namespace: default
+    cpu: 4
+    memory: 2G
 
 win_vm_definition: &WINDOWS_VM_DEFINITION
+  env:
+    JF_ALIAS: "jf"
   ec2_instance:
     experimental: true # see https://github.com/cirruslabs/cirrus-ci-docs/issues/1051
     image: base-windows-jdk17-v*
@@ -58,21 +71,11 @@ win_ssd_and_clone:
       git reset --hard $CIRRUS_CHANGE_IN_REPO
     fi
 
-.jfrog__config_template: &JFROG_CONFIG_TEMPLATE
+.jfrog_config_template: &JFROG_CONFIG_TEMPLATE
   jfrog_config_script:
     - $JF_ALIAS config add repox --artifactory-url "$ARTIFACTORY_URL" --access-token "$ARTIFACTORY_PRIVATE_ACCESS_TOKEN"
     - $JF_ALIAS poetry-config --server-id-resolve repox --repo-resolve sonarsource-pypi
     - $JF_ALIAS poetry install --build-name="$CIRRUS_REPO_NAME" --build-number="$CI_BUILD_NUMBER"
-
-.jfrog_windows_config_template: &JFROG_WIN_CONFIG_TEMPLATE
-  env:
-    JF_ALIAS: "jf"
-  <<: *JFROG_CONFIG_TEMPLATE
-
-.jfrog_MAC_LINUX_config_template: &JFROG_MAC_LINUX_CONFIG_TEMPLATE
-  env:
-    JF_ALIAS: "jfrog"
-  <<: *JFROG_CONFIG_TEMPLATE
 
 poetry_win_install: &POETRY_WIN_INSTALL
   <<: *WINDOWS_VM_DEFINITION
@@ -86,25 +89,23 @@ poetry_win_install: &POETRY_WIN_INSTALL
   poetry_win_install_script:
     - source cirrus-env QA
     - pip install poetry=="$POETRY_VERSION"
-    - source set_poetry_build_version "$CI_BUILD_NUMBER"
-  <<: *JFROG_WIN_CONFIG_TEMPLATE
+  <<: *JFROG_CONFIG_TEMPLATE
 
 poetry_cache_template: &POETRY_CACHE
   poetry_cache:
     folder: ~/.cache/poetry/
     fingerprint_script: cat poetry.lock
 
-.poetry_template: &POETRY_TEMPLATE
+.poetry_install_template: &POETRY_INSTALL
   <<: *POETRY_CACHE
+  <<: *JFROG_CONFIG_TEMPLATE
   poetry_install_script:
+    - poetry install
+
+.poetry_set_version_template: &POETRY_SET_VERSION
+  poetry_set_version_script:
     - source set_poetry_build_version "$CI_BUILD_NUMBER"
     - echo "PROJECT_VERSION=$PROJECT_VERSION" >> $CIRRUS_ENV
-  <<: *JFROG_MAC_LINUX_CONFIG_TEMPLATE
-
-.poetry_linux_template: &POETRY_LINUX_TEMPLATE
-  <<: *POETRY_TEMPLATE
-  eks_container:
-    <<: *LINUX_CONTAINER_DEFINITION
 
 .poetry_macos_template: &POETRY_MACOS_TEMPLATE
   <<: *POETRY_CACHE
@@ -114,7 +115,7 @@ poetry_cache_template: &POETRY_CACHE
   poetry_install_script:
     - brew install poetry
     - poetry config keyring.enabled false # Keyring is locked in macOS VM and not needed for downloading dependencies
-  <<: *JFROG_MAC_LINUX_CONFIG_TEMPLATE
+  <<: *JFROG_CONFIG_TEMPLATE
 
 macos_worker_template: &MACOS_WORKER_DEFINITION
   persistent_worker:
@@ -129,20 +130,15 @@ macos_worker_template: &MACOS_WORKER_DEFINITION
       envname: prod
 
 mend_scan_task:
-  <<: *POETRY_LINUX_TEMPLATE
   depends_on:
     - build
   # run only on master and long-living branches
   only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && ($CIRRUS_BRANCH == "master" || $CIRRUS_BRANCH =~ "branch-.*")
-  eks_container:
-    image: ${CIRRUS_AWS_ACCOUNT}.dkr.ecr.eu-central-1.amazonaws.com/base:j21-latest
-    region: eu-central-1
-    cluster_name: ${CIRRUS_CLUSTER_NAME}
-    namespace: default
-    cpu: 4
-    memory: 2G
+  <<: *MEND_CONTAINER_DEFINITION
   env:
     WS_APIKEY: VAULT[development/kv/data/mend data.apikey]
+  <<: *POETRY_INSTALL
+  <<: *POETRY_SET_VERSION
   mend_script:
     - source cirrus-env QA
     - source ws_scan.sh
@@ -152,9 +148,10 @@ mend_scan_task:
       path: "whitesource/**/*"
 
 formatting_task:
-  <<: *POETRY_LINUX_TEMPLATE
   alias: formatting
   name: "Formatting"
+  <<: *LINUX_CONTAINER_DEFINITION
+  <<: *POETRY_INSTALL
   formatting_script:
     - poetry run black src/ tests/ --check
     - poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d src/
@@ -162,23 +159,21 @@ formatting_task:
     - git diff --name-only --exit-code ./src ./tests
 
 documentation_task:
-  <<: *POETRY_LINUX_TEMPLATE
   alias: documentation
   name: "CLI Documentation"
+  <<: *LINUX_CONTAINER_DEFINITION
+  <<: *POETRY_INSTALL
   cli_docs_script:
     - poetry run python tools/generate_cli_documentation.py
     - git diff --exit-code CLI_ARGS.md
 
 analysis_linux_task:
-  <<: *POETRY_CACHE
-  eks_container:
-    <<: *LINUX_CONTAINER_DEFINITION
+  <<: *LINUX_CONTAINER_DEFINITION
   alias: analysis
   name: "NEXT Analysis"
+  <<: *POETRY_INSTALL
   # For NEXT analysis we don't need to set the build versions, but we still need to access jfrog to recover the dependencies
-  <<: *JFROG_MAC_LINUX_CONFIG_TEMPLATE
   analysis_script:
-    - poetry install
     - poetry run pytest --cov-report=xml:coverage.xml --cov-config=pyproject.toml --cov=src --cov-branch tests
     - poetry run mypy src/ > mypy-report.txt || true # mypy exits with 1 if there are errors
     - uv venv
@@ -218,7 +213,9 @@ qa_task:
       eks_container:
         docker_arguments:
           PYTHON_VERSION: 3.13.2
-  <<: *POETRY_LINUX_TEMPLATE
+  <<: *LINUX_CONTAINER_DEFINITION
+  <<: *POETRY_INSTALL
+  <<: *POETRY_SET_VERSION
   qa_script:
     - poetry run pytest tests/
 
@@ -245,13 +242,16 @@ qa_macos_task:
 qa_windows_task:
   name: "Test Windows"
   <<: *POETRY_WIN_INSTALL
+  <<: *POETRY_SET_VERSION
   alias: qa_windows
   qa_script:
     - poetry run pytest tests/
     - exit $LASTEXITCODE
 
 build_task:
-  <<: *POETRY_LINUX_TEMPLATE
+  <<: *LINUX_CONTAINER_DEFINITION
+  <<: *POETRY_INSTALL
+  <<: *POETRY_SET_VERSION
   alias: build
   name: "Build"
   build_script: regular_poetry_build_publish
@@ -263,7 +263,8 @@ its_task:
     folder: sonarqube_cache/
     populate_script: mkdir -p sonarqube_cache && wget -q https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-$SONARQUBE_VERSION.zip -O sonarqube_cache/sonarqube.zip
     fingerprint_script: echo "sonarqube-$SONARQUBE_VERSION"
-  <<: *POETRY_LINUX_TEMPLATE
+  <<: *LINUX_CONTAINER_DEFINITION
+  <<: *POETRY_INSTALL
   its_script:
     - .cirrus/run_its.sh
 
@@ -291,5 +292,7 @@ promote_task:
   env:
     ARTIFACTORY_PROMOTE_ACCESS_TOKEN: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promoter access_token]
     GITHUB_TOKEN: VAULT[development/github/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promotion token]
-  <<: *POETRY_LINUX_TEMPLATE
+  <<: *LINUX_CONTAINER_DEFINITION
+  <<: *POETRY_INSTALL
+  <<: *POETRY_SET_VERSION
   promote_script: cirrus_promote
