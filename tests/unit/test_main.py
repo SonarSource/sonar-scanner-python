@@ -22,7 +22,7 @@ from unittest.mock import patch, Mock
 
 from pyfakefs import fake_filesystem_unittest as pyfakefs
 
-from pysonar_scanner.__main__ import scan, check_version, create_jre
+from pysonar_scanner.__main__ import scan, main, check_version, create_jre
 from pysonar_scanner.api import SQVersion, SonarQubeApi
 from pysonar_scanner.cache import Cache
 from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader
@@ -90,6 +90,12 @@ class TestMain(pyfakefs.TestCase):
 
         exitcode = scan()
         self.assertEqual(1, exitcode)
+
+    def test_main_with_exitcode_not_zero(self):
+        with patch("pysonar_scanner.__main__.scan", return_value=42):
+            with self.assertRaises(SystemExit) as main_exit:
+                main()
+            self.assertEqual(main_exit.exception.code, 42)
 
     def test_version_check_outdated_sonarqube(self):
         sq_cloud_api = sq_api_utils.get_sq_server()
