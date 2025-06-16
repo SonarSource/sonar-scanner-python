@@ -11,7 +11,7 @@ env:
   POETRY_VIRTUALENVS_PATH: "~/.cache/poetry/venvs"
   POETRY_CACHE_DIR: "~/.cache/poetry/pypoetry"
 
-only_if: $CIRRUS_USER_COLLABORATOR == "true" && $CIRRUS_TAG == "" && ($CIRRUS_PR != "" || $CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_BRANCH =~ "feature/*" || $CIRRUS_BRANCH =~ "dogfood-on-.*")
+only_if: $CIRRUS_USER_COLLABORATOR == "true" && $CIRRUS_TAG == "" && ($CIRRUS_PR != "" || $CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_BRANCH =~ "feature/*" || $CIRRUS_BRANCH =~ "dogfood-on-.*" || $CIRRUS_BRANCH =~ "branch-.*")
 
 container_definition: &CONTAINER_DEFINITION
   dockerfile: .cirrus/poetry.Dockerfile
