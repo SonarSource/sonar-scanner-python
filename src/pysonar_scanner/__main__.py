@@ -41,6 +41,10 @@ from pysonar_scanner.jre import JREResolvedPath, JREProvisioner, JREResolver, JR
 from pysonar_scanner.scannerengine import ScannerEngine, ScannerEngineProvisioner
 
 
+def main():
+    exit(scan())
+
+
 def scan():
     try:
         return do_scan()
