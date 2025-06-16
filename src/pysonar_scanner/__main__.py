@@ -50,6 +50,9 @@ def scan():
 
 def do_scan():
     app_logging.setup()
+    logging.info(
+        "Enhance your workflow: Pair pysonar with SonarQube Server per your license or SonarQube Cloud for deeper analysis, and try SonarQube-IDE in your favourite IDE."
+    )
     logging.info("Starting Pysonar, the Sonar scanner CLI for Python")
     config = ConfigurationLoader.load()
     set_logging_options(config)

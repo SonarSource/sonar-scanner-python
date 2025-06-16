@@ -18,7 +18,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import pathlib
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, call
 
 from pyfakefs import fake_filesystem_unittest as pyfakefs
 
@@ -45,6 +45,7 @@ from tests.unit import sq_api_utils
 
 class TestMain(pyfakefs.TestCase):
 
+    @patch("pysonar_scanner.__main__.logging")
     @patch.object(pathlib.Path, "home", return_value=pathlib.Path("home/user"))
     @patch.object(
         ConfigurationLoader,
@@ -61,7 +62,9 @@ class TestMain(pyfakefs.TestCase):
     )
     @patch("pysonar_scanner.__main__.create_jre", return_value=JREResolvedPath(pathlib.Path("jre_path")))
     @patch.object(ScannerEngine, "run", return_value=0)
-    def test_minimal_success_run(self, run_mock, create_jre_mock, provision_mock, load_mock, path_home_mock):
+    def test_minimal_success_run(
+        self, run_mock, create_jre_mock, provision_mock, load_mock, path_home_mock, mock_logging
+    ):
         exitcode = scan()
         self.assertEqual(exitcode, 0)
 
@@ -83,6 +86,15 @@ class TestMain(pyfakefs.TestCase):
         }
 
         self.assertEqual(expected_config, config)
+
+        info_logs = [
+            call(
+                "Enhance your workflow: Pair pysonar with SonarQube Server per your license or SonarQube Cloud for deeper analysis, and try SonarQube-IDE in your favourite IDE."
+            ),
+            call("Starting Pysonar, the Sonar scanner CLI for Python"),
+            call("Starting the analysis..."),
+        ]
+        mock_logging.info.assert_has_calls(info_logs)
 
     @patch.object(ConfigurationLoader, "load")
     def test_scan_with_exception(self, load_mock):
