@@ -34,10 +34,10 @@ class CoverageRCConfigurationLoader:
         translated_exclusions = CoverageRCConfigurationLoader.__extract_coverage_exclusion_patterns(
             config_file_path, coverage_properties
         )
-        if translated_exclusions is None:
+        if len(translated_exclusions) == 0:
             return {}
 
-        return {"sonar.coverage.exclusions": translated_exclusions}
+        return {"sonar.coverage.exclusions": ", ".join(translated_exclusions)}
 
     @staticmethod
     def __read_config(config_file_path: pathlib.Path) -> dict[str, Any]:
@@ -61,11 +61,10 @@ class CoverageRCConfigurationLoader:
     @staticmethod
     def __extract_coverage_exclusion_patterns(
         config_file_path: pathlib.Path, coverage_properties: dict[str, Any]
-    ) -> str | None:
+    ) -> list[str]:
         if "run" not in coverage_properties or "omit" not in coverage_properties["run"]:
             logging.debug(f"Coverage file {config_file_path} has no exclusion properties")
-            return None
+            return []
 
         omit_exclusions = coverage_properties["run"]["omit"]
-        patterns_list = [patterns.strip() for patterns in omit_exclusions.splitlines() if patterns.strip()]
-        return ", ".join(patterns_list)
+        return [patterns.strip() for patterns in omit_exclusions.splitlines() if patterns.strip()]
