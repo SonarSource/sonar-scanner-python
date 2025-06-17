@@ -51,7 +51,7 @@ class ConfigurationLoader:
         toml_path_property = cli_properties.get("toml-path", ".")
         toml_dir = Path(toml_path_property) if "toml-path" in cli_properties else base_dir
         toml_properties = TomlConfigurationLoader.load(toml_dir)
-        coverage_properties = CoverageRCConfigurationLoader.load(base_dir)
+        coverage_properties = CoverageRCConfigurationLoader.load_exclusion_properties(base_dir)
 
         resolved_properties = get_static_default_properties()
         resolved_properties.update(dynamic_defaults_loader.load())

@@ -26,57 +26,47 @@ from typing import Any
 class CoverageRCConfigurationLoader:
 
     @staticmethod
-    def load(base_dir: pathlib.Path) -> dict[str, str]:
+    def load_exclusion_properties(base_dir: pathlib.Path) -> dict[str, str]:
         config_file_path = base_dir / ".coveragerc"
-        result_dict: dict[str, str] = {}
-
         coverage_properties = CoverageRCConfigurationLoader.__read_config(config_file_path)
         if len(coverage_properties) == 0:
-            return result_dict
-        exclusion_properties = CoverageRCConfigurationLoader.__read_coverage_exclusions_properties(
+            return {}
+        translated_exclusions = CoverageRCConfigurationLoader.__extract_coverage_exclusion_patterns(
             config_file_path, coverage_properties
         )
-        result_dict.update(exclusion_properties)
-        return result_dict
+        if translated_exclusions is None:
+            return {}
+
+        return {"sonar.coverage.exclusions": translated_exclusions}
 
     @staticmethod
     def __read_config(config_file_path: pathlib.Path) -> dict[str, Any]:
         config_dict: dict[str, Any] = {}
         if not config_file_path.exists():
-            logging.debug(f"Configuration file not found: {config_file_path}")
+            logging.debug(f"Coverage file not found: {config_file_path}")
             return config_dict
 
         try:
             config_parser = configparser.ConfigParser()
             config_parser.read(config_file_path)
-
-            # Iterate over sections and options
             for section in config_parser.sections():
                 section_values = {}
                 for key, value in config_parser.items(section):
                     section_values[key] = value
-
                 config_dict[section] = section_values
         except Exception as e:
             logging.debug(f"Error decoding coverage file {config_file_path}: {e}")
         return config_dict
 
     @staticmethod
-    def __read_coverage_exclusions_properties(
+    def __extract_coverage_exclusion_patterns(
         config_file_path: pathlib.Path, coverage_properties: dict[str, Any]
-    ) -> dict[str, Any]:
+    ) -> str | None:
         result_dict: dict[str, Any] = {}
-        if "run" not in coverage_properties:
-            logging.debug(f"The run key was not found in {config_file_path}")
-            return result_dict
-
-        if "omit" not in coverage_properties["run"]:
-            logging.debug(f"The run.omit key was not found in {config_file_path}")
-            return result_dict
+        if "run" not in coverage_properties or "omit" not in coverage_properties["run"]:
+            logging.debug(f"Coverage file has no exclusion properties")
+            return None
 
         omit_exclusions = coverage_properties["run"]["omit"]
         patterns_list = [patterns.strip() for patterns in omit_exclusions.splitlines() if patterns.strip()]
-        translated_exclusions = ", ".join(patterns_list)
-
-        result_dict["sonar.coverage.exclusions"] = translated_exclusions
-        return result_dict
+        return ", ".join(patterns_list)
