@@ -64,6 +64,18 @@ class TestCoverageRcFile(TestCase):
         mock_logging.debug.assert_called_with("Coverage file has no exclusion properties")
 
     @patch("pysonar_scanner.configuration.coveragerc_loader.logging")
+    def test_load_without_exclusions_property(self, mock_logging):
+        self.fs.create_file(
+            ".coveragerc",
+            contents="""
+                    [run]
+                    """,
+        )
+        properties = CoverageRCConfigurationLoader.load_exclusion_properties(Path("."))
+        self.assertEqual(len(properties), 0)
+        mock_logging.debug.assert_called_with("Coverage file has no exclusion properties")
+
+    @patch("pysonar_scanner.configuration.coveragerc_loader.logging")
     def test_load_malformed_file(self, mock_logging):
         self.fs.create_file(
             ".coveragerc",
