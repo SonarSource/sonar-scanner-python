@@ -31,15 +31,6 @@ linux_container_definition: &LINUX_CONTAINER_DEFINITION
     cpu: 3
     memory: 8G
 
-mend_container_definition: &MEND_CONTAINER_DEFINITION
-  eks_container:
-    image: ${CIRRUS_AWS_ACCOUNT}.dkr.ecr.eu-central-1.amazonaws.com/base:j21-latest
-    region: eu-central-1
-    cluster_name: ${CIRRUS_CLUSTER_NAME}
-    namespace: default
-    cpu: 4
-    memory: 2G
-
 win_vm_definition: &WINDOWS_VM_DEFINITION
   env:
     JF_ALIAS: "jf"
@@ -134,7 +125,7 @@ mend_scan_task:
     - build
   # run only on master and long-living branches
   only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && ($CIRRUS_BRANCH == "master" || $CIRRUS_BRANCH =~ "branch-.*")
-  <<: *MEND_CONTAINER_DEFINITION
+  <<: *LINUX_CONTAINER_DEFINITION
   env:
     WS_APIKEY: VAULT[development/kv/data/mend data.apikey]
   <<: *POETRY_INSTALL
