@@ -18,11 +18,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 from pathlib import Path
-from unittest import mock
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from pyfakefs.fake_filesystem_unittest import TestCase
-from pysonar_scanner.configuration.pyproject_toml import TomlConfigurationLoader
+
 from pysonar_scanner.configuration.coveragerc_loader import CoverageRCConfigurationLoader
 
 
