@@ -62,9 +62,8 @@ class CoverageRCConfigurationLoader:
     def __extract_coverage_exclusion_patterns(
         config_file_path: pathlib.Path, coverage_properties: dict[str, Any]
     ) -> str | None:
-        result_dict: dict[str, Any] = {}
         if "run" not in coverage_properties or "omit" not in coverage_properties["run"]:
-            logging.debug(f"Coverage file has no exclusion properties")
+            logging.debug(f"Coverage file {config_file_path} has no exclusion properties")
             return None
 
         omit_exclusions = coverage_properties["run"]["omit"]
