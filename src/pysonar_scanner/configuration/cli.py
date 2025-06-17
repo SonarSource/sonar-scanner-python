@@ -470,6 +470,13 @@ class CliConfigurationLoader:
             help="Comma-delimited list of paths to coverage reports in the Cobertura XML format.",
         )
         reports_group.add_argument(
+            "--sonar-coverage-exclusions",
+            "--sonar.coverage.exclusions",
+            "-Dsonar.coverage.exclusions",
+            type=str,
+            help="Defines the source files to be excluded from the code coverage analysis.",
+        )
+        reports_group.add_argument(
             "-Dsonar.python.skipUnchanged",
             type=bool,
             help="Equivalent to --sonar-python-skip-unchanged",

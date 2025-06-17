@@ -51,6 +51,7 @@
 | `--skip-jre-provisioning`, `-Dsonar.scanner.skipJreProvisioning` | If provided, the provisioning of the JRE will be skipped |
 | `--sonar-branch-name`, `-Dsonar.branch.name` | Name of the branch being analyzed |
 | `--sonar-build-string`, `-Dsonar.buildString` | The string passed with this property will be stored with the analysis and available in the results of api/project_analyses/search, thus allowing you to later identify a specific analysis and obtain its key for use with api/new_code_periods/set on the SPECIFIC_ANALYSIS type |
+| `--sonar-coverage-exclusions`, `--sonar.coverage.exclusions`, `-Dsonar.coverage.exclusions` | Defines the source files to be excluded from the code coverage analysis. |
 | `--sonar-cpd-python-minimum-lines`, `-Dsonar.cpd.python.minimumLines` | Minimum number of tokens to be considered as a duplicated block of code |
 | `--sonar-cpd-python-minimum-tokens`, `-Dsonar.cpd.python.minimumTokens` | Minimum number of tokens to be considered as a duplicated block of code |
 | `--sonar-links-ci`, `-Dsonar.links.ci` | The URL of the continuous integration system used |

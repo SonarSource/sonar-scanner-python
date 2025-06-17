@@ -85,6 +85,7 @@ SONAR_PULLREQUEST_BASE: Key = "sonar.pullrequest.base"
 SONAR_PYTHON_VERSION: Key = "sonar.python.version"
 SONAR_PYTHON_PYLINT_REPORT_PATH: Key = "sonar.python.pylint.reportPath"
 SONAR_PYTHON_COVERAGE_REPORT_PATHS: Key = "sonar.python.coverage.reportPaths"
+SONAR_COVERAGE_EXCLUSIONS: Key = "sonar.coverage.exclusions"
 SONAR_PYTHON_SKIP_UNCHANGED: Key = "sonar.python.skipUnchanged"
 SONAR_NEWCODE_REFERENCE_BRANCH: Key = "sonar.newCode.referenceBranch"
 SONAR_SCM_REVISION: Key = "sonar.scm.revision"
@@ -489,6 +490,11 @@ PROPERTIES: list[Property] = [
         name=SONAR_PYTHON_COVERAGE_REPORT_PATHS,
         default_value=None,
         cli_getter=lambda args: args.sonar_python_coverage_report_paths
+    ),
+    Property(
+        name=SONAR_COVERAGE_EXCLUSIONS,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_coverage_exclusions
     ),
     Property(
         name=SONAR_PYTHON_SKIP_UNCHANGED,
