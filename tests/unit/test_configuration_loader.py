@@ -51,6 +51,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_SCANNER_JAVA_OPTS,
     SONAR_SCANNER_ARCH,
     SONAR_SCANNER_OS,
+    SONAR_COVERAGE_EXCLUSIONS,
 )
 from pysonar_scanner.utils import Arch, Os
 from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader, SONAR_PROJECT_BASE_DIR
@@ -304,6 +305,45 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_ARCH: Arch.X64.value,
             TOML_PATH: "custom/path",
             SONAR_SCANNER_JAVA_HEAP_SIZE: "8000Mb",
+        }
+        self.assertDictEqual(configuration, expected_configuration)
+
+    @patch(
+        "sys.argv",
+        [
+            "myscript.py",
+        ],
+    )
+    def test_load_coveragerc_properties(self, mock_get_os, mock_get_arch):
+        self.fs.create_dir("custom/path")
+        self.fs.create_file(
+            ".coveragerc",
+            contents=(
+                """
+                [run]
+                omit =
+                    */.local/*
+                    /usr/*
+                    utils/tirefire.py
+                """
+            ),
+        )
+        configuration = ConfigurationLoader.load()
+        expected_configuration = {
+            SONAR_SCANNER_APP: "python",
+            SONAR_SCANNER_APP_VERSION: "1.0",
+            SONAR_SCANNER_BOOTSTRAP_START_TIME: configuration[SONAR_SCANNER_BOOTSTRAP_START_TIME],
+            SONAR_VERBOSE: False,
+            SONAR_SCANNER_SKIP_JRE_PROVISIONING: False,
+            SONAR_PROJECT_BASE_DIR: os.getcwd(),
+            SONAR_SCANNER_CONNECT_TIMEOUT: 5,
+            SONAR_SCANNER_SOCKET_TIMEOUT: 60,
+            SONAR_SCANNER_RESPONSE_TIMEOUT: 0,
+            SONAR_SCANNER_KEYSTORE_PASSWORD: "changeit",
+            SONAR_SCANNER_TRUSTSTORE_PASSWORD: "changeit",
+            SONAR_SCANNER_OS: Os.LINUX.value,
+            SONAR_SCANNER_ARCH: Arch.X64.value,
+            SONAR_COVERAGE_EXCLUSIONS: "*/.local/*, /usr/*, utils/tirefire.py",
         }
         self.assertDictEqual(configuration, expected_configuration)
 

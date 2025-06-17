@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any
 
 from pysonar_scanner.configuration.cli import CliConfigurationLoader
+from pysonar_scanner.configuration.coveragerc_loader import CoverageRCConfigurationLoader
 from pysonar_scanner.configuration.pyproject_toml import TomlConfigurationLoader
 from pysonar_scanner.configuration.properties import SONAR_PROJECT_KEY, SONAR_TOKEN, SONAR_PROJECT_BASE_DIR, Key
 from pysonar_scanner.configuration.properties import PROPERTIES
@@ -50,9 +51,11 @@ class ConfigurationLoader:
         toml_path_property = cli_properties.get("toml-path", ".")
         toml_dir = Path(toml_path_property) if "toml-path" in cli_properties else base_dir
         toml_properties = TomlConfigurationLoader.load(toml_dir)
+        coverage_properties = CoverageRCConfigurationLoader.load_exclusion_properties(base_dir)
 
         resolved_properties = get_static_default_properties()
         resolved_properties.update(dynamic_defaults_loader.load())
+        resolved_properties.update(coverage_properties)
         resolved_properties.update(toml_properties.project_properties)
         resolved_properties.update(sonar_project_properties.load(base_dir))
         resolved_properties.update(toml_properties.sonar_properties)
