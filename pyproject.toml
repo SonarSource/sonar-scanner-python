@@ -42,7 +42,7 @@ black = "25.1.0"
 coverage = '>=7.3.3'
 licenseheaders = '>=0.8.8'
 mypy = '>=1.7.1'
-pytest = '8.3.5'
+pytest = '8.4.1'
 pytest-cov = '6.1.1'
 pytest-subtests = "0.14.1"
 pytest-docker = "3.2.0"
