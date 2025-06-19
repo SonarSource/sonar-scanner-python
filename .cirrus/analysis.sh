@@ -1,9 +1,16 @@
 #!/bin/bash
 
 function run_analysis {
+  # deal with strange SonarQube configuration for the US region
+  SONAR_REGION=""
+  if [ "$SONAR_HOST_URL" == "https://sonarqube.us" ]; then
+    SONAR_REGION="-Dsonar.region=us"
+  fi
+
   # extra analysis parameters are set in the 'sonar-project.properties'
   pysonar \
   -Dsonar.host.url="$SONAR_HOST_URL" \
+  ${SONAR_REGION} \
   -Dsonar.token="$SONAR_TOKEN" \
   -Dsonar.analysis.buildNumber=$CI_BUILD_NUMBER \
   -Dsonar.analysis.pipeline="$PIPELINE_ID" \
