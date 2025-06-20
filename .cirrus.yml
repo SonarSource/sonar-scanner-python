@@ -12,6 +12,7 @@ env:
   # Use bash (instead of sh on linux or cmd.exe on windows)
   CIRRUS_SHELL: bash
   JF_ALIAS: "jfrog"
+  CRON_NIGHTLY_JOB_NAME: "nightly"
 
 only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && ($CIRRUS_PR != "" || $CIRRUS_BRANCH == 'master' || $CIRRUS_BRANCH =~ "branch-.*")
 linux_container_definition: &LINUX_CONTAINER_DEFINITION
@@ -183,6 +184,8 @@ analysis_next_task:
 
 analysis_SQC_EU_shadow_task:
   <<: *ANALYSIS_BASE_LINUX_TEMPLATE
+  # only executed in CRON job AND on master branch
+  only_if: $CIRRUS_CRON == $CRON_NIGHTLY_JOB_NAME && $CIRRUS_BRANCH == "master"
   alias: sonar_analysis_shadow_sqc_eu
   name: "SQC-EU Shadow Analysis"
   env:
@@ -191,6 +194,8 @@ analysis_SQC_EU_shadow_task:
 
 analysis_SQC_US_shadow_task:
   <<: *ANALYSIS_BASE_LINUX_TEMPLATE
+  # only executed in CRON job AND on master branch
+  only_if: $CIRRUS_CRON == $CRON_NIGHTLY_JOB_NAME && $CIRRUS_BRANCH == "master"
   alias: sonar_analysis_shadow_sqc_us
   name: "SQC-US Shadow Analysis"
   env:
@@ -296,8 +301,6 @@ promote_task:
   depends_on:
     - formatting
     - sonar_analysis_next
-    - sonar_analysis_shadow_sqc_eu
-    - sonar_analysis_shadow_sqc_us
     - qa
     - qa_windows
     - build
