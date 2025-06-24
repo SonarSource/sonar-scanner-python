@@ -1,5 +1,6 @@
 env:
   ARTIFACTORY_URL: VAULT[development/kv/data/repox data.url]
+  ARTIFACTORY_PRIVATE_USERNAME: vault-${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader
   ARTIFACTORY_PRIVATE_ACCESS_TOKEN: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
   ARTIFACTORY_DEPLOY_USERNAME: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-qa-deployer username]
   ARTIFACTORY_DEPLOY_ACCESS_TOKEN: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-qa-deployer access_token]
@@ -312,3 +313,23 @@ promote_task:
   <<: *POETRY_INSTALL
   <<: *POETRY_SET_VERSION
   promote_script: cirrus_promote
+
+run_iris_task:
+  depends_on:
+    - promote
+  <<: *LINUX_CONTAINER_DEFINITION
+  # only executed in CRON job AND on master branch
+  only_if: $CIRRUS_CRON == $CRON_NIGHTLY_JOB_NAME && $CIRRUS_BRANCH == "master"
+  env:
+    SONAR_SOURCE_IRIS_TOKEN: VAULT[development/kv/data/iris data.next]
+  matrix:
+    - name: "IRIS SQ NEXT -> Sonarcloud.io"
+      env:
+        SONAR_TARGET_URL: https://sonarcloud.io
+        SONAR_TARGET_IRIS_TOKEN: VAULT[development/kv/data/iris data.sqc-eu]
+    - name: "IRIS SQ NEXT -> SonarQube.us"
+      env:
+        SONAR_TARGET_URL: https://sonarqube.us
+        SONAR_TARGET_IRIS_TOKEN: VAULT[development/kv/data/iris data.sqc-us]
+  script:
+    - .cirrus/run_iris.sh
