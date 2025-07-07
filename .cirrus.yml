@@ -112,7 +112,7 @@ macos_worker_template: &MACOS_WORKER_DEFINITION
   persistent_worker:
     isolation:
       tart:
-        image: ghcr.io/cirruslabs/macos-sonoma-xcode:latest
+        image: ghcr.io/cirruslabs/macos-sonoma-xcode:15.3
         cpu: 3
         memory: 6G
     resources:
