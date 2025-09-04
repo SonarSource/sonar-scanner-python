@@ -170,6 +170,22 @@ class CliConfigurationLoader:
             "--sonar-modules", "-Dsonar.modules", type=str, help="Comma-delimited list of modules to analyze"
         )
 
+        parser.add_argument(
+            "--sonar-python-analysis-parallel",
+            "--analysis-in-parallel",
+            "-Dsonar.python.analysis.parallel",
+            type=bool,
+            action=argparse.BooleanOptionalAction,
+            help="When set to False the analysis will be single threaded",
+        )
+        parser.add_argument(
+            "--sonar-python-analysis-threads",
+            "--nr-analysis-threads",
+            "-Dsonar.python.analysis.threads",
+            type=int,
+            help="Set the number of threads to use during analysis. This property is ignored if --sonar-python-analysis-parallel is set to False",
+        )
+
         server_connection_group = parser.add_argument_group("SonarQube Connection")
         server_connection_group.add_argument(
             "--sonar-host-url",
