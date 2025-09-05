@@ -94,6 +94,8 @@ SONAR_SOURCE_ENCODING: Key = "sonar.sourceEncoding"
 SONAR_WORKING_DIRECTORY: Key = "sonar.working.directory"
 SONAR_SCM_FORCE_RELOAD_ALL: Key = "sonar.scm.forceReloadAll"
 SONAR_MODULES: Key = "sonar.modules"
+SONAR_PYTHON_ANALYSIS_PARALLEL: Key = "sonar.python.analysis.parallel"
+SONAR_PYTHON_ANALYSIS_THREADS: Key = "sonar.python.analysis.threads"
 SONAR_PYTHON_XUNIT_REPORT_PATH: Key = "sonar.python.xunit.reportPath"
 SONAR_PYTHON_XUNIT_SKIP_DETAILS: Key = "sonar.python.xunit.skipDetails"
 SONAR_PYTHON_MYPY_REPORT_PATHS: Key = "sonar.python.mypy.reportPaths"
@@ -541,6 +543,16 @@ PROPERTIES: list[Property] = [
         default_value=None,
         cli_getter=None,
         deprecation_message="SONAR_SCANNER_OPTS is deprecated, please use SONAR_SCANNER_JAVA_OPTS instead."
-    )
+    ),
+    Property(
+        name=SONAR_PYTHON_ANALYSIS_PARALLEL,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_python_analysis_parallel
+    ),
+    Property(
+        name=SONAR_PYTHON_ANALYSIS_THREADS,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_python_analysis_threads
+    ),
 ]
 # fmt: on

@@ -26,6 +26,8 @@ from pysonar_scanner.configuration.configuration_loader import CliConfigurationL
 from pysonar_scanner.configuration.properties import (
     SONAR_HOST_URL,
     SONAR_ORGANIZATION,
+    SONAR_PYTHON_ANALYSIS_PARALLEL,
+    SONAR_PYTHON_ANALYSIS_THREADS,
     SONAR_PYTHON_BANDIT_REPORT_PATHS,
     SONAR_PYTHON_FLAKE8_REPORT_PATHS,
     SONAR_PYTHON_MYPY_REPORT_PATHS,
@@ -159,6 +161,8 @@ EXPECTED_CONFIGURATION = {
     SONAR_PYTHON_COVERAGE_REPORT_PATHS: "path/to/coverage1,path/to/coverage2",
     SONAR_COVERAGE_EXCLUSIONS: "*/.local/*,/usr/*,utils/tirefire.py",
     SONAR_PYTHON_SKIP_UNCHANGED: True,
+    SONAR_PYTHON_ANALYSIS_PARALLEL: True,
+    SONAR_PYTHON_ANALYSIS_THREADS: 2,
     SONAR_PYTHON_XUNIT_REPORT_PATH: "path/to/xunit/report",
     SONAR_PYTHON_XUNIT_SKIP_DETAILS: True,
     SONAR_PYTHON_MYPY_REPORT_PATHS: "path/to/mypy/reports",
@@ -206,6 +210,36 @@ class TestCliConfigurationLoader(unittest.TestCase):
                     SONAR_SCANNER_JAVA_HEAP_SIZE: "8000Mb",
                 }
                 self.assertDictEqual(configuration, expected_configuration)
+
+    def test_alternative_analysis_threads_cli_args(self):
+        base_args = ["myscript.py", "-t", "myToken", "--sonar-project-key", "myProjectKey"]
+        report_args = ["--nr-analysis-threads", "3"]
+
+        expected_configuration = {
+            SONAR_TOKEN: "myToken",
+            SONAR_PROJECT_KEY: "myProjectKey",
+            SONAR_PYTHON_ANALYSIS_THREADS: 3,
+        }
+
+        with patch("sys.argv", base_args + report_args), patch("sys.stderr", new=StringIO()):
+            configuration = CliConfigurationLoader.load()
+            self.assertDictEqual(configuration, expected_configuration)
+
+    def test_alternative_analysis_single_threaded_cli_args(self):
+        base_args = ["myscript.py", "-t", "myToken", "--sonar-project-key", "myProjectKey"]
+        report_args = [
+            "--no-analysis-in-parallel",
+        ]
+
+        expected_configuration = {
+            SONAR_TOKEN: "myToken",
+            SONAR_PROJECT_KEY: "myProjectKey",
+            SONAR_PYTHON_ANALYSIS_PARALLEL: False,
+        }
+
+        with patch("sys.argv", base_args + report_args), patch("sys.stderr", new=StringIO()):
+            configuration = CliConfigurationLoader.load()
+            self.assertDictEqual(configuration, expected_configuration)
 
     def test_alternative_report_cli_args(self):
         base_args = ["myscript.py", "-t", "myToken", "--sonar-project-key", "myProjectKey"]
@@ -404,6 +438,9 @@ class TestCliConfigurationLoader(unittest.TestCase):
             "module1,module2",
             "--sonar-scanner-java-heap-size",
             "8000Mb",
+            "--analysis-in-parallel",
+            "--nr-analysis-threads",
+            "2",
         ],
     )
     def test_all_cli_args(self):
@@ -474,6 +511,8 @@ class TestCliConfigurationLoader(unittest.TestCase):
             "-Dsonar.python.pylint.reportPath=path/to/pylint/report",
             "-Dsonar.python.coverage.reportPaths=path/to/coverage1,path/to/coverage2",
             "-Dsonar.coverage.exclusions=*/.local/*,/usr/*,utils/tirefire.py",
+            "-Dsonar.python.analysis.parallel",
+            "-Dsonar.python.analysis.threads=2",
             "-Dsonar.python.skipUnchanged=true",
             "-Dsonar.python.xunit.reportPath=path/to/xunit/report",
             "-Dsonar.python.xunit.skipDetails=true",

@@ -64,6 +64,8 @@
 | `--sonar-pullrequest-base`, `-Dsonar.pullrequest.base` | Base branch of the pull request being analyzed |
 | `--sonar-pullrequest-branch`, `-Dsonar.pullrequest.branch` | Branch of the pull request being analyzed |
 | `--sonar-pullrequest-key`, `-Dsonar.pullrequest.key` | Key of the pull request being analyzed |
+| `--sonar-python-analysis-parallel`, `--no-sonar-python-analysis-parallel`, `--analysis-in-parallel`, `--no-analysis-in-parallel`, `-Dsonar.python.analysis.parallel` | When set to False the analysis will be single threaded |
+| `--sonar-python-analysis-threads`, `--nr-analysis-threads`, `-Dsonar.python.analysis.threads` | Set the number of threads to use during analysis. This property is ignored if --sonar-python-analysis-parallel is set to False |
 | `--sonar-python-skip-unchanged`, `--no-sonar-python-skip-unchanged` | Override the SonarQube configuration of skipping or not the analysis of unchanged Python files |
 | `--sonar-qualitygate-timeout`, `-Dsonar.qualitygate.timeout` | The number of seconds that the scanner should wait for a report to be processed |
 | `--sonar-qualitygate-wait`, `--no-sonar-qualitygate-wait` | Forces the analysis step to poll the server instance and wait for the Quality Gate status |
