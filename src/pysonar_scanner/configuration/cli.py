@@ -302,12 +302,16 @@ class CliConfigurationLoader:
         scanner_behavior_group.add_argument(
             "--sonar-cpd-py-minimum-tokens",
             "-Dsonar.cpd.py.minimumTokens",
+            "--sonar-cpd-python-minimum-tokens",
+            "-Dsonar.cpd.python.minimumTokens",
             type=int,
             help="Minimum number of tokens to be considered as a duplicated block of code",
         )
         scanner_behavior_group.add_argument(
             "--sonar-cpd-py-minimum-lines",
             "-Dsonar.cpd.py.minimumLines",
+            "--sonar-cpd-python-minimum-lines",
+            "-Dsonar.cpd.python.minimumLines",
             type=int,
             help="Minimum number of tokens to be considered as a duplicated block of code",
         )

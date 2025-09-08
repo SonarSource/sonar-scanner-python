@@ -569,6 +569,29 @@ class TestCliConfigurationLoader(unittest.TestCase):
             "myToken",
             "--sonar-project-key",
             "myProjectKey",
+            "-Dsonar.cpd.python.minimumLines=10",
+            "--sonar-cpd-python-minimum-tokens",
+            "20",
+        ],
+    )
+    def test_cpd_config_with_py_property_name(self):
+        configuration = CliConfigurationLoader.load()
+        expected_configuration = {
+            SONAR_TOKEN: "myToken",
+            SONAR_PROJECT_KEY: "myProjectKey",
+            SONAR_CPD_PYTHON_MINIMUM_LINES: 10,
+            SONAR_CPD_PYTHON_MINIMUM_TOKENS: 20,
+        }
+        self.assertDictEqual(configuration, expected_configuration)
+
+    @patch(
+        "sys.argv",
+        [
+            "myscript.py",
+            "--token",
+            "myToken",
+            "--sonar-project-key",
+            "myProjectKey",
             "-Dunknown.property=unknownValue",
             "-Danother.unknown.property=anotherValue",
         ],
