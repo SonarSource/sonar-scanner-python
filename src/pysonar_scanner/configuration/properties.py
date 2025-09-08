@@ -67,8 +67,8 @@ SONAR_SOURCES: Key = "sonar.sources"
 SONAR_EXCLUSIONS: Key = "sonar.exclusions"
 SONAR_TESTS: Key = "sonar.tests"
 SONAR_FILESIZE_LIMIT: Key = "sonar.filesize.limit"
-SONAR_CPD_PYTHON_MINIMUM_TOKENS: Key = "sonar.cpd.python.minimumTokens"
-SONAR_CPD_PYTHON_MINIMUM_LINES: Key = "sonar.cpd.python.minimumLines"
+SONAR_CPD_PYTHON_MINIMUM_TOKENS: Key = "sonar.cpd.py.minimumTokens"
+SONAR_CPD_PYTHON_MINIMUM_LINES: Key = "sonar.cpd.py.minimumLines"
 SONAR_LOG_LEVEL: Key = "sonar.log.level"
 SONAR_QUALITYGATE_WAIT: Key = "sonar.qualitygate.wait"
 SONAR_QUALITYGATE_TIMEOUT: Key = "sonar.qualitygate.timeout"
@@ -361,12 +361,12 @@ PROPERTIES: list[Property] = [
     Property(
         name=SONAR_CPD_PYTHON_MINIMUM_TOKENS,
         default_value=None,
-        cli_getter=lambda args: args.sonar_cpd_python_minimum_tokens
+        cli_getter=lambda args: args.sonar_cpd_py_minimum_tokens
     ),
     Property(
         name=SONAR_CPD_PYTHON_MINIMUM_LINES,
         default_value=None,
-        cli_getter=lambda args: args.sonar_cpd_python_minimum_lines
+        cli_getter=lambda args: args.sonar_cpd_py_minimum_lines
     ),
     Property(
         name=SONAR_LOG_LEVEL,

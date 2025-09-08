@@ -300,14 +300,14 @@ class CliConfigurationLoader:
             help="Sets the limit in MB for files to be discarded from the analysis scope if the size is greater than specified",
         )
         scanner_behavior_group.add_argument(
-            "--sonar-cpd-python-minimum-tokens",
-            "-Dsonar.cpd.python.minimumTokens",
+            "--sonar-cpd-py-minimum-tokens",
+            "-Dsonar.cpd.py.minimumTokens",
             type=int,
             help="Minimum number of tokens to be considered as a duplicated block of code",
         )
         scanner_behavior_group.add_argument(
-            "--sonar-cpd-python-minimum-lines",
-            "-Dsonar.cpd.python.minimumLines",
+            "--sonar-cpd-py-minimum-lines",
+            "-Dsonar.cpd.py.minimumLines",
             type=int,
             help="Minimum number of tokens to be considered as a duplicated block of code",
         )
