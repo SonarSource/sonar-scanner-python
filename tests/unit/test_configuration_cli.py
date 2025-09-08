@@ -376,9 +376,9 @@ class TestCliConfigurationLoader(unittest.TestCase):
             "--sonar-filesize-limit",
             "1000",
             "--sonar-scm-exclusions-disabled",
-            "--sonar-cpd-python-minimum-tokens",
+            "--sonar-cpd-py-minimum-tokens",
             "15",
-            "--sonar-cpd-python-minimum-lines",
+            "--sonar-cpd-py-minimum-lines",
             "100",
             "--sonar-log-level",
             "INFO",
@@ -487,8 +487,8 @@ class TestCliConfigurationLoader(unittest.TestCase):
             "-Dsonar.projectBaseDir=mySonarProjectBaseDir",
             "-Dsonar.filesize.limit=1000",
             "-Dsonar.scm.exclusions.disabled=true",
-            "-Dsonar.cpd.python.minimumTokens=15",
-            "-Dsonar.cpd.python.minimumLines=100",
+            "-Dsonar.cpd.py.minimumTokens=15",
+            "-Dsonar.cpd.py.minimumLines=100",
             "-Dsonar.qualitygate.wait=true",
             "-Dsonar.qualitygate.timeout=120",
             "-Dsonar.externalIssuesReportPaths=path/to/external/issues",
@@ -560,6 +560,29 @@ class TestCliConfigurationLoader(unittest.TestCase):
         with patch("sys.argv", [*patch_template, "-Dsonar.scm.exclusions.disabled=true"]):
             configuration = CliConfigurationLoader.load()
             self.assertTrue(configuration.get(SONAR_SCM_EXCLUSIONS_DISABLED))
+
+    @patch(
+        "sys.argv",
+        [
+            "myscript.py",
+            "--token",
+            "myToken",
+            "--sonar-project-key",
+            "myProjectKey",
+            "-Dsonar.cpd.python.minimumLines=10",
+            "--sonar-cpd-python-minimum-tokens",
+            "20",
+        ],
+    )
+    def test_cpd_config_with_py_property_name(self):
+        configuration = CliConfigurationLoader.load()
+        expected_configuration = {
+            SONAR_TOKEN: "myToken",
+            SONAR_PROJECT_KEY: "myProjectKey",
+            SONAR_CPD_PYTHON_MINIMUM_LINES: 10,
+            SONAR_CPD_PYTHON_MINIMUM_TOKENS: 20,
+        }
+        self.assertDictEqual(configuration, expected_configuration)
 
     @patch(
         "sys.argv",
