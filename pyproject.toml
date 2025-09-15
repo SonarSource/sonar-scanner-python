@@ -32,7 +32,7 @@ python = '>=3.9'
 tomli = '2.2.1'
 requests = "2.32.5"
 responses = "0.25.8"
-pyfakefs = "5.8.0"
+pyfakefs = "5.9.3"
 jproperties = "2.1.2"
 
 [tool.poetry.group]
