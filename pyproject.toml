@@ -45,7 +45,7 @@ mypy = '>=1.7.1'
 pytest = '8.4.2'
 pytest-cov = '7.0.0'
 pytest-subtests = "0.14.1"
-pytest-docker = "3.2.0"
+pytest-docker = "3.2.3"
 debugpy = "1.8.13"
 types-requests = "^2.32.0.20250328"
 
