@@ -11,7 +11,7 @@ jobs:
     permissions:
       id-token: write
       contents: write
-    uses: SonarSource/gh-action_release/.github/workflows/main.yaml@e887e05abda17241a57c7f3d6118e5b3d0705acd # 5.18.0
+    uses: SonarSource/gh-action_release/.github/workflows/main.yaml@51c77454eebdc43965dd3aa9b91bc5b5171edcac # 6.1.0
     with:
       publishToTestPyPI: true
       skipPythonReleasabilityChecks: true
@@ -20,7 +20,7 @@ jobs:
     permissions:
       id-token: write
       contents: write
-    uses: SonarSource/gh-action_release/.github/workflows/main.yaml@e887e05abda17241a57c7f3d6118e5b3d0705acd # 5.18.0
+    uses: SonarSource/gh-action_release/.github/workflows/main.yaml@51c77454eebdc43965dd3aa9b91bc5b5171edcac # 6.1.0
     with:
       publishToPyPI: true
       skipPythonReleasabilityChecks: true
