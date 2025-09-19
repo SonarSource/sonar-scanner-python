@@ -38,7 +38,7 @@ jproperties = "2.1.2"
 [tool.poetry.group]
 [tool.poetry.group.dev]
 [tool.poetry.group.dev.dependencies]
-black = "25.1.0"
+black = "25.9.0"
 coverage = '>=7.3.3'
 licenseheaders = '>=0.8.8'
 mypy = '>=1.7.1'
