@@ -1,0 +1,68 @@
+---
+name: Configure Poetry
+description: GitHub Action to configure a poetry project
+
+inputs:
+  poetry-version:
+    description: The version of poetry to install
+    default: 2.2.1
+  jfrog-version:
+    description: The version of jFrog to install
+    default: 2.77.0
+  poetry-virtualenvs-path:
+    description: Path to the Poetry virtual environments, relative to GitHub workspace. The folder is cached only if it is a subdirectory of
+      `poetry-cache-dir`.
+    default: .cache/pypoetry/virtualenvs
+  poetry-cache-dir:
+    description: Path to the Poetry cache directory, relative to GitHub workspace.
+    default: .cache/pypoetry
+outputs:
+  BUILD_NUMBER:
+    description: The build number, incremented or reused if already cached
+    value: ${{ steps.get_build_number.outputs.BUILD_NUMBER }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set build parameters
+      shell: bash
+      env:
+        ARTIFACTORY_READER_ROLE: private-reader
+      run: |
+        echo "ARTIFACTORY_READER_ROLE=${ARTIFACTORY_READER_ROLE}" >> "$GITHUB_ENV"
+    - uses: SonarSource/ci-github-actions/get-build-number@v1
+      id: get_build_number
+    - name: Cache local Poetry cache
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: ${{ inputs.poetry-cache-dir }}
+        key: poetry-${{ runner.os }}-${{ hashFiles('poetry.lock') }}
+        restore-keys: poetry-${{ runner.os }}-
+    - uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
+      with:
+        version: 2025.7.12
+        install_args: "jfrog-cli@${{ inputs.jfrog-version }} poetry@${{ inputs.poetry-version }}"
+    - name: Vault
+      # yamllint disable rule:line-length
+      id: secrets
+      uses: SonarSource/vault-action-wrapper@320bd31b03e5dacaac6be51bbbb15adf7caccc32 # 3.1.0
+      with:
+        secrets: |
+          development/artifactory/token/{REPO_OWNER_NAME_DASH}-${{ env.ARTIFACTORY_READER_ROLE }} access_token | ARTIFACTORY_ACCESS_TOKEN;
+      # yamllint enable rule:line-length
+    - name: Config Poetry
+      id: config
+      shell: bash
+      env:
+        ARTIFACTORY_URL: https://repox.jfrog.io/artifactory
+        ARTIFACTORY_PYPI_REPO: sonarsource-pypi
+        ARTIFACTORY_ACCESS_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}
+        POETRY_VIRTUALENVS_PATH: ${{ github.workspace }}/${{ inputs.poetry-virtualenvs-path }}
+        POETRY_CACHE_DIR: ${{ github.workspace }}/${{ inputs.poetry-cache-dir }}
+      run: |
+        mise use -g poetry@${{ inputs.poetry-version  }}
+        mise use -g jfrog-cli@${{ inputs.jfrog-version  }}
+        echo "POETRY_VIRTUALENVS_PATH=${POETRY_VIRTUALENVS_PATH}" >> "$GITHUB_ENV"
+        echo "POETRY_CACHE_DIR=${POETRY_CACHE_DIR}" >> "$GITHUB_ENV"
+        ${GITHUB_ACTION_PATH}/../../scripts/config-poetry.sh
+
