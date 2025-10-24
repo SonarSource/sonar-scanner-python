@@ -19,12 +19,12 @@ jobs:
       id-token: write
       contents: write
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-      - uses: jdx/mise-action@e3d7b8d67a7958d1207f6ed871e83b1ea780e7b0 #v3.3.1
-        with:
-          install_args: "poetry@2.2.1"
-      - run: mise use -g poetry@2.2.1
-      - uses: SonarSource/ci-github-actions/build-poetry@v1
+      - name: Checkout repository
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - name: Install mise and tools
+        uses: jdx/mise-action@e3d7b8d67a7958d1207f6ed871e83b1ea780e7b0 #v3.3.1
+      - name: Build the scanner
+        uses: SonarSource/ci-github-actions/build-poetry@v1
         id: build-poetry
         with:
           sonar-platform: none
@@ -33,14 +33,16 @@ jobs:
           deploy-pull-request: true
 
   install_deps:
-    name: "Install Dependencies"
+    name: "Install and Cache Poetry Dependencies"
     runs-on: github-ubuntu-latest-s
     permissions:
       id-token: write
       contents: write
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-      - uses: ./.github/actions/config-poetry
+      - name: Checkout repository
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - name: Configure poetry for Windows
+        uses: ./.github/actions/config-poetry # We use this job to cache the poetry depend
       - run: |
           poetry install
 
@@ -52,8 +54,10 @@ jobs:
       id-token: write
       contents: write
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-      - uses: ./.github/actions/config-poetry
+      - name: Checkout repository
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - name: Configure poetry for Windows
+        uses: ./.github/actions/config-poetry
       - run: |
           poetry run black src/ tests/ --check
           poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d src/
@@ -68,12 +72,12 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-      - uses: jdx/mise-action@e3d7b8d67a7958d1207f6ed871e83b1ea780e7b0 #v3.3.1
-        with:
-          install_args: "poetry@2.2.1"
-      - run: mise use -g poetry@2.2.1
-      - run: |
+      - name: Checkout repository
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - name: Install mise and tools
+        uses: jdx/mise-action@e3d7b8d67a7958d1207f6ed871e83b1ea780e7b0 #v3.3.1
+      - name: Check for incorrect documentation
+        run: |
           poetry run python tools/generate_cli_documentation.py
           git diff --exit-code CLI_ARGS.md
 
@@ -85,8 +89,10 @@ jobs:
       id-token: write
       contents: write
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-      - uses: ./.github/actions/config-poetry
+      - name: Checkout repository
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - name: Configure poetry
+        uses: ./.github/actions/config-poetry
       - run: |
           poetry run pytest --cov-report=xml:coverage.xml --cov-config=pyproject.toml --cov=src --cov-branch tests
           poetry run mypy src/ > mypy-report.txt || true
@@ -106,16 +112,16 @@ jobs:
       id-token: write
       contents: write
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - name: Checkout repository
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
       - name: Download coverage artifacts
         uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: coverage-reports
-      - uses: jdx/mise-action@e3d7b8d67a7958d1207f6ed871e83b1ea780e7b0 #v3.3.1
-        with:
-          install_args: "poetry@2.2.1"
-      - run: mise use -g poetry@2.2.1
-      - uses: SonarSource/ci-github-actions/build-poetry@v1
+      - name: Install mise and tools
+        uses: jdx/mise-action@e3d7b8d67a7958d1207f6ed871e83b1ea780e7b0 #v3.3.1
+      - name: Analysis the project on next
+        uses: SonarSource/ci-github-actions/build-poetry@v1
         with:
           sonar-platform: next
           artifactory-reader-role: private-reader
@@ -132,9 +138,12 @@ jobs:
       matrix:
         python-version: ["3.9.18", "3.9.6", "3.10.13", "3.11.7", "3.12.1", "3.13.2"]
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-      - uses: ./.github/actions/config-poetry
-      - run: |
+      - name: Checkout repository
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - name: Configure poetry
+        uses: ./.github/actions/config-poetry
+      - name: Execute the test suite
+        run: |
           poetry run pytest tests/
 
   qa-windows:
@@ -145,11 +154,13 @@ jobs:
       id-token: write
       contents: write
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-      - uses: ./.github/actions/config-poetry-win
-      - run: |
+      - name: Checkout repository
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - name: Configure poetry for Windows
+        uses: ./.github/actions/config-poetry-win
+      - name: Execute the test suite
+        run: |
           poetry run pytest tests/
-
 
   its:
     name: "Integration Tests"
@@ -158,13 +169,17 @@ jobs:
       id-token: write
       contents: write
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - name: Checkout repository
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
       - name: Cache SonarQube
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: SonarSource/ci-github-actions/cache@v1
+        id: sonarqube-cache
         with:
           path: sonarqube_cache/
           key: sonarqube-25.3.0.104237
+          restore-keys: cache-${{ runner.os }}-
       - name: Download SonarQube
+        if: ${{ !steps.sonarqube-cache.outputs.cache-hit }}
         run: |
           mkdir -p sonarqube_cache
           if [ ! -f sonarqube_cache/sonarqube.zip ]; then
@@ -172,8 +187,10 @@ jobs:
           fi
         env:
           SONARQUBE_VERSION: 25.3.0.104237
-      - uses: ./.github/actions/config-poetry
-      - run: ./.github/scripts/run_its.sh
+      - name: Configure poetry 
+        uses: ./.github/actions/config-poetry
+      - name: Execute the integration tests
+        run: ./.github/scripts/run_its.sh
 
   promote:
     name: "Promote"
@@ -183,8 +200,8 @@ jobs:
       id-token: write
       contents: write
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-      - uses: SonarSource/ci-github-actions/promote@v1
+      - name: Promote
+        uses: SonarSource/ci-github-actions/promote@v1
         with:
           promote-pull-request: true
           build-name: sonar-scanner-python

@@ -33,15 +33,15 @@ runs:
     - uses: SonarSource/ci-github-actions/get-build-number@v1
       id: get_build_number
     - name: Cache local Poetry cache
-      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      uses: SonarSource/ci-github-actions/cache@v1
       with:
         path: ${{ inputs.poetry-cache-dir }}
         key: poetry-${{ runner.os }}-${{ hashFiles('poetry.lock') }}
         restore-keys: poetry-${{ runner.os }}-
-    - uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
+    - name: Install mise and tools
+      uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
       with:
         version: 2025.7.12
-        install_args: "jfrog-cli@${{ inputs.jfrog-version }} poetry@${{ inputs.poetry-version }}"
     - name: Vault
       # yamllint disable rule:line-length
       id: secrets

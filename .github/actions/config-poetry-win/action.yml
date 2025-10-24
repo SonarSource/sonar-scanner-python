@@ -30,7 +30,7 @@ runs:
     - uses: SonarSource/ci-github-actions/get-build-number@v1
       id: get_build_number
     - name: Cache local Poetry cache
-      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      uses: SonarSource/ci-github-actions/cache@v1
       with:
         path: ${{ inputs.poetry-cache-dir }}
         key: poetry-${{ runner.os }}-${{ hashFiles('poetry.lock') }}
