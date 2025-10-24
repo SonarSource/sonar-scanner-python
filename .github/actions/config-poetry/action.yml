@@ -5,7 +5,7 @@ description: GitHub Action to configure a poetry project
 inputs:
   python-version:
     description: The version of python to use
-    default: 3.12.12
+    default: 3.12.1
   poetry-version:
     description: The version of poetry to install
     default: 2.2.1
@@ -41,15 +41,19 @@ runs:
         path: ${{ inputs.poetry-cache-dir }}
         key: poetry-${{ runner.os }}-${{ hashFiles('poetry.lock') }}
         restore-keys: poetry-${{ runner.os }}-
-    - name: Install mise and tools
+    - name: Install mise and Python
       uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
       with:
         version: 2025.7.12
-    - name: Install Python $${{ inputs.python-version }}
+        install_args: "python@${{ inputs.python-version }}"
+    - name: Install Pipx backend for mise
       shell: bash
       run: |
-        mise install python@${{ inputs.python-version }}
-        mise use -g python@${{ inputs.python-version }}
+        pip install --user pipx
+    - name: Install tools through mise
+      uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
+      with:
+        version: 2025.7.12
     - name: Vault
       # yamllint disable rule:line-length
       id: secrets

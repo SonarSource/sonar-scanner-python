@@ -1,3 +1,3 @@
 [tools]
-jfrog-cli = "2.77.0"
-poetry = "2.2.1"
+"pipx:jfrog-cli" = "2.77.0"
+"pipx:poetry" = "2.2.1"
