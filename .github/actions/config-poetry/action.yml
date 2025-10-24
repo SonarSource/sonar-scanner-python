@@ -45,15 +45,12 @@ runs:
       uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
       with:
         version: 2025.7.12
-        install_args: "python@${{ inputs.python-version }}"
-    - name: Install Pipx backend for mise
-      shell: bash
-      run: |
-        pip install --user pipx
-    - name: Install tools through mise
+        install_args: "python@${{ inputs.python-version }}" 
+    - name: Install jfrog and poetry through mise
       uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
       with:
         version: 2025.7.12
+        experimental: true # needed to use the http backend for installation of jfrog on windows
     - name: Vault
       # yamllint disable rule:line-length
       id: secrets
@@ -74,5 +71,5 @@ runs:
       run: |
         echo "POETRY_VIRTUALENVS_PATH=${POETRY_VIRTUALENVS_PATH}" >> "$GITHUB_ENV"
         echo "POETRY_CACHE_DIR=${POETRY_CACHE_DIR}" >> "$GITHUB_ENV"
-        ${GITHUB_ACTION_PATH}/../../scripts/config-poetry.sh
+        ${GITHUB_ACTION_PATH}/config-poetry.sh
 
