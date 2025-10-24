@@ -6,7 +6,7 @@ env:
   ARTIFACTORY_DEPLOY_ACCESS_TOKEN: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-qa-deployer access_token]
   ARTIFACTORY_DEPLOY_REPO: sonarsource-pypi-public-qa
   GITHUB_TOKEN: VAULT[development/github/token/licenses-ro token]
-  DEPLOY_PULL_REQUEST: 'true'
+  DEPLOY_PULL_REQUEST: "true"
   POETRY_VIRTUALENVS_PATH: "~/.cache/poetry/venvs"
   POETRY_CACHE_DIR: "~/.cache/poetry/pypoetry"
   SONARQUBE_VERSION: 25.3.0.104237
@@ -103,21 +103,3 @@ its_macos_task:
     fingerprint_script: echo "sonarqube-$SONARQUBE_VERSION"
   its_script:
     - .cirrus/run_its.sh
-
-run_iris_task:
-  <<: *LINUX_CONTAINER_DEFINITION
-  # only executed in CRON job AND on master branch
-  only_if: $CIRRUS_CRON == $CRON_NIGHTLY_JOB_NAME && $CIRRUS_BRANCH == "master"
-  env:
-    SONAR_SOURCE_IRIS_TOKEN: VAULT[development/kv/data/iris data.next]
-  matrix:
-    - name: "IRIS SQ NEXT -> Sonarcloud.io"
-      env:
-        SONAR_TARGET_URL: https://sonarcloud.io
-        SONAR_TARGET_IRIS_TOKEN: VAULT[development/kv/data/iris data.sqc-eu]
-    - name: "IRIS SQ NEXT -> SonarQube.us"
-      env:
-        SONAR_TARGET_URL: https://sonarqube.us
-        SONAR_TARGET_IRIS_TOKEN: VAULT[development/kv/data/iris data.sqc-us]
-  script:
-    - .cirrus/run_iris.sh
