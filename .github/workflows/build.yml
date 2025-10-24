@@ -41,7 +41,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-      - name: Configure poetry for Windows
+      - name: Configure poetry 
         uses: ./.github/actions/config-poetry # We use this job to cache the poetry depend
       - run: |
           poetry install
@@ -56,7 +56,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-      - name: Configure poetry for Windows
+      - name: Configure poetry
         uses: ./.github/actions/config-poetry
       - run: |
           poetry run black src/ tests/ --check
@@ -142,6 +142,8 @@ jobs:
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
       - name: Configure poetry
         uses: ./.github/actions/config-poetry
+        with:
+          python-version: ${{ matrix.python-version }}
       - name: Execute the test suite
         run: |
           poetry run pytest tests/

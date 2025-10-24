@@ -3,6 +3,9 @@ name: Configure Poetry
 description: GitHub Action to configure a poetry project
 
 inputs:
+  python-version:
+    description: The version of python to use
+    default: 3.12.12
   poetry-version:
     description: The version of poetry to install
     default: 2.2.1
@@ -42,6 +45,11 @@ runs:
       uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
       with:
         version: 2025.7.12
+    - name: Install Python $${{ inputs.python-version }}
+      shell: bash
+      run: |
+        mise install python@${{ inputs.python-version }}
+        mise use -g python@${{ inputs.python-version }}
     - name: Vault
       # yamllint disable rule:line-length
       id: secrets
@@ -60,8 +68,6 @@ runs:
         POETRY_VIRTUALENVS_PATH: ${{ github.workspace }}/${{ inputs.poetry-virtualenvs-path }}
         POETRY_CACHE_DIR: ${{ github.workspace }}/${{ inputs.poetry-cache-dir }}
       run: |
-        mise use -g poetry@${{ inputs.poetry-version  }}
-        mise use -g jfrog-cli@${{ inputs.jfrog-version  }}
         echo "POETRY_VIRTUALENVS_PATH=${POETRY_VIRTUALENVS_PATH}" >> "$GITHUB_ENV"
         echo "POETRY_CACHE_DIR=${POETRY_CACHE_DIR}" >> "$GITHUB_ENV"
         ${GITHUB_ACTION_PATH}/../../scripts/config-poetry.sh
