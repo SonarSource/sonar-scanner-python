@@ -1,0 +1,13 @@
+[tools]
+"pipx:poetry" = "2.2.1"
+
+[tools."asdf:jfrog-cli"]
+version = "2.77.0"
+os = ["linux", "macos"]
+
+[tools."http:jfrog-cli"]
+version = "2.77.0"
+os = ["windows"]
+
+[tools."http:jfrog-cli".platforms]
+windows-x64 = { url = "https://releases.jfrog.io/artifactory/jfrog-cli/v2-jf/2.77.0/jfrog-cli-windows-amd64/jf.exe", install = "cp ${MISE_DOWNLOAD_PATH} ${MISE_INSTALL_PATH}/bin/jf.exe" }
