@@ -17,21 +17,6 @@ env:
 
 only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && ($CIRRUS_PR != "" || $CIRRUS_BRANCH == 'master' || $CIRRUS_BRANCH =~ "branch-.*")
 
-linux_container_definition: &LINUX_CONTAINER_DEFINITION
-  eks_container:
-    dockerfile: .cirrus/poetry.Dockerfile
-    cluster_name: ${CIRRUS_CLUSTER_NAME}
-    region: eu-central-1
-    namespace: default
-    builder_role: cirrus-builder
-    builder_image: docker-builder-v*
-    builder_instance_type: t3.small
-    use_in_memory_disk: true
-    docker_arguments:
-      CIRRUS_AWS_ACCOUNT: ${CIRRUS_AWS_ACCOUNT}
-    cpu: 3
-    memory: 8G
-
 .jfrog_config_template: &JFROG_CONFIG_TEMPLATE
   jfrog_config_script:
     - $JF_ALIAS config add repox --artifactory-url "$ARTIFACTORY_URL" --access-token "$ARTIFACTORY_PRIVATE_ACCESS_TOKEN"
@@ -42,12 +27,6 @@ poetry_cache_template: &POETRY_CACHE
   poetry_cache:
     folder: ~/.cache/poetry/
     fingerprint_script: cat poetry.lock
-
-.poetry_install_template: &POETRY_INSTALL
-  <<: *POETRY_CACHE
-  <<: *JFROG_CONFIG_TEMPLATE
-  poetry_install_script:
-    - poetry install
 
 .poetry_macos_template: &POETRY_MACOS_TEMPLATE
   <<: *POETRY_CACHE
