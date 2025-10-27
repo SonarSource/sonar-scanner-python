@@ -170,6 +170,8 @@ jobs:
     permissions:
       id-token: write
       contents: write
+    env:
+      SONARQUBE_VERSION: 25.3.0.104237
     steps:
       - name: Checkout repository
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
@@ -185,10 +187,8 @@ jobs:
         run: |
           mkdir -p sonarqube_cache
           if [ ! -f sonarqube_cache/sonarqube.zip ]; then
-            wget -q https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-25.3.0.104237.zip -O sonarqube_cache/sonarqube.zip
+            wget -q https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-$SONARQUBE_VERSION.zip -O sonarqube_cache/sonarqube.zip
           fi
-        env:
-          SONARQUBE_VERSION: 25.3.0.104237
       - name: Configure poetry 
         uses: ./.github/actions/config-poetry
       - name: Execute the integration tests
