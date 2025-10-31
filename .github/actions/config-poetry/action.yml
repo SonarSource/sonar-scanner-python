@@ -51,6 +51,7 @@ runs:
         version: 2025.7.12
         tool_versions: |
           python ${{ inputs.python-version }}
+        experimental: true # needed to use the http backend for installation of jfrog on windows
 
     - name: Install jfrog and poetry through mise
       uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
