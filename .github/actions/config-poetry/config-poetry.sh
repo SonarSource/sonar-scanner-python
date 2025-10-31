@@ -13,9 +13,12 @@ set_build_env() {
 }
 
 config_poetry() {
-  jf config add repox --artifactory-url "$ARTIFACTORY_URL" --access-token "$ARTIFACTORY_ACCESS_TOKEN"
-  jf poetry-config --server-id-resolve repox --repo-resolve "$ARTIFACTORY_PYPI_REPO"
-  jf poetry install --build-name="$PROJECT" --build-number="$BUILD_NUMBER"
+  echo "config add repox"
+  jf config add repox --artifactory-url "$ARTIFACTORY_URL" --access-token "$ARTIFACTORY_ACCESS_TOKEN" 
+  echo "poetry-config"
+  jf poetry-config --server-id-resolve repox --repo-resolve "$ARTIFACTORY_PYPI_REPO" 
+  echo "poetry install"
+  jf poetry install --build-name="$PROJECT" --build-number="$BUILD_NUMBER" -v
 }
 
 main() {
