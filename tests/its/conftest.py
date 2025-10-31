@@ -38,7 +38,7 @@ def check_health(sonarqube_client: SonarQubeClient) -> bool:
         return False
 
 
-if "CIRRUS_OS" in os.environ:
+if "CI" in os.environ:
     from time import sleep
 
     @pytest.fixture(scope="session")
