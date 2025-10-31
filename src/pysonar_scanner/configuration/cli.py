@@ -174,7 +174,6 @@ class CliConfigurationLoader:
             "--sonar-python-analysis-parallel",
             "--analysis-in-parallel",
             "-Dsonar.python.analysis.parallel",
-            type=bool,
             action=argparse.BooleanOptionalAction,
             help="When set to False the analysis will be single threaded",
         )
@@ -284,7 +283,6 @@ class CliConfigurationLoader:
         )
         scanner_behavior_group.add_argument(
             "--sonar-scm-exclusions-disabled",
-            type=bool,
             action=argparse.BooleanOptionalAction,
             help="Defines whether files ignored by the SCM, e.g., files listed in .gitignore, will be excluded from the analysis or not",
         )
@@ -324,7 +322,6 @@ class CliConfigurationLoader:
         )
         scanner_behavior_group.add_argument(
             "--sonar-qualitygate-wait",
-            type=bool,
             action=argparse.BooleanOptionalAction,
             help="Forces the analysis step to poll the server instance and wait for the Quality Gate status",
         )
@@ -353,7 +350,6 @@ class CliConfigurationLoader:
         )
         scanner_behavior_group.add_argument(
             "--sonar-scm-force-reload-all",
-            type=bool,
             action=argparse.BooleanOptionalAction,
             help="Set this property to true to load blame information for all files, which may significantly increase analysis duration",
         )
@@ -364,7 +360,6 @@ class CliConfigurationLoader:
         )
         scanner_behavior_group.add_argument(
             "--sonar-python-skip-unchanged",
-            type=bool,
             action=argparse.BooleanOptionalAction,
             help="Override the SonarQube configuration of skipping or not the analysis of unchanged Python files",
         )
@@ -511,7 +506,6 @@ class CliConfigurationLoader:
         reports_group.add_argument(
             "--sonar-python-xunit-skip-details",
             "--xunit-skip-details",
-            type=bool,
             action=argparse.BooleanOptionalAction,
             help="When enabled, the test execution statistics is provided only on project level",
         )
