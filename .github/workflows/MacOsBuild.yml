@@ -1,0 +1,81 @@
+name: macOS Build and Tests
+on:
+  schedule:
+    - cron: "45 4 * * 1-5" # Monday to Friday at 06:45 CEST (04:45 UTC)
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qa_macos:
+    name: "[macOS] Test Python ${{ matrix.python-version }}"
+    runs-on: macos-latest-xlarge
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9.18", "3.10.13", "3.11.7", "3.12.1", "3.13.2"]
+    steps:
+      - name: Setup Cloudflare WARP
+        uses: SonarSource/gh-action_setup-cloudflare-warp@v1
+
+      - name: Checkout repository
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Install mise and tools
+        uses: jdx/mise-action@e3d7b8d67a7958d1207f6ed871e83b1ea780e7b0 # v3.3.1
+
+      - name: Configure poetry
+        uses: ./.github/actions/config-poetry
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Run tests for Python ${{ matrix.python-version }}
+        run: |
+          echo "========================================================================"
+          echo "Running tests on macOS with Python version: ${{ matrix.python-version }}"
+          echo "========================================================================"
+          poetry run python --version
+          poetry install
+          poetry run pytest tests/
+
+  its_macos:
+    name: "[macOS] Integration Tests"
+    runs-on: macos-latest-xlarge
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      SONARQUBE_VERSION: 25.3.0.104237
+    steps:
+      - name: Setup Cloudflare WARP
+        uses: SonarSource/gh-action_setup-cloudflare-warp@v1
+
+      - name: Checkout repository
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Install mise and tools
+        uses: jdx/mise-action@e3d7b8d67a7958d1207f6ed871e83b1ea780e7b0 # v3.3.1
+
+      - name: Cache SonarQube
+        uses: SonarSource/ci-github-actions/cache@v1
+        id: sonarqube-cache
+        with:
+          path: sonarqube_cache/
+          key: sonarqube-25.3.0.104237
+          restore-keys: cache-${{ runner.os }}-
+      - name: Download SonarQube
+        if: ${{ !steps.sonarqube-cache.outputs.cache-hit }}
+        run: |
+          mkdir -p sonarqube_cache
+          if [ ! -f sonarqube_cache/sonarqube.zip ]; then
+            wget -q https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-$SONARQUBE_VERSION.zip -O sonarqube_cache/sonarqube.zip
+          fi
+      - name: Configure poetry
+        uses: ./.github/actions/config-poetry
+      - name: Execute the integration tests
+        run: ./.github/scripts/run_its.sh
