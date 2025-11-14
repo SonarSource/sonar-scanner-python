@@ -112,6 +112,6 @@ Run `poetry run mypy src/ tests/ --ignore-missing-imports` to execute the type c
 Before pushing, please check if all files have a license header.
 If not all files have a license header please execute: 
 ```
-poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d src/
-poetry run licenseheaders -t license_header.tmpl -o "SonarSource SA" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d tests/
+poetry run licenseheaders -t license_header.tmpl -o "SonarSource Sàrl" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d src/
+poetry run licenseheaders -t license_header.tmpl -o "SonarSource Sàrl" -y 2011-2024 -n "Sonar Scanner Python" -E .py -d tests/
 ```
