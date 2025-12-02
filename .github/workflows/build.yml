@@ -22,7 +22,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
       - name: Install mise and tools
-        uses: jdx/mise-action@e3d7b8d67a7958d1207f6ed871e83b1ea780e7b0 #v3.3.1
+        uses: jdx/mise-action@146a28175021df8ca24f8ee1828cc2a60f980bd5 # v3.5.1
       - name: Build the scanner
         uses: SonarSource/ci-github-actions/build-poetry@v1
         id: build-poetry
@@ -75,7 +75,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
       - name: Install mise and tools
-        uses: jdx/mise-action@e3d7b8d67a7958d1207f6ed871e83b1ea780e7b0 #v3.3.1
+        uses: jdx/mise-action@146a28175021df8ca24f8ee1828cc2a60f980bd5 # v3.5.1
       - name: Check for incorrect documentation
         run: |
           poetry run python tools/generate_cli_documentation.py
@@ -119,7 +119,7 @@ jobs:
         with:
           name: coverage-reports
       - name: Install mise and tools
-        uses: jdx/mise-action@e3d7b8d67a7958d1207f6ed871e83b1ea780e7b0 #v3.3.1
+        uses: jdx/mise-action@146a28175021df8ca24f8ee1828cc2a60f980bd5 # v3.5.1
       - name: Analysis the project on next
         uses: SonarSource/ci-github-actions/build-poetry@v1
         with:
