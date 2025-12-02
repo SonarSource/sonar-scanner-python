@@ -758,14 +758,14 @@ reference = "jfrog-server"
 
 [[package]]
 name = "pytest-subtests"
-version = "0.14.1"
+version = "0.15.0"
 description = "unittest subTest() support and subtests fixture"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "pytest_subtests-0.14.1-py3-none-any.whl", hash = "sha256:e92a780d98b43118c28a16044ad9b841727bd7cb6a417073b38fd2d7ccdf052d"},
-    {file = "pytest_subtests-0.14.1.tar.gz", hash = "sha256:350c00adc36c3aff676a66135c81aed9e2182e15f6c3ec8721366918bbbf7580"},
+    {file = "pytest_subtests-0.15.0-py3-none-any.whl", hash = "sha256:da2d0ce348e1f8d831d5a40d81e3aeac439fec50bd5251cbb7791402696a9493"},
+    {file = "pytest_subtests-0.15.0.tar.gz", hash = "sha256:cb495bde05551b784b8f0b8adfaa27edb4131469a27c339b80fd8d6ba33f887c"},
 ]
 
 [package.dependencies]
@@ -1133,4 +1133,4 @@ reference = "jfrog-server"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9"
-content-hash = "05bea44c67e5a5cedd5d3d1774c02bc22d69edbba07875c36b2466a1a098f5d3"
+content-hash = "7dcf09d0fb943b3b5a94e4b73eda84ad7489d1e4f9901b296ff3577880bde59c"
