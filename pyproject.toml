@@ -39,15 +39,15 @@ jproperties = "2.1.2"
 [tool.poetry.group.dev]
 [tool.poetry.group.dev.dependencies]
 black = "25.1.0"
-coverage = '>=7.3.3'
-licenseheaders = '>=0.8.8'
-mypy = '>=1.7.1'
+coverage = "7.10.6"
+licenseheaders = "0.8.8"
+mypy = "1.15.0"
 pytest = '8.4.2'
 pytest-cov = '7.0.0'
 pytest-subtests = "0.14.1"
 pytest-docker = "3.2.0"
 debugpy = "1.8.13"
-types-requests = "^2.32.0.20250328"
+types-requests = "2.32.0.20250328"
 
 [[tool.poetry.packages]]
 from = 'src'
