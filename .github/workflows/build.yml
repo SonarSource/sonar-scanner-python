@@ -1,5 +1,7 @@
 name: Build
 on:
+  schedule:
+    - cron: "0 3 * * *" # Every day at 03:00 UTC
   push:
     branches: [master, branch-*, dogfood-*]
   pull_request:
@@ -128,8 +130,8 @@ jobs:
           artifactory-deployer-role: qa-deployer
 
   qa:
-    name: "Test Python ${{ matrix.python-version }}"
-    runs-on: github-ubuntu-latest-s
+    name: "[${{ matrix.runner }}] Test Python ${{ matrix.python-version }}"
+    runs-on: ${{ matrix.runner }}
     needs: [install_deps]
     permissions:
       id-token: write
@@ -137,9 +139,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        runner: [github-ubuntu-latest-s, macos-latest-xlarge]
         python-version:
           ["3.9.18", "3.9.6", "3.10.13", "3.11.7", "3.12.1", "3.13.2", "3.14.0"]
     steps:
+      - name: Setup Cloudflare WARP
+        if: ${{ matrix.runner == 'macos-latest-xlarge' }}
+        uses: SonarSource/gh-action_setup-cloudflare-warp@v1
+
       - name: Checkout repository
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
       - name: Configure poetry
@@ -167,14 +174,22 @@ jobs:
           poetry run pytest tests/
 
   its:
-    name: "Integration Tests"
-    runs-on: github-ubuntu-latest-s
+    name: "[${{ matrix.runner }}] Integration Tests"
+    runs-on: ${{ matrix.runner }}
     permissions:
       id-token: write
       contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [github-ubuntu-latest-s, macos-latest-xlarge]
     env:
       SONARQUBE_VERSION: 25.3.0.104237
     steps:
+      - name: Setup Cloudflare WARP
+        if: ${{ matrix.runner == 'macos-latest-xlarge' }}
+        uses: SonarSource/gh-action_setup-cloudflare-warp@v1
+
       - name: Checkout repository
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
       - name: Cache SonarQube
