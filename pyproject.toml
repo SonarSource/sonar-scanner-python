@@ -39,7 +39,7 @@ jproperties = "2.1.2"
 [tool.poetry.group.dev]
 [tool.poetry.group.dev.dependencies]
 black = "25.1.0"
-coverage = "7.10.6"
+coverage = "7.13.0"
 licenseheaders = "0.8.8"
 mypy = "1.15.0"
 pytest = '8.4.2'
