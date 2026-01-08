@@ -1,0 +1,88 @@
+name: macOS Nightly Build
+
+on:
+  schedule:
+    # Run at 3:00 AM UTC every day (5:00 AM CEST / 4:00 AM CET)
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+    inputs:
+      skip_its:
+        description: "Skip integration tests"
+        required: false
+        default: false
+        type: boolean
+
+# Only allow one instance of this workflow to run at a time
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  qa-macos:
+    name: "Test macOS Python ${{ matrix.python-version }}"
+    runs-on: github-macos-large
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9.18", "3.10.13", "3.11.7", "3.12.1", "3.13.2"]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Configure poetry
+        uses: ./.github/actions/config-poetry
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Execute the test suite
+        run: poetry run pytest tests/
+
+  its-macos:
+    name: "macOS Integration Tests"
+    runs-on: github-macos-large
+    if: ${{ !inputs.skip_its }}
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      SONARQUBE_VERSION: 25.3.0.104237
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Cache SonarQube
+        uses: SonarSource/ci-github-actions/cache@v1
+        id: sonarqube-cache
+        with:
+          path: sonarqube_cache/
+          key: sonarqube-macos-${{ env.SONARQUBE_VERSION }}
+          restore-keys: sonarqube-macos-
+
+      - name: Download SonarQube
+        if: ${{ !steps.sonarqube-cache.outputs.cache-hit }}
+        run: |
+          mkdir -p sonarqube_cache
+          if [ ! -f sonarqube_cache/sonarqube.zip ]; then
+            wget -q https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-$SONARQUBE_VERSION.zip -O sonarqube_cache/sonarqube.zip
+          fi
+
+      - name: Configure poetry
+        uses: ./.github/actions/config-poetry
+
+      - name: Execute the integration tests
+        run: ./.github/scripts/run_its.sh
+
+  notify-on-failure:
+    name: "Notify on Failure"
+    runs-on: github-ubuntu-latest-s
+    needs: [qa-macos, its-macos]
+    if: failure() && github.event_name == 'schedule'
+    steps:
+      - name: Notify team about nightly failure
+        run: |
+          echo "macOS nightly build failed. Check the workflow run for details."
+          echo "Workflow URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
