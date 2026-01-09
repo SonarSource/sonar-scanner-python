@@ -179,12 +179,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
       - name: Cache SonarQube
-        uses: SonarSource/ci-github-actions/cache@v1
+        uses: SonarSource/gh-action_cache@v1
         id: sonarqube-cache
         with:
           path: sonarqube_cache/
-          key: sonarqube-25.3.0.104237
-          restore-keys: cache-${{ runner.os }}-
+          key: sonarqube-${{ env.SONARQUBE_VERSION }}
+          restore-keys: sonarqube-
       - name: Download SonarQube
         if: ${{ !steps.sonarqube-cache.outputs.cache-hit }}
         run: |

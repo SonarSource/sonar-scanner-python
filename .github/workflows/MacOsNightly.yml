@@ -65,7 +65,7 @@ jobs:
         uses: SonarSource/gh-action_setup-cloudflare-warp@v1
 
       - name: Cache SonarQube
-        uses: SonarSource/ci-github-actions/cache@v1
+        uses: SonarSource/gh-action_cache@v1
         id: sonarqube-cache
         with:
           path: sonarqube_cache/
