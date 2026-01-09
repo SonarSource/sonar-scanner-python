@@ -1,6 +1,10 @@
 name: macOS Nightly Build
 
 on:
+  # TODO: Remove this trigger before merging to master
+  push:
+    branches:
+      - MJ/SCANPY-220
   schedule:
     # Run at 3:00 AM UTC every day (5:00 AM CEST / 4:00 AM CET)
     - cron: "0 3 * * *"
@@ -20,7 +24,7 @@ concurrency:
 jobs:
   qa-macos:
     name: "Test macOS Python ${{ matrix.python-version }}"
-    runs-on: github-macos-large
+    runs-on: macos-latest-xlarge
     permissions:
       id-token: write
       contents: read
@@ -32,6 +36,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
 
+      - name: Setup Cloudflare WARP
+        uses: SonarSource/gh-action_setup-cloudflare-warp@v1
+
       - name: Configure poetry
         uses: ./.github/actions/config-poetry
         with:
@@ -42,7 +49,7 @@ jobs:
 
   its-macos:
     name: "macOS Integration Tests"
-    runs-on: github-macos-large
+    runs-on: macos-latest-xlarge
     if: ${{ !inputs.skip_its }}
     permissions:
       id-token: write
@@ -52,6 +59,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Setup Cloudflare WARP
+        uses: SonarSource/gh-action_setup-cloudflare-warp@v1
 
       - name: Cache SonarQube
         uses: SonarSource/ci-github-actions/cache@v1
@@ -77,12 +87,25 @@ jobs:
 
   notify-on-failure:
     name: "Notify on Failure"
-    runs-on: github-ubuntu-latest-s
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     needs: [qa-macos, its-macos]
     if: failure() && github.event_name == 'schedule'
     steps:
-      - name: Notify team about nightly failure
+      - name: Write failure summary
         run: |
-          echo "macOS nightly build failed. Check the workflow run for details."
-          echo "Workflow URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo "## macOS Nightly Build Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The scheduled macOS nightly build has failed." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Send Slack notification
+        uses: SonarSource/gh-action_slack-notify@1.0.1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          slackChannel: squad-python-notifs
 
