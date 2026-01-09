@@ -56,6 +56,7 @@ jobs:
       contents: read
     env:
       SONARQUBE_VERSION: 25.3.0.104237
+      SKIP_DOCKER: true  # Use locally-started SonarQube instead of Docker
     steps:
       - name: Checkout repository
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
