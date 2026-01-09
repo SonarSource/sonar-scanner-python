@@ -1,10 +1,6 @@
 name: macOS Nightly Build
 
 on:
-  # TODO: Remove this trigger before merging to master
-  push:
-    branches:
-      - MJ/SCANPY-220
   schedule:
     # Run at 3:00 AM UTC every day (5:00 AM CEST / 4:00 AM CET)
     - cron: "0 3 * * *"
