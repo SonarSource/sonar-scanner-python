@@ -1,10 +1,6 @@
 name: macOS Nightly Build
 
 on:
-  # TODO: Remove this trigger before merging
-  push:
-    branches:
-      - MJ/SCANPY-220
   schedule:
     # Run at 3:00 AM UTC every day (5:00 AM CEST / 4:00 AM CET)
     - cron: "0 3 * * *"
@@ -12,11 +8,6 @@ on:
     inputs:
       skip_its:
         description: "Skip integration tests"
-        required: false
-        default: false
-        type: boolean
-      test_failure_notification:
-        description: "Force a failure to test the Slack notification"
         required: false
         default: false
         type: boolean
@@ -51,11 +42,6 @@ jobs:
 
       - name: Execute the test suite
         run: poetry run pytest tests/
-
-      - name: "[Debug] Force failure to test Slack notification"
-        # TODO: Remove 'push' condition before merging
-        if: ${{ inputs.test_failure_notification || github.event_name == 'push' }}
-        run: exit 1
 
   its-macos:
     name: "macOS Integration Tests"
@@ -103,8 +89,7 @@ jobs:
       id-token: write
       contents: read
     needs: [qa-macos, its-macos]
-    # TODO: Remove 'push' condition before merging
-    if: failure() && (github.event_name == 'schedule' || github.event_name == 'push' || inputs.test_failure_notification)
+    if: failure() && github.event_name == 'schedule'
     steps:
       - name: Write failure summary
         run: |
