@@ -15,6 +15,8 @@ set_build_env() {
 config_poetry() {
   jf config add repox --artifactory-url "$ARTIFACTORY_URL" --access-token "$ARTIFACTORY_ACCESS_TOKEN"
   jf poetry-config --server-id-resolve repox --repo-resolve "$ARTIFACTORY_PYPI_REPO"
+  # force poetry to use python available in the environment to avoid cached .venv to point to old python version
+  jf poetry env use python --build-name="$PROJECT" --build-number="$BUILD_NUMBER"
   jf poetry install --build-name="$PROJECT" --build-number="$BUILD_NUMBER"
 }
 
