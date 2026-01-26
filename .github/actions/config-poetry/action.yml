@@ -37,11 +37,13 @@ runs:
     - uses: SonarSource/ci-github-actions/get-build-number@v1
       id: get_build_number
     - name: Cache local Poetry cache
-      uses: SonarSource/ci-github-actions/cache@v1
+      uses: SonarSource/gh-action_cache@v1
       with:
         path: ${{ inputs.poetry-cache-dir }}
-        key: poetry-${{ runner.os }}-${{ hashFiles('poetry.lock') }}
-        restore-keys: poetry-${{ runner.os }}-
+        key: poetry-${{ runner.os }}-${{ inputs.python-version }}-${{ hashFiles('poetry.lock') }}
+        restore-keys: |
+          poetry-${{ runner.os }}-${{ inputs.python-version }}-
+          poetry-${{ runner.os }}-
 
       # python needs to be installed before jfrog and poetry
       # (see https://xtranet-sonarsource.atlassian.net/wiki/spaces/Platform/pages/4344217683/Mise+Poetry+Install+-+GitHub)

@@ -1,0 +1,120 @@
+name: macOS Nightly Build
+
+on:
+  schedule:
+    # Run at 3:00 AM UTC every day (5:00 AM CEST / 4:00 AM CET)
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+    inputs:
+      skip_its:
+        description: "Skip integration tests"
+        required: false
+        default: false
+        type: boolean
+
+# Only allow one instance of this workflow to run at a time
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  qa-macos:
+    name: "Test macOS Python ${{ matrix.python-version }}"
+    runs-on: macos-latest-xlarge
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9.18", "3.10.13", "3.11.7", "3.12.1", "3.13.2"]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Setup Cloudflare WARP
+        uses: SonarSource/gh-action_setup-cloudflare-warp@v1
+
+      - name: Configure poetry
+        uses: ./.github/actions/config-poetry
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Execute the test suite
+        run: poetry run pytest tests/
+
+  its-macos:
+    name: "macOS Integration Tests"
+    runs-on: macos-latest-xlarge
+    if: ${{ !inputs.skip_its }}
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      SONARQUBE_VERSION: 25.3.0.104237
+      SKIP_DOCKER: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Setup Cloudflare WARP
+        uses: SonarSource/gh-action_setup-cloudflare-warp@v1
+
+      - name: Cache SonarQube
+        uses: SonarSource/gh-action_cache@v1
+        id: sonarqube-cache
+        with:
+          path: sonarqube_cache/
+          key: sonarqube-macos-${{ env.SONARQUBE_VERSION }}
+          restore-keys: sonarqube-macos-
+
+      - name: Download SonarQube
+        if: ${{ !steps.sonarqube-cache.outputs.cache-hit }}
+        run: |
+          mkdir -p sonarqube_cache
+          if [ ! -f sonarqube_cache/sonarqube.zip ]; then
+            wget -q https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-$SONARQUBE_VERSION.zip -O sonarqube_cache/sonarqube.zip
+          fi
+
+      - name: Configure poetry
+        uses: ./.github/actions/config-poetry
+
+      - name: Execute the integration tests
+        run: ./.github/scripts/run_its.sh
+
+  notify-on-failure:
+    name: "Notify on Failure"
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    needs: [qa-macos, its-macos]
+    if: failure() && github.event_name == 'schedule'
+    steps:
+      - name: Write failure summary
+        run: |
+          echo "## macOS Nightly Build Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The scheduled macOS nightly build has failed." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Vault Secrets
+        id: secrets
+        uses: SonarSource/vault-action-wrapper@v3
+        with:
+          secrets: |
+            development/kv/data/slack token | SLACK_TOKEN;
+
+      - name: Send Slack notification
+        uses: rtCamp/action-slack-notify@e31e87e03dd19038e411e38ae27cbad084a90661 # v2.3.3
+        env:
+          SLACK_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).SLACK_TOKEN }}
+          SLACK_CHANNEL: squad-python-notifs
+          SLACK_COLOR: danger
+          SLACK_TITLE: Build Failed
+          SLACK_MESSAGE: |
+            Workflow failed in ${{ github.repository }} 🚨
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          SLACK_USERNAME: BuildBot
+
