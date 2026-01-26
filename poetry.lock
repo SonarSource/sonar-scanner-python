@@ -642,14 +642,14 @@ reference = "jfrog-server"
 
 [[package]]
 name = "pyfakefs"
-version = "5.9.3"
+version = "5.10.2"
 description = "Implements a fake file system that mocks the Python file system modules."
 optional = false
 python-versions = ">=3.7"
 groups = ["main"]
 files = [
-    {file = "pyfakefs-5.9.3-py3-none-any.whl", hash = "sha256:14a0514e94ff156543208c0b4832facc68bdf19de993799b67d58dd5ca05ef30"},
-    {file = "pyfakefs-5.9.3.tar.gz", hash = "sha256:b458b11abc8862d4d8500816170a9b25e10d07437332b9dffd651069f3d4c40c"},
+    {file = "pyfakefs-5.10.2-py3-none-any.whl", hash = "sha256:6ff0e84653a71efc6a73f9ee839c3141e3a7cdf4e1fb97666f82ac5b24308d64"},
+    {file = "pyfakefs-5.10.2.tar.gz", hash = "sha256:8ae0e5421e08de4e433853a4609a06a1835f4bc2a3ce13b54f36713a897474ba"},
 ]
 
 [package.source]
@@ -1133,4 +1133,4 @@ reference = "jfrog-server"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9"
-content-hash = "05bea44c67e5a5cedd5d3d1774c02bc22d69edbba07875c36b2466a1a098f5d3"
+content-hash = "70645307c211ac689767331c8a1ddbe76c5c950329ba3ba9101a8f5d6b78f770"
