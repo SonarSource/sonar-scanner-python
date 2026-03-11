@@ -20,9 +20,9 @@ jobs:
       contents: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Install mise and tools
-        uses: jdx/mise-action@e3d7b8d67a7958d1207f6ed871e83b1ea780e7b0 #v3.3.1
+        uses: jdx/mise-action@5228313ee0372e111a38da051671ca30fc5a96db # v3.6.3
       - name: Build the scanner
         uses: SonarSource/ci-github-actions/build-poetry@v1
         id: build-poetry
@@ -40,7 +40,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Configure poetry
         uses: ./.github/actions/config-poetry # We use this job to cache the poetry depend
       - run: |
@@ -55,7 +55,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Configure poetry
         uses: ./.github/actions/config-poetry
       - run: |
@@ -73,9 +73,9 @@ jobs:
       contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Install mise and tools
-        uses: jdx/mise-action@e3d7b8d67a7958d1207f6ed871e83b1ea780e7b0 #v3.3.1
+        uses: jdx/mise-action@5228313ee0372e111a38da051671ca30fc5a96db # v3.6.3
       - name: Check for incorrect documentation
         run: |
           poetry run python tools/generate_cli_documentation.py
@@ -90,14 +90,14 @@ jobs:
       contents: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Configure poetry
         uses: ./.github/actions/config-poetry
       - run: |
           poetry run pytest --cov-report=xml:coverage.xml --cov-config=pyproject.toml --cov=src --cov-branch tests
           poetry run mypy src/ > mypy-report.txt || true
       - name: Upload coverage artifacts
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: coverage-reports
           path: |
@@ -113,13 +113,13 @@ jobs:
       contents: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Download coverage artifacts
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: coverage-reports
       - name: Install mise and tools
-        uses: jdx/mise-action@e3d7b8d67a7958d1207f6ed871e83b1ea780e7b0 #v3.3.1
+        uses: jdx/mise-action@5228313ee0372e111a38da051671ca30fc5a96db # v3.6.3
       - name: Analysis the project on next
         uses: SonarSource/ci-github-actions/build-poetry@v1
         with:
@@ -141,7 +141,7 @@ jobs:
           ["3.9.18", "3.9.6", "3.10.13", "3.11.7", "3.12.1", "3.13.2", "3.14.0"]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Configure poetry
         uses: ./.github/actions/config-poetry
         with:
@@ -159,7 +159,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Configure poetry for Windows
         uses: ./.github/actions/config-poetry
       - name: Execute the test suite
@@ -177,7 +177,7 @@ jobs:
       SKIP_DOCKER: true
     steps:
       - name: Checkout repository
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Cache SonarQube
         uses: SonarSource/gh-action_cache@v1
         id: sonarqube-cache
