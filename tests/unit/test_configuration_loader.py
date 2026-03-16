@@ -312,6 +312,58 @@ class TestConfigurationLoader(pyfakefs.TestCase):
         "sys.argv",
         [
             "myscript.py",
+            "--token",
+            "myToken",
+            "--sonar-project-key",
+            "myProjectKey",
+            "--toml-path",
+            "custom/path/pyproject.toml",
+        ],
+    )
+    def test_load_pyproject_toml_from_toml_path_with_file(self, mock_get_os, mock_get_arch):
+        self.fs.create_dir("custom/path")
+        self.fs.create_file(
+            "custom/path/pyproject.toml",
+            contents=(
+                """
+                [tool.sonar]
+                projectKey = "custom-path-project-key"
+                project-name = "Custom Path Project"
+                sources = "src/main"
+                tests= "src/test"
+                scanner.javaHeapSize = "8000Mb"
+                """
+            ),
+        )
+        configuration = ConfigurationLoader.load()
+        expected_configuration = {
+            SONAR_TOKEN: "myToken",
+            SONAR_PROJECT_KEY: "myProjectKey",
+            SONAR_PROJECT_NAME: "Custom Path Project",
+            SONAR_SOURCES: "src/main",
+            SONAR_TESTS: "src/test",
+            SONAR_SCANNER_APP: "python",
+            SONAR_SCANNER_APP_VERSION: "1.0",
+            SONAR_SCANNER_BOOTSTRAP_START_TIME: configuration[SONAR_SCANNER_BOOTSTRAP_START_TIME],
+            SONAR_VERBOSE: False,
+            SONAR_SCANNER_SKIP_JRE_PROVISIONING: False,
+            SONAR_PROJECT_BASE_DIR: os.getcwd(),
+            SONAR_SCANNER_CONNECT_TIMEOUT: 5,
+            SONAR_SCANNER_SOCKET_TIMEOUT: 60,
+            SONAR_SCANNER_RESPONSE_TIMEOUT: 0,
+            SONAR_SCANNER_KEYSTORE_PASSWORD: "changeit",
+            SONAR_SCANNER_TRUSTSTORE_PASSWORD: "changeit",
+            SONAR_SCANNER_OS: Os.LINUX.value,
+            SONAR_SCANNER_ARCH: Arch.X64.value,
+            TOML_PATH: "custom/path/pyproject.toml",
+            SONAR_SCANNER_JAVA_HEAP_SIZE: "8000Mb",
+        }
+        self.assertDictEqual(configuration, expected_configuration)
+
+    @patch(
+        "sys.argv",
+        [
+            "myscript.py",
         ],
     )
     def test_load_coveragerc_properties(self, mock_get_os, mock_get_arch):

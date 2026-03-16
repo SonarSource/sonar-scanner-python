@@ -85,10 +85,16 @@ Properties in `pyproject.toml` files are expected to be provided in camel case. 
 project-key=My Project key # valid alias for projectKey
 ```
 
-By default, the scanner will expect the `pyproject.toml` file to be present in the current directory. However, its path can be provided manually through the `toml-path` CLI argument as well as through the `sonar.projectBaseDir` argument. For instance:
+By default, the scanner will expect the `pyproject.toml` file to be present in the current directory. However, its path can be provided manually through the `toml-path` CLI argument as well as through the `sonar.projectBaseDir` argument. The `--toml-path` argument accepts either the path to the `pyproject.toml` file itself or to the folder containing it. For instance:
 
 ```
 pysonar --toml-path "path/to/pyproject.toml"
+```
+
+Or equivalently:
+
+```
+pysonar --toml-path "path/to"
 ```
 
 Or:

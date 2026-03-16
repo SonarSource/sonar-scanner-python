@@ -37,8 +37,11 @@ class TomlProperties:
 
 class TomlConfigurationLoader:
     @staticmethod
-    def load(base_dir: Path) -> TomlProperties:
-        filepath = base_dir / "pyproject.toml"
+    def load(toml_path: Path) -> TomlProperties:
+        if toml_path.name == "pyproject.toml":
+            filepath = toml_path
+        else:
+            filepath = toml_path / "pyproject.toml"
         if not os.path.isfile(filepath):
             logging.debug(f"No pyproject.toml at {filepath}")
             return TomlProperties({}, {})

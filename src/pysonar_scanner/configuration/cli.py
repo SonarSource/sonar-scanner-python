@@ -142,7 +142,7 @@ class CliConfigurationLoader:
         parser.add_argument(
             "--toml-path",
             type=str,
-            help="Path to the pyproject.toml file. If not provided, it will look in the SONAR_PROJECT_BASE_DIR",
+            help="Path to the pyproject.toml file or to the folder containing it. If not provided, it will look in the SONAR_PROJECT_BASE_DIR",
         )
 
         parser.add_argument(

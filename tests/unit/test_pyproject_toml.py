@@ -167,6 +167,25 @@ class TestTomlFile(TestCase):
         self.assertEqual(properties.sonar_properties.get("sonar.projectKey"), "custom-path-project")
         self.assertEqual(properties.sonar_properties.get("sonar.projectName"), "Custom Path Project")
 
+    def test_load_toml_file_from_direct_file_path(self):
+        self.fs.create_dir("custom/path")
+        self.fs.create_file(
+            "custom/path/pyproject.toml",
+            contents="""
+            [tool.sonar]
+            projectKey = "direct-file-project"
+            projectName = "Direct File Project"
+            """,
+        )
+        properties = TomlConfigurationLoader.load(Path("custom/path/pyproject.toml"))
+
+        self.assertEqual(properties.sonar_properties.get("sonar.projectKey"), "direct-file-project")
+        self.assertEqual(properties.sonar_properties.get("sonar.projectName"), "Direct File Project")
+
+    def test_load_toml_file_from_direct_file_path_missing(self):
+        properties = TomlConfigurationLoader.load(Path("nonexistent/pyproject.toml"))
+        self.assertEqual(len(properties.sonar_properties), 0)
+
     def test_load_toml_file_project_content(self):
         self.fs.create_file(
             "pyproject.toml",
