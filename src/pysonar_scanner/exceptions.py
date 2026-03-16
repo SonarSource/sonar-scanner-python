@@ -37,7 +37,8 @@ class MissingPropertyException(Exception):
         missing_properties = ", ".join([f"{prop.property} ({prop.cli_arg})" for prop in properties])
         fix_message = (
             "You can provide these properties using one of the following methods:\n"
-            "- Command line arguments (e.g., --sonar.projectKey=myproject)\n"
+            "- Command line arguments (e.g., --sonar-project-key=myproject)\n"
+            "- Analysis parameters with -D prefix (e.g., -Dsonar.projectKey=myproject)\n"
             "- Environment variables (e.g., SONAR_PROJECTKEY=myproject)\n"
             "- Properties file (sonar-project.properties)\n"
             "- Project configuration files (e.g., build.gradle, pom.xml)"
