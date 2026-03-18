@@ -73,6 +73,7 @@
 | `--sonar-scanner-arch`, `-Dsonar.scanner.arch` | Architecture on which the scanner will be running |
 | `--sonar-scanner-cloud-url`, `-Dsonar.scanner.cloudUrl` | SonarQube Cloud base URL, https://sonarcloud.io for example |
 | `--sonar-scanner-connect-timeout`, `-Dsonar.scanner.connectTimeout` | Time period to establish connections with the server (in seconds) |
+| `--dry-run`, `--no-dry-run` | Enable dry-run mode to validate configuration without connecting to SonarQube server or submitting analysis. See [Dry Run Mode](DRY_RUN_MODE.md) for details. Can also be set via `-Dsonar.scanner.dryRun=true` or `SONAR_SCANNER_DRY_RUN=true` |
 | `--sonar-scanner-internal-dump-to-file`, `-Dsonar.scanner.internal.dumpToFile` | Filename where the input to the scanner engine will be dumped. Useful for debugging |
 | `--sonar-scanner-internal-sq-version`, `-Dsonar.scanner.internal.sqVersion` | Emulate the result of the call to get SQ server version.  Useful for debugging with --sonar-scanner-internal-dump-to-file |
 | `--sonar-scanner-java-exe-path`, `-Dsonar.scanner.javaExePath` | If defined, the scanner engine will be run with this JRE |
