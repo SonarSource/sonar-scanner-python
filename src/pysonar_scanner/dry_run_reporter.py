@@ -206,9 +206,7 @@ class CoverageReportValidator:
             )
         except ET.ParseError as e:
             validation_result.add_error(
-                f"Coverage report is not valid XML (Cobertura format): {report_path}\n" f"  Parse error: {str(e)}"
+                f"Coverage report is not valid XML (Cobertura format): {report_path}\n  Parse error: {str(e)}"
             )
         except Exception as e:
-            validation_result.add_error(
-                f"Error validating coverage report format: {report_path}\n" f"  Error: {str(e)}"
-            )
+            validation_result.add_error(f"Error validating coverage report format: {report_path}\n  Error: {str(e)}")
