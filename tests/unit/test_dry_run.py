@@ -156,9 +156,7 @@ class TestCoverageReportValidator(pyfakefs.TestCase):
         self.fs.create_dir("/project")
         result = ValidationResult()
 
-        CoverageReportValidator.validate_coverage_reports(
-            "coverage.xml", "/project", result
-        )
+        CoverageReportValidator.validate_coverage_reports("coverage.xml", "/project", result)
 
         assert not result.is_valid()
         assert len(result.errors) == 1
@@ -170,9 +168,7 @@ class TestCoverageReportValidator(pyfakefs.TestCase):
         self.fs.create_file("/project/coverage.xml", contents='<?xml version="1.0"?>\n<coverage></coverage>')
         result = ValidationResult()
 
-        CoverageReportValidator.validate_coverage_reports(
-            "coverage.xml", "/project", result
-        )
+        CoverageReportValidator.validate_coverage_reports("coverage.xml", "/project", result)
 
         assert result.is_valid()
         assert len(result.warnings) == 0
@@ -186,9 +182,7 @@ class TestCoverageReportValidator(pyfakefs.TestCase):
         self.fs.create_file("/project/coverage2.xml", contents='<?xml version="1.0"?>\n<coverage></coverage>')
         result = ValidationResult()
 
-        CoverageReportValidator.validate_coverage_reports(
-            "coverage1.xml, coverage2.xml", "/project", result
-        )
+        CoverageReportValidator.validate_coverage_reports("coverage1.xml, coverage2.xml", "/project", result)
 
         assert result.is_valid()
 
@@ -197,9 +191,7 @@ class TestCoverageReportValidator(pyfakefs.TestCase):
         self.fs.create_dir("/project/coverage.xml")
         result = ValidationResult()
 
-        CoverageReportValidator.validate_coverage_reports(
-            "coverage.xml", "/project", result
-        )
+        CoverageReportValidator.validate_coverage_reports("coverage.xml", "/project", result)
 
         assert not result.is_valid()
         assert "not a file" in result.errors[0]
@@ -209,24 +201,17 @@ class TestCoverageReportValidator(pyfakefs.TestCase):
         self.fs.create_file("/project/coverage.xml", contents="not valid xml")
         result = ValidationResult()
 
-        CoverageReportValidator.validate_coverage_reports(
-            "coverage.xml", "/project", result
-        )
+        CoverageReportValidator.validate_coverage_reports("coverage.xml", "/project", result)
 
         assert not result.is_valid()
         assert "not valid XML" in result.errors[0]
 
     def test_validate_report_wrong_root_element(self):
         self.fs.create_dir("/project")
-        self.fs.create_file(
-            "/project/coverage.xml",
-            contents='<?xml version="1.0"?>\n<report></report>'
-        )
+        self.fs.create_file("/project/coverage.xml", contents='<?xml version="1.0"?>\n<report></report>')
         result = ValidationResult()
 
-        CoverageReportValidator.validate_coverage_reports(
-            "coverage.xml", "/project", result
-        )
+        CoverageReportValidator.validate_coverage_reports("coverage.xml", "/project", result)
 
         assert result.is_valid()
         assert len(result.warnings) == 1
@@ -238,9 +223,7 @@ class TestCoverageReportValidator(pyfakefs.TestCase):
         self.fs.create_file("/project/exists.xml", contents='<?xml version="1.0"?>\n<coverage></coverage>')
         result = ValidationResult()
 
-        CoverageReportValidator.validate_coverage_reports(
-            "exists.xml, missing.xml", "/project", result
-        )
+        CoverageReportValidator.validate_coverage_reports("exists.xml, missing.xml", "/project", result)
 
         assert not result.is_valid()
         assert len(result.errors) == 1
@@ -267,10 +250,7 @@ class TestRunDryRun(pyfakefs.TestCase):
     @patch("pysonar_scanner.__main__.logging")
     def test_run_dry_run_with_valid_coverage_reports(self, mock_logging):
         self.fs.create_dir("/project")
-        self.fs.create_file(
-            "/project/coverage.xml",
-            contents='<?xml version="1.0"?>\n<coverage></coverage>'
-        )
+        self.fs.create_file("/project/coverage.xml", contents='<?xml version="1.0"?>\n<coverage></coverage>')
         config = {
             SONAR_PROJECT_KEY: "my-project",
             SONAR_PROJECT_BASE_DIR: "/project",

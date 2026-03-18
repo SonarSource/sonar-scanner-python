@@ -367,7 +367,7 @@ class CliConfigurationLoader:
             "--dry-run",
             action=argparse.BooleanOptionalAction,
             default=None,
-            help="Enable dry-run mode to validate configuration without connecting to SonarQube server or submitting analysis",
+            help="Enable dry-run mode to validate configuration without connecting to SonarQube server or submitting analysis. See DRY_RUN_MODE.md for details",
         )
 
         jvm_group = parser.add_argument_group("JVM Settings")
