@@ -80,6 +80,8 @@ class DryRunReporter:
         logging.info("=" * 80)
 
         if validation_result.is_valid():
+            for warning in validation_result.warnings:
+                logging.warning(f"  • {warning}")
             logging.info("✓ Configuration validation PASSED")
             logging.info("=" * 80)
             return 0
@@ -182,26 +184,6 @@ class CoverageReportValidator:
             )
             return
 
-        # Check if it's readable
-        try:
-            with open(full_path, "r", encoding="utf-8") as f:
-                f.read(1)  # Try to read first byte
-        except PermissionError:
-            validation_result.add_error(
-                f"Coverage report is not readable (permission denied): {report_path}"
-            )
-            return
-        except UnicodeDecodeError:
-            validation_result.add_warning(
-                f"Coverage report may not be text-based (is it in binary format?): {report_path}"
-            )
-            return
-        except Exception as e:
-            validation_result.add_error(
-                f"Error reading coverage report {report_path}: {str(e)}"
-            )
-            return
-
         try:
             with open(full_path, "r", encoding="utf-8") as f:
                 tree = ET.parse(f)
@@ -212,6 +194,14 @@ class CoverageReportValidator:
                     )
                 else:
                     logging.info(f"  ✓ Coverage report is valid Cobertura XML: {report_path}")
+        except PermissionError:
+            validation_result.add_error(
+                f"Coverage report is not readable (permission denied): {report_path}"
+            )
+        except UnicodeDecodeError:
+            validation_result.add_warning(
+                f"Coverage report may not be text-based (is it in binary format?): {report_path}"
+            )
         except ET.ParseError as e:
             validation_result.add_error(
                 f"Coverage report is not valid XML (Cobertura format): {report_path}\n"
