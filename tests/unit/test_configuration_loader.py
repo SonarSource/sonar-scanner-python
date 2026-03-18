@@ -363,6 +363,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_ARCH: Arch.X64.value,
             TOML_PATH: "custom/path/pyproject.toml",
             SONAR_SCANNER_JAVA_HEAP_SIZE: "8000Mb",
+            SONAR_SCANNER_DRY_RUN: False,
         }
         self.assertDictEqual(configuration, expected_configuration)
 
