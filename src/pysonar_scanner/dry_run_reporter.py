@@ -36,16 +36,8 @@ from pysonar_scanner.configuration.properties import (
 
 
 class DryRunReporter:
-    """
-    Handles reporting of configuration and validation results in dry-run mode.
-    Provides clear, structured output for troubleshooting configuration issues.
-    """
-
     @staticmethod
     def report_configuration(config: dict[str, Any]) -> None:
-        """
-        Log the resolved configuration, focusing on key properties.
-        """
         logging.info("=" * 80)
         logging.info("DRY RUN MODE - Configuration Report")
         logging.info("=" * 80)
@@ -83,10 +75,6 @@ class DryRunReporter:
 
     @staticmethod
     def report_validation_results(validation_result: "ValidationResult") -> int:
-        """
-        Log validation results and return appropriate exit code.
-        Returns 0 if validation passed, non-zero if there were errors.
-        """
         logging.info("=" * 80)
         logging.info("DRY RUN MODE - Validation Results")
         logging.info("=" * 80)
@@ -110,7 +98,6 @@ class DryRunReporter:
 
     @staticmethod
     def _log_section(title: str, values: dict[str, Any]) -> None:
-        """Log a section of configuration values."""
         logging.info(f"\n{title}:")
         for key, value in values.items():
             formatted_key = DryRunReporter._format_key(key)
@@ -118,7 +105,6 @@ class DryRunReporter:
 
     @staticmethod
     def _format_key(key: str) -> str:
-        """Format a property key for display."""
         if key.startswith("sonar."):
             key = key[6:]
         key = key.replace(".", " ").replace("_", " ")
@@ -127,50 +113,31 @@ class DryRunReporter:
 
 
 class ValidationResult:
-    """Holds validation results for coverage reports and configuration."""
-
     def __init__(self):
         self.errors: list[str] = []
         self.warnings: list[str] = []
         self.infos: list[str] = []
 
     def add_error(self, message: str) -> None:
-        """Add a validation error."""
         self.errors.append(message)
 
     def add_warning(self, message: str) -> None:
-        """Add a validation warning."""
         self.warnings.append(message)
 
     def add_info(self, message: str) -> None:
-        """Add a validation info message."""
         self.infos.append(message)
 
     def is_valid(self) -> bool:
-        """Check if validation passed (no errors)."""
         return len(self.errors) == 0
 
 
 class CoverageReportValidator:
-    """
-    Validates coverage reports for format and accessibility.
-    Provides clear error messages for common issues.
-    """
-
     @staticmethod
     def validate_coverage_reports(
         coverage_paths: Optional[str],
         project_base_dir: str,
         validation_result: ValidationResult,
     ) -> None:
-        """
-        Validate coverage report paths.
-
-        Args:
-            coverage_paths: Comma-separated coverage report paths
-            project_base_dir: Base directory for the project
-            validation_result: ValidationResult object to populate
-        """
         if not coverage_paths:
             validation_result.add_warning("No coverage report paths specified")
             return
@@ -183,7 +150,6 @@ class CoverageReportValidator:
 
     @staticmethod
     def _validate_single_report(report_path: str, base_path: Path, validation_result: ValidationResult) -> None:
-        """Validate a single coverage report file."""
         # Resolve relative path
         full_path = base_path / report_path if not Path(report_path).is_absolute() else Path(report_path)
 
