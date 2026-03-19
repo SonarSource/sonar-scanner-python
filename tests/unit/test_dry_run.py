@@ -252,9 +252,10 @@ class TestCoverageReportValidator(pyfakefs.TestCase):
 
         result = CoverageReportValidator.validate_coverage_reports("coverage.xml", "/project")
 
-        has_unicode_warning = any("binary format" in w for w in result.warnings)
-        has_xml_error = any("not valid XML" in e for e in result.errors)
-        self.assertTrue(has_unicode_warning or has_xml_error)
+        self.assertTrue(result.is_valid())
+        self.assertEqual(len(result.warnings), 1)
+        self.assertIn("binary format", result.warnings[0])
+        self.assertEqual(len(result.errors), 0)
 
     def test_validate_mixed_valid_and_missing_reports(self):
         self.fs.create_dir("/project")
