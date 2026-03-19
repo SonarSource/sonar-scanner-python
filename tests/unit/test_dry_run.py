@@ -17,9 +17,10 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+import unittest
+from unittest.mock import patch
 
-from unittest.mock import patch, call
-from pyfakefs import fake_filesystem_unittest as pyfakefs
+import pyfakefs.fake_filesystem_unittest as pyfakefs
 
 from pysonar_scanner.__main__ import run_dry_run
 from pysonar_scanner.configuration.properties import (
@@ -39,37 +40,43 @@ from pysonar_scanner.dry_run_reporter import (
 )
 
 
-class TestValidationResult:
+class TestValidationResult(unittest.TestCase):
 
     def test_valid_when_no_errors(self):
         result = ValidationResult()
-        assert result.is_valid()
-        assert len(result.errors) == 0
-        assert len(result.warnings) == 0
+        self.assertTrue(result.is_valid())
+        self.assertEqual(len(result.errors), 0)
+        self.assertEqual(len(result.warnings), 0)
 
     def test_invalid_when_errors_present(self):
         result = ValidationResult()
         result.add_error("Test error")
-        assert not result.is_valid()
-        assert len(result.errors) == 1
+        self.assertFalse(result.is_valid())
+        self.assertEqual(len(result.errors), 1)
 
     def test_can_add_warnings_without_becoming_invalid(self):
         result = ValidationResult()
         result.add_warning("Test warning")
-        assert result.is_valid()
-        assert len(result.warnings) == 1
+        self.assertTrue(result.is_valid())
+        self.assertEqual(len(result.warnings), 1)
+
+    def test_can_add_infos(self):
+        result = ValidationResult()
+        result.add_info("Test info")
+        self.assertTrue(result.is_valid())
+        self.assertEqual(len(result.infos), 1)
 
     def test_multiple_errors_and_warnings(self):
         result = ValidationResult()
         result.add_error("Error 1")
         result.add_error("Error 2")
         result.add_warning("Warning 1")
-        assert not result.is_valid()
-        assert len(result.errors) == 2
-        assert len(result.warnings) == 1
+        self.assertFalse(result.is_valid())
+        self.assertEqual(len(result.errors), 2)
+        self.assertEqual(len(result.warnings), 1)
 
 
-class TestDryRunReporter:
+class TestDryRunReporter(unittest.TestCase):
 
     @patch("pysonar_scanner.dry_run_reporter.logging")
     def test_report_configuration_logs_all_sections(self, mock_logging):
@@ -87,56 +94,69 @@ class TestDryRunReporter:
 
         logged_messages = [str(c) for c in mock_logging.info.call_args_list]
         joined = " ".join(logged_messages)
-        assert "DRY RUN MODE - Configuration Report" in joined
-        assert "my-project" in joined
-        assert "My Project" in joined
-        assert "my-org" in joined
-        assert "src" in joined
-        assert "tests" in joined
-        assert "coverage.xml" in joined
-        assert "https://sonarqube.example.com" in joined
+        self.assertIn("DRY RUN MODE - Configuration Report", joined)
+        self.assertIn("my-project", joined)
+        self.assertIn("My Project", joined)
+        self.assertIn("my-org", joined)
+        self.assertIn("src", joined)
+        self.assertIn("tests", joined)
+        self.assertIn("coverage.xml", joined)
+        self.assertIn("https://sonarqube.example.com", joined)
 
     @patch("pysonar_scanner.dry_run_reporter.logging")
     def test_report_configuration_shows_na_for_missing_values(self, mock_logging):
-        config = {}
-
-        DryRunReporter.report_configuration(config)
+        DryRunReporter.report_configuration({})
 
         logged_messages = [str(c) for c in mock_logging.info.call_args_list]
         joined = " ".join(logged_messages)
-        assert "N/A" in joined
+        self.assertIn("N/A", joined)
 
     @patch("pysonar_scanner.dry_run_reporter.logging")
     def test_report_validation_results_valid(self, mock_logging):
         result = ValidationResult()
         exit_code = DryRunReporter.report_validation_results(result)
 
-        assert exit_code == 0
+        self.assertEqual(exit_code, 0)
         logged_messages = [str(c) for c in mock_logging.info.call_args_list]
         joined = " ".join(logged_messages)
-        assert "PASSED" in joined
+        self.assertIn("PASSED", joined)
+
+    @patch("pysonar_scanner.dry_run_reporter.logging")
+    def test_report_validation_results_valid_with_infos_and_warnings(self, mock_logging):
+        result = ValidationResult()
+        result.add_info("Coverage report check passed: coverage.xml")
+        result.add_warning("No tests directory specified")
+        exit_code = DryRunReporter.report_validation_results(result)
+
+        self.assertEqual(exit_code, 0)
+        logged_messages = [str(c) for c in mock_logging.info.call_args_list]
+        self.assertIn("PASSED", " ".join(logged_messages))
+        mock_logging.warning.assert_called()
 
     @patch("pysonar_scanner.dry_run_reporter.logging")
     def test_report_validation_results_invalid(self, mock_logging):
         result = ValidationResult()
         result.add_error("Coverage file not found")
+        result.add_warning("Unexpected root element")
         exit_code = DryRunReporter.report_validation_results(result)
 
-        assert exit_code == 1
+        self.assertEqual(exit_code, 1)
         mock_logging.warning.assert_called()
         mock_logging.error.assert_called()
 
     def test_format_key_handles_camel_case(self):
-        assert DryRunReporter._format_key("sonar.projectKey") == "Project Key"
-        assert DryRunReporter._format_key("sonar.projectName") == "Project Name"
+        self.assertEqual(DryRunReporter._format_key("sonar.projectKey"), "Project Key")
+        self.assertEqual(DryRunReporter._format_key("sonar.projectName"), "Project Name")
 
     def test_format_key_handles_dotted_paths(self):
-        assert DryRunReporter._format_key("sonar.host.url") == "Host Url"
-        assert DryRunReporter._format_key("sonar.python.coverage.reportPaths") == "Python Coverage Report Paths"
+        self.assertEqual(DryRunReporter._format_key("sonar.host.url"), "Host Url")
+        self.assertEqual(
+            DryRunReporter._format_key("sonar.python.coverage.reportPaths"), "Python Coverage Report Paths"
+        )
 
     def test_format_key_handles_simple_keys(self):
-        assert DryRunReporter._format_key("sonar.sources") == "Sources"
-        assert DryRunReporter._format_key("sonar.organization") == "Organization"
+        self.assertEqual(DryRunReporter._format_key("sonar.sources"), "Sources")
+        self.assertEqual(DryRunReporter._format_key("sonar.organization"), "Organization")
 
 
 class TestCoverageReportValidator(pyfakefs.TestCase):
@@ -144,33 +164,39 @@ class TestCoverageReportValidator(pyfakefs.TestCase):
     def setUp(self):
         self.setUpPyfakefs()
 
-    def test_validate_coverage_reports_no_paths(self):
+    def test_validate_no_paths(self):
         result = CoverageReportValidator.validate_coverage_reports(None, ".")
 
-        assert result.is_valid()
-        assert len(result.warnings) == 1
-        assert "No coverage report paths specified" in result.warnings[0]
+        self.assertTrue(result.is_valid())
+        self.assertEqual(len(result.warnings), 1)
+        self.assertIn("No coverage report paths specified", result.warnings[0])
+
+    def test_validate_empty_string_paths(self):
+        result = CoverageReportValidator.validate_coverage_reports("", ".")
+
+        self.assertTrue(result.is_valid())
+        self.assertEqual(len(result.warnings), 1)
+        self.assertIn("No coverage report paths specified", result.warnings[0])
 
     def test_validate_single_report_file_not_found(self):
         self.fs.create_dir("/project")
 
         result = CoverageReportValidator.validate_coverage_reports("coverage.xml", "/project")
 
-        assert not result.is_valid()
-        assert len(result.errors) == 1
-        assert "not found" in result.errors[0]
+        self.assertFalse(result.is_valid())
+        self.assertEqual(len(result.errors), 1)
+        self.assertIn("not found", result.errors[0])
 
-    @patch("pysonar_scanner.dry_run_reporter.logging")
-    def test_validate_single_report_valid_cobertura(self, mock_logging):
+    def test_validate_single_report_valid_cobertura(self):
         self.fs.create_dir("/project")
         self.fs.create_file("/project/coverage.xml", contents='<?xml version="1.0"?>\n<coverage></coverage>')
 
         result = CoverageReportValidator.validate_coverage_reports("coverage.xml", "/project")
 
-        assert result.is_valid()
-        assert len(result.warnings) == 0
-        assert len(result.infos) == 1
-        assert "Coverage report check passed" in result.infos[0]
+        self.assertTrue(result.is_valid())
+        self.assertEqual(len(result.warnings), 0)
+        self.assertEqual(len(result.infos), 1)
+        self.assertIn("Coverage report check passed", result.infos[0])
 
     def test_validate_multiple_coverage_reports(self):
         self.fs.create_dir("/project")
@@ -179,7 +205,7 @@ class TestCoverageReportValidator(pyfakefs.TestCase):
 
         result = CoverageReportValidator.validate_coverage_reports("coverage1.xml, coverage2.xml", "/project")
 
-        assert result.is_valid()
+        self.assertTrue(result.is_valid())
 
     def test_validate_report_not_a_file(self):
         self.fs.create_dir("/project")
@@ -187,8 +213,8 @@ class TestCoverageReportValidator(pyfakefs.TestCase):
 
         result = CoverageReportValidator.validate_coverage_reports("coverage.xml", "/project")
 
-        assert not result.is_valid()
-        assert "not a file" in result.errors[0]
+        self.assertFalse(result.is_valid())
+        self.assertIn("not a file", result.errors[0])
 
     def test_validate_report_invalid_xml(self):
         self.fs.create_dir("/project")
@@ -196,8 +222,8 @@ class TestCoverageReportValidator(pyfakefs.TestCase):
 
         result = CoverageReportValidator.validate_coverage_reports("coverage.xml", "/project")
 
-        assert not result.is_valid()
-        assert "not valid XML" in result.errors[0]
+        self.assertFalse(result.is_valid())
+        self.assertIn("not valid XML", result.errors[0])
 
     def test_validate_report_wrong_root_element(self):
         self.fs.create_dir("/project")
@@ -205,10 +231,30 @@ class TestCoverageReportValidator(pyfakefs.TestCase):
 
         result = CoverageReportValidator.validate_coverage_reports("coverage.xml", "/project")
 
-        assert result.is_valid()
-        assert len(result.warnings) == 1
-        assert "report" in result.warnings[0]
-        assert "expected 'coverage'" in result.warnings[0]
+        self.assertTrue(result.is_valid())
+        self.assertEqual(len(result.warnings), 1)
+        self.assertIn("report", result.warnings[0])
+        self.assertIn("expected 'coverage'", result.warnings[0])
+
+    def test_validate_report_permission_denied(self):
+        self.fs.create_dir("/project")
+        self.fs.create_file("/project/coverage.xml", contents='<?xml version="1.0"?>\n<coverage></coverage>')
+        self.fs.chmod("/project/coverage.xml", mode=0o000, force_unix_mode=True)
+
+        result = CoverageReportValidator.validate_coverage_reports("coverage.xml", "/project")
+
+        self.assertFalse(result.is_valid())
+        self.assertIn("permission denied", result.errors[0])
+
+    def test_validate_report_binary_content(self):
+        self.fs.create_dir("/project")
+        self.fs.create_file("/project/coverage.xml", contents=b"\x80\x81\x82\x83\xff\xfe")
+
+        result = CoverageReportValidator.validate_coverage_reports("coverage.xml", "/project")
+
+        has_unicode_warning = any("binary format" in w for w in result.warnings)
+        has_xml_error = any("not valid XML" in e for e in result.errors)
+        self.assertTrue(has_unicode_warning or has_xml_error)
 
     def test_validate_mixed_valid_and_missing_reports(self):
         self.fs.create_dir("/project")
@@ -216,9 +262,9 @@ class TestCoverageReportValidator(pyfakefs.TestCase):
 
         result = CoverageReportValidator.validate_coverage_reports("exists.xml, missing.xml", "/project")
 
-        assert not result.is_valid()
-        assert len(result.errors) == 1
-        assert "missing.xml" in result.errors[0]
+        self.assertFalse(result.is_valid())
+        self.assertEqual(len(result.errors), 1)
+        self.assertIn("missing.xml", result.errors[0])
 
 
 class TestRunDryRun(pyfakefs.TestCase):
@@ -236,7 +282,7 @@ class TestRunDryRun(pyfakefs.TestCase):
 
         exit_code = run_dry_run(config)
 
-        assert exit_code == 0
+        self.assertEqual(exit_code, 0)
 
     @patch("pysonar_scanner.__main__.logging")
     def test_run_dry_run_with_valid_coverage_reports(self, mock_logging):
@@ -250,7 +296,7 @@ class TestRunDryRun(pyfakefs.TestCase):
 
         exit_code = run_dry_run(config)
 
-        assert exit_code == 0
+        self.assertEqual(exit_code, 0)
 
     @patch("pysonar_scanner.__main__.logging")
     def test_run_dry_run_with_missing_coverage_reports(self, mock_logging):
@@ -263,7 +309,7 @@ class TestRunDryRun(pyfakefs.TestCase):
 
         exit_code = run_dry_run(config)
 
-        assert exit_code == 1
+        self.assertEqual(exit_code, 1)
 
     @patch("pysonar_scanner.__main__.logging")
     def test_run_dry_run_logs_dry_run_mode(self, mock_logging):
