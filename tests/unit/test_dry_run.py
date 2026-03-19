@@ -17,6 +17,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+import platform
 import unittest
 from unittest.mock import patch
 
@@ -236,6 +237,7 @@ class TestCoverageReportValidator(pyfakefs.TestCase):
         self.assertIn("report", result.warnings[0])
         self.assertIn("expected 'coverage'", result.warnings[0])
 
+    @unittest.skipIf(platform.system() == "Windows", "Unix permissions not supported on Windows")
     def test_validate_report_permission_denied(self):
         self.fs.create_dir("/project")
         self.fs.create_file("/project/coverage.xml", contents='<?xml version="1.0"?>\n<coverage></coverage>')
