@@ -140,10 +140,8 @@ def run_dry_run(config: dict[str, Any]) -> int:
 
     DryRunReporter.report_configuration(config)
 
-    validation_result = ValidationResult()
-
     coverage_paths = config.get(SONAR_PYTHON_COVERAGE_REPORT_PATHS)
     project_base_dir = config.get(SONAR_PROJECT_BASE_DIR, ".")
-    CoverageReportValidator.validate_coverage_reports(coverage_paths, project_base_dir, validation_result)
+    validation_result = CoverageReportValidator.validate_coverage_reports(coverage_paths, project_base_dir)
 
     return DryRunReporter.report_validation_results(validation_result)

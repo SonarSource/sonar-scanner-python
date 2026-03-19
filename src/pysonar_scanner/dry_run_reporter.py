@@ -47,7 +47,7 @@ class DryRunReporter:
             {
                 SONAR_PROJECT_KEY: config.get(SONAR_PROJECT_KEY),
                 SONAR_PROJECT_NAME: config.get(SONAR_PROJECT_NAME),
-                SONAR_ORGANIZATION: config.get(SONAR_ORGANIZATION, "N/A (likely SonarQube Server)"),
+                SONAR_ORGANIZATION: config.get(SONAR_ORGANIZATION, "N/A"),
             },
         )
 
@@ -90,9 +90,9 @@ class DryRunReporter:
         else:
             logging.warning("✗ Configuration validation FAILED with the following issues:")
             for error in validation_result.errors:
-                logging.error(f"  • {error}")
+                logging.error(f"✗ {error}")
             for warning in validation_result.warnings:
-                logging.warning(f"  • {warning}")
+                logging.warning(f"⚠ {warning}")
             logging.info("=" * 80)
             return 1
 
@@ -136,17 +136,19 @@ class CoverageReportValidator:
     def validate_coverage_reports(
         coverage_paths: Optional[str],
         project_base_dir: str,
-        validation_result: ValidationResult,
-    ) -> None:
+    ) -> ValidationResult:
+        validation_result = ValidationResult()
         if not coverage_paths:
             validation_result.add_warning("No coverage report paths specified")
-            return
+            return validation_result
 
         base_path = Path(project_base_dir)
         report_paths = [p.strip() for p in coverage_paths.split(",")]
 
         for report_path in report_paths:
             CoverageReportValidator._validate_single_report(report_path, base_path, validation_result)
+
+        return validation_result
 
     @staticmethod
     def _validate_single_report(report_path: str, base_path: Path, validation_result: ValidationResult) -> None:
@@ -170,7 +172,7 @@ class CoverageReportValidator:
                         f"Coverage report root element is '{root.tag}', expected 'coverage' (Cobertura format)"
                     )
                 else:
-                    validation_result.add_info(f"Coverage report is valid Cobertura XML: {report_path}")
+                    validation_result.add_info(f"Coverage report check passed: {report_path}")
         except PermissionError:
             validation_result.add_error(f"Coverage report is not readable (permission denied): {report_path}")
         except UnicodeDecodeError:
@@ -179,7 +181,7 @@ class CoverageReportValidator:
             )
         except ET.ParseError as e:
             validation_result.add_error(
-                f"Coverage report is not valid XML (Cobertura format): {report_path}\n  Parse error: {str(e)}"
+                f"Coverage report is not valid XML (Cobertura format): {report_path} (Parse error: {str(e)})"
             )
         except Exception as e:
-            validation_result.add_error(f"Error validating coverage report format: {report_path}\n  Error: {str(e)}")
+            validation_result.add_error(f"Error validating coverage report format: {report_path} (Error: {str(e)})")
