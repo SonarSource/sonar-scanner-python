@@ -102,6 +102,7 @@ SONAR_PYTHON_MYPY_REPORT_PATHS: Key = "sonar.python.mypy.reportPaths"
 SONAR_PYTHON_BANDIT_REPORT_PATHS: Key = "sonar.python.bandit.reportPaths"
 SONAR_PYTHON_FLAKE8_REPORT_PATHS: Key = "sonar.python.flake8.reportPaths"
 SONAR_PYTHON_RUFF_REPORT_PATHS: Key = "sonar.python.ruff.reportPaths"
+SONAR_SCANNER_DRY_RUN: Key = "sonar.scanner.dryRun"
 TOML_PATH: Key = "toml-path"
 
 # ============ DEPRECATED ==============
@@ -553,6 +554,11 @@ PROPERTIES: list[Property] = [
         name=SONAR_PYTHON_ANALYSIS_THREADS,
         default_value=None,
         cli_getter=lambda args: args.sonar_python_analysis_threads
+    ),
+    Property(
+        name=SONAR_SCANNER_DRY_RUN,
+        default_value=False,
+        cli_getter=lambda args: args.dry_run
     ),
 ]
 # fmt: on

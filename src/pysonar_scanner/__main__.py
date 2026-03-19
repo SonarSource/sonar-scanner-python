@@ -35,10 +35,14 @@ from pysonar_scanner.configuration.properties import (
     SONAR_SCANNER_JAVA_EXE_PATH,
     SONAR_SCANNER_OS,
     SONAR_SCANNER_ARCH,
+    SONAR_SCANNER_DRY_RUN,
+    SONAR_PROJECT_BASE_DIR,
+    SONAR_PYTHON_COVERAGE_REPORT_PATHS,
 )
 from pysonar_scanner.exceptions import SQTooOldException
 from pysonar_scanner.jre import JREResolvedPath, JREProvisioner, JREResolver, JREResolverConfiguration
 from pysonar_scanner.scannerengine import ScannerEngine, ScannerEngineProvisioner
+from pysonar_scanner.dry_run_reporter import DryRunReporter, CoverageReportValidator, ValidationResult
 
 
 def main():
@@ -60,6 +64,9 @@ def do_scan():
     logging.info("Starting Pysonar, the Sonar scanner CLI for Python")
     config = ConfigurationLoader.load()
     set_logging_options(config)
+
+    if config.get(SONAR_SCANNER_DRY_RUN, False):
+        return run_dry_run(config)
 
     ConfigurationLoader.check_configuration(config)
 
@@ -121,3 +128,20 @@ def create_jre(api, cache, config: dict[str, Any]) -> JREResolvedPath:
     jre_provisioner = JREProvisioner(api, cache, config[SONAR_SCANNER_OS], config[SONAR_SCANNER_ARCH])
     jre_resolver = JREResolver(JREResolverConfiguration.from_dict(config), jre_provisioner)
     return jre_resolver.resolve_jre()
+
+
+def run_dry_run(config: dict[str, Any]) -> int:
+    """
+    Run in dry-run mode without connecting to SonarQube server.
+    Validates configuration and coverage reports.
+    """
+    logging.info("Running in DRY RUN mode")
+    logging.info("No server connection will be made and no analysis will be submitted")
+
+    DryRunReporter.report_configuration(config)
+
+    coverage_paths = config.get(SONAR_PYTHON_COVERAGE_REPORT_PATHS)
+    project_base_dir = config.get(SONAR_PROJECT_BASE_DIR, ".")
+    validation_result = CoverageReportValidator.validate_coverage_reports(coverage_paths, project_base_dir)
+
+    return DryRunReporter.report_validation_results(validation_result)

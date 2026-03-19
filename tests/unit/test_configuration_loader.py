@@ -32,6 +32,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_SCANNER_APP_VERSION,
     SONAR_SCANNER_BOOTSTRAP_START_TIME,
     SONAR_SCANNER_CONNECT_TIMEOUT,
+    SONAR_SCANNER_DRY_RUN,
     SONAR_SCANNER_KEYSTORE_PASSWORD,
     SONAR_SCANNER_RESPONSE_TIMEOUT,
     SONAR_SCANNER_SKIP_JRE_PROVISIONING,
@@ -90,6 +91,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_TRUSTSTORE_PASSWORD: "changeit",
             SONAR_SCANNER_OS: Os.LINUX.value,
             SONAR_SCANNER_ARCH: Arch.X64.value,
+            SONAR_SCANNER_DRY_RUN: False,
         }
         self.assertDictEqual(configuration, expected_configuration)
 
@@ -156,6 +158,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_TRUSTSTORE_PASSWORD: "changeit",
             SONAR_SCANNER_OS: Os.LINUX.value,
             SONAR_SCANNER_ARCH: Arch.X64.value,
+            SONAR_SCANNER_DRY_RUN: False,
         }
         self.assertDictEqual(configuration, expected_configuration)
 
@@ -204,6 +207,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_TRUSTSTORE_PASSWORD: "changeit",
             SONAR_SCANNER_OS: Os.LINUX.value,
             SONAR_SCANNER_ARCH: Arch.X64.value,
+            SONAR_SCANNER_DRY_RUN: False,
         }
         self.assertDictEqual(configuration, expected_configuration)
 
@@ -253,6 +257,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_TRUSTSTORE_PASSWORD: "changeit",
             SONAR_SCANNER_OS: Os.LINUX.value,
             SONAR_SCANNER_ARCH: Arch.X64.value,
+            SONAR_SCANNER_DRY_RUN: False,
         }
         self.assertDictEqual(configuration, expected_configuration)
 
@@ -305,6 +310,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_ARCH: Arch.X64.value,
             TOML_PATH: "custom/path",
             SONAR_SCANNER_JAVA_HEAP_SIZE: "8000Mb",
+            SONAR_SCANNER_DRY_RUN: False,
         }
         self.assertDictEqual(configuration, expected_configuration)
 
@@ -357,6 +363,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_ARCH: Arch.X64.value,
             TOML_PATH: "custom/path/pyproject.toml",
             SONAR_SCANNER_JAVA_HEAP_SIZE: "8000Mb",
+            SONAR_SCANNER_DRY_RUN: False,
         }
         self.assertDictEqual(configuration, expected_configuration)
 
@@ -396,6 +403,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_OS: Os.LINUX.value,
             SONAR_SCANNER_ARCH: Arch.X64.value,
             SONAR_COVERAGE_EXCLUSIONS: "*/.local/*, /usr/*, utils/tirefire.py",
+            SONAR_SCANNER_DRY_RUN: False,
         }
         self.assertDictEqual(configuration, expected_configuration)
 
