@@ -92,8 +92,10 @@ class DryRunReporter:
         logging.info("=" * 80)
 
         if validation_result.is_valid():
+            for info in validation_result.infos:
+                logging.info(f"✓ {info}")
             for warning in validation_result.warnings:
-                logging.warning(f"  • {warning}")
+                logging.warning(f"• {warning}")
             logging.info("✓ Configuration validation PASSED")
             logging.info("=" * 80)
             return 0
@@ -130,6 +132,7 @@ class ValidationResult:
     def __init__(self):
         self.errors: list[str] = []
         self.warnings: list[str] = []
+        self.infos: list[str] = []
 
     def add_error(self, message: str) -> None:
         """Add a validation error."""
@@ -138,6 +141,10 @@ class ValidationResult:
     def add_warning(self, message: str) -> None:
         """Add a validation warning."""
         self.warnings.append(message)
+
+    def add_info(self, message: str) -> None:
+        """Add a validation info message."""
+        self.infos.append(message)
 
     def is_valid(self) -> bool:
         """Check if validation passed (no errors)."""
@@ -197,7 +204,7 @@ class CoverageReportValidator:
                         f"Coverage report root element is '{root.tag}', expected 'coverage' (Cobertura format)"
                     )
                 else:
-                    logging.info(f"  ✓ Coverage report is valid Cobertura XML: {report_path}")
+                    validation_result.add_info(f"Coverage report is valid Cobertura XML: {report_path}")
         except PermissionError:
             validation_result.add_error(f"Coverage report is not readable (permission denied): {report_path}")
         except UnicodeDecodeError:

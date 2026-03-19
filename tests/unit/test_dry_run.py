@@ -172,9 +172,8 @@ class TestCoverageReportValidator(pyfakefs.TestCase):
 
         assert result.is_valid()
         assert len(result.warnings) == 0
-        logged_messages = [str(c) for c in mock_logging.info.call_args_list]
-        joined = " ".join(logged_messages)
-        assert "valid Cobertura XML" in joined
+        assert len(result.infos) == 1
+        assert "valid Cobertura XML" in result.infos[0]
 
     def test_validate_multiple_coverage_reports(self):
         self.fs.create_dir("/project")
