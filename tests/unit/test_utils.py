@@ -43,14 +43,16 @@ class TestUtils(unittest.TestCase):
     def test_get_arch(self):
         x64_machine_strs = ["amd64", "AmD64", "x86_64", "X86_64"]
         for machine_str in x64_machine_strs:
-            with self.subTest("amd64", machine_str=machine_str), unittest.mock.patch(
-                "platform.machine", return_value=machine_str
+            with (
+                self.subTest("amd64", machine_str=machine_str),
+                unittest.mock.patch("platform.machine", return_value=machine_str),
             ):
                 self.assertEqual(get_arch(), Arch.X64)
         arm_machine_strs = ["arm64", "ARm64"]
         for machine_str in arm_machine_strs:
-            with self.subTest("arm", machine_str=machine_str), unittest.mock.patch(
-                "platform.machine", return_value=machine_str
+            with (
+                self.subTest("arm", machine_str=machine_str),
+                unittest.mock.patch("platform.machine", return_value=machine_str),
             ):
                 self.assertEqual(get_arch(), Arch.AARCH64)
 
