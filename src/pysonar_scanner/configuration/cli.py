@@ -363,6 +363,12 @@ class CliConfigurationLoader:
             action=argparse.BooleanOptionalAction,
             help="Override the SonarQube configuration of skipping or not the analysis of unchanged Python files",
         )
+        scanner_behavior_group.add_argument(
+            "--dry-run",
+            action=argparse.BooleanOptionalAction,
+            default=None,
+            help="Enable dry-run mode to validate configuration without connecting to SonarQube server or submitting analysis. See DRY_RUN_MODE.md for details",
+        )
 
         jvm_group = parser.add_argument_group("JVM Settings")
         jvm_group.add_argument(
