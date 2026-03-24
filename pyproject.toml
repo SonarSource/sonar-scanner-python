@@ -52,6 +52,7 @@ types-requests = "2.32.0.20250328"
 [[tool.poetry.packages]]
 from = 'src'
 include = 'pysonar_scanner'
+
 [tool.poetry.scripts]
 pysonar = 'pysonar_scanner.__main__:main'
 
