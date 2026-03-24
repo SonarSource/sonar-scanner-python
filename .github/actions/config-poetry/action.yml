@@ -48,7 +48,7 @@ runs:
       # python needs to be installed before jfrog and poetry
       # (see https://xtranet-sonarsource.atlassian.net/wiki/spaces/Platform/pages/4344217683/Mise+Poetry+Install+-+GitHub)
     - name: Install mise and python
-      uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
+      uses: jdx/mise-action@5228313ee0372e111a38da051671ca30fc5a96db # v3.6.3
       with:
         version: 2025.7.12
         tool_versions: |
@@ -56,7 +56,7 @@ runs:
         experimental: true # needed to use the http backend for installation of jfrog on windows
 
     - name: Install jfrog and poetry through mise
-      uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
+      uses: jdx/mise-action@5228313ee0372e111a38da051671ca30fc5a96db # v3.6.3
       with:
         version: 2025.7.12
         experimental: true # needed to use the http backend for installation of jfrog on windows
@@ -64,7 +64,7 @@ runs:
     - name: Vault
       # yamllint disable rule:line-length
       id: secrets
-      uses: SonarSource/vault-action-wrapper@320bd31b03e5dacaac6be51bbbb15adf7caccc32 # 3.1.0
+      uses: SonarSource/vault-action-wrapper@3d5c87cb535e4a2c7a09adcbcfdefa751854dee3 # 3.3.0
       with:
         secrets: |
           development/artifactory/token/{REPO_OWNER_NAME_DASH}-${{ env.ARTIFACTORY_READER_ROLE }} access_token | ARTIFACTORY_ACCESS_TOKEN;
