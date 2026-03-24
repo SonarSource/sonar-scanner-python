@@ -1,8 +1,15 @@
 name: Releasability status
-"on":
-  check_suite:
+
+on:
+  workflow_run:
+    workflows:
+      - Build
     types:
       - completed
+    branches:
+      - master
+      - branch-*
+      - dogfood-*
   workflow_dispatch:
 
 jobs:
@@ -15,16 +22,11 @@ jobs:
       contents: read
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      ((contains(fromJSON('["main", "master"]'),
-      github.event.check_suite.head_branch) ||
-      startsWith(github.event.check_suite.head_branch, 'branch-')) &&
-      github.event.check_suite.conclusion == 'success' &&
-      github.event.check_suite.app.slug == 'cirrus-ci')
+      github.event.workflow_run.conclusion == 'success'
     steps:
-      - uses: >-
-          SonarSource/gh-action_releasability/releasability-status@v2
+      - uses: SonarSource/gh-action_releasability/releasability-status@v3
         with:
           # CheckManifestValues is not supported for python projects (see PREQ-465)
           optional_checks: "Jira,CheckManifestValues"
         env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
