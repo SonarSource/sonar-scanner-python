@@ -29,25 +29,25 @@ relative_files = true
 
 [tool.poetry.dependencies]
 python = '>=3.9'
-tomli = '2.2.1'
+tomli = '2.4.0'
 requests = "2.32.5"
-responses = "0.25.8"
-pyfakefs = "5.9.3"
+responses = "0.26.0"
+pyfakefs = "5.10.2"
 jproperties = "2.1.2"
 
 [tool.poetry.group]
 [tool.poetry.group.dev]
 [tool.poetry.group.dev.dependencies]
-black = "25.1.0"
-coverage = "7.10.6"
+black = "25.12.0"
+coverage = "7.13.4"
 licenseheaders = "0.8.8"
-mypy = "1.15.0"
+mypy = "1.19.1"
 pytest = '8.4.2'
 pytest-cov = '7.0.0'
-pytest-subtests = "0.14.1"
-pytest-docker = "3.2.0"
-debugpy = "1.8.13"
-types-requests = "2.32.0.20250328"
+pytest-subtests = "0.15.0"
+pytest-docker = "3.2.5"
+debugpy = "1.8.20"
+types-requests = "2.32.4.20260107"
 
 [[tool.poetry.packages]]
 from = 'src'
