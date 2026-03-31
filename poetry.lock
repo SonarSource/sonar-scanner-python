@@ -15,7 +15,7 @@ files = [
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "black"
@@ -67,7 +67,7 @@ uvloop = ["uvloop (>=0.15.2)"]
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "certifi"
@@ -84,7 +84,7 @@ files = [
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "charset-normalizer"
@@ -228,7 +228,7 @@ files = [
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "click"
@@ -248,7 +248,7 @@ colorama = {version = "*", markers = "platform_system == \"Windows\""}
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "colorama"
@@ -266,7 +266,7 @@ files = [
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "coverage"
@@ -375,7 +375,7 @@ toml = ["tomli ; python_full_version <= \"3.11.0a6\""]
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "debugpy"
@@ -416,7 +416,7 @@ files = [
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "exceptiongroup"
@@ -440,7 +440,7 @@ test = ["pytest (>=6)"]
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "idna"
@@ -460,7 +460,7 @@ all = ["flake8 (>=7.1.1)", "mypy (>=1.11.2)", "pytest (>=8.3.2)", "ruff (>=0.6.2
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "iniconfig"
@@ -477,7 +477,7 @@ files = [
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "jproperties"
@@ -497,7 +497,7 @@ six = ">=1.13,<2.0"
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "licenseheaders"
@@ -517,7 +517,7 @@ regex = "*"
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "mypy"
@@ -576,7 +576,7 @@ reports = ["lxml"]
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "mypy-extensions"
@@ -593,7 +593,7 @@ files = [
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "packaging"
@@ -610,7 +610,7 @@ files = [
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "pathspec"
@@ -633,7 +633,7 @@ tests = ["pytest (>=9)", "typing-extensions (>=4.15)"]
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "platformdirs"
@@ -655,7 +655,7 @@ type = ["mypy (>=1.14.1)"]
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "pluggy"
@@ -676,7 +676,7 @@ testing = ["coverage", "pytest", "pytest-benchmark"]
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "pyfakefs"
@@ -693,7 +693,7 @@ files = [
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "pygments"
@@ -713,7 +713,7 @@ windows-terminal = ["colorama (>=0.4.6)"]
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "pytest"
@@ -742,7 +742,7 @@ dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "requests
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "pytest-cov"
@@ -767,7 +767,7 @@ testing = ["process-tests", "pytest-xdist", "virtualenv"]
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "pytest-docker"
@@ -792,7 +792,7 @@ tests = ["mypy (>=0.500,<2.0)", "pytest-mypy (>=0.10,<1.0)", "pytest-pycodestyle
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "pytest-subtests"
@@ -813,7 +813,7 @@ pytest = ">=7.4"
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "pyyaml"
@@ -901,7 +901,7 @@ files = [
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "regex"
@@ -1047,7 +1047,7 @@ files = [
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "requests"
@@ -1074,7 +1074,7 @@ use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "responses"
@@ -1099,7 +1099,7 @@ tests = ["coverage (>=6.0.0)", "flake8", "mypy", "pytest (>=7.0.0)", "pytest-asy
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "six"
@@ -1116,7 +1116,7 @@ files = [
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "tomli"
@@ -1179,7 +1179,7 @@ markers = {dev = "python_full_version <= \"3.11.0a6\""}
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "types-requests"
@@ -1199,7 +1199,7 @@ urllib3 = ">=2"
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "typing-extensions"
@@ -1216,7 +1216,7 @@ files = [
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [[package]]
 name = "urllib3"
@@ -1239,9 +1239,9 @@ zstd = ["backports-zstd (>=1.0.0) ; python_version < \"3.14\""]
 [package.source]
 type = "legacy"
 url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "jfrog-server"
+reference = "repox"
 
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9"
-content-hash = "5151c155bf33c0e7a17748521d5fe1dadc943095d8082e4ef13ba20af3cf213a"
+content-hash = "a88bcfc7e11a0e3f235693a7067fb966eee079fbc938bac667a1a86fd5ffb206"
