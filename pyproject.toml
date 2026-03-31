@@ -58,7 +58,7 @@ include = 'pysonar_scanner'
 pysonar = 'pysonar_scanner.__main__:main'
 
 [[tool.poetry.source]]
-name = 'jfrog-server'
+name = 'repox'
 url = 'https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple'
 priority = "primary"
 
