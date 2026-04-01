@@ -1244,4 +1244,4 @@ reference = "repox"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9"
-content-hash = "a88bcfc7e11a0e3f235693a7067fb966eee079fbc938bac667a1a86fd5ffb206"
+content-hash = "71b7080a22119ddcbf94eb68bb9db9efb110bf902e4e93d91358a4ca9e89b5b6"
