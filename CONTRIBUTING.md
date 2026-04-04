@@ -48,7 +48,7 @@ Run `poetry run pytest tests/its --its` to run the its.
 
 To see the ITs in the VSCode test explorer, add the `--its` argument to the `python.testing.pytestArgs` setting in `.vscode/settings.json`.
 
-The the following keys should be present:
+The following keys should be present:
 ```json
   "python.testing.unittestArgs": ["-v", "-s", "tests", "-p", "test_*.py"],
   "python.testing.pytestEnabled": true,
