@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Setup Cloudflare WARP
-        uses: SonarSource/gh-action_setup-cloudflare-warp@v1
+        uses: SonarSource/gh-action_setup-cloudflare-warp@7e444c6beb29c6f0d926f1e9e63cd30563f8cfaa # v2.0.1
 
       - name: Configure poetry
         uses: ./.github/actions/config-poetry
@@ -58,7 +58,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Setup Cloudflare WARP
-        uses: SonarSource/gh-action_setup-cloudflare-warp@v1
+        uses: SonarSource/gh-action_setup-cloudflare-warp@7e444c6beb29c6f0d926f1e9e63cd30563f8cfaa # v2.0.1
 
       - name: Cache SonarQube
         uses: SonarSource/gh-action_cache@v1
