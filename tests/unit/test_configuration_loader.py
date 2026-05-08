@@ -408,6 +408,66 @@ class TestConfigurationLoader(pyfakefs.TestCase):
         self.assertDictEqual(configuration, expected_configuration)
 
     @patch("sys.argv", ["myscript.py"])
+    def test_auto_detect_tests_from_pytest_ini(self, mock_get_os, mock_get_arch):
+        self.fs.create_file(
+            "pytest.ini",
+            contents="[pytest]\ntestpaths = tests\n",
+        )
+        self.fs.create_dir("tests")
+        configuration = ConfigurationLoader.load()
+        self.assertEqual(configuration[SONAR_TESTS], "tests")
+
+    @patch("sys.argv", ["myscript.py"])
+    def test_auto_detect_tests_from_filesystem(self, mock_get_os, mock_get_arch):
+        self.fs.create_dir("tests")
+        configuration = ConfigurationLoader.load()
+        self.assertEqual(configuration[SONAR_TESTS], "tests")
+
+    @patch(
+        "sys.argv",
+        ["myscript.py", "--token", "myToken", "--sonar-project-key", "myProjectKey"],
+    )
+    def test_explicit_sonar_tests_overrides_auto_detection(self, mock_get_os, mock_get_arch):
+        self.fs.create_dir("tests")
+        self.fs.create_file(
+            "pyproject.toml",
+            contents="""
+            [tool.sonar]
+            tests = "src/test"
+            """,
+        )
+        configuration = ConfigurationLoader.load()
+        self.assertEqual(configuration[SONAR_TESTS], "src/test")
+
+    @patch("sys.argv", ["myscript.py"])
+    def test_sonar_project_properties_sonar_tests_overrides_auto_detection(self, mock_get_os, mock_get_arch):
+        """sonar.tests in sonar-project.properties must override auto-detected value from filesystem/pytest config."""
+        self.fs.create_dir("tests")  # auto-detection would find this
+        self.fs.create_dir("tests/unit")
+        self.fs.create_file(
+            "sonar-project.properties",
+            contents="sonar.tests=tests/unit\n",
+        )
+        configuration = ConfigurationLoader.load()
+        self.assertEqual(configuration[SONAR_TESTS], "tests/unit")
+
+    @patch("sys.argv", ["myscript.py"])
+    def test_sonar_project_properties_sonar_tests_overrides_pytest_ini_auto_detection(self, mock_get_os, mock_get_arch):
+        """sonar.tests in sonar-project.properties overrides auto-detection from pytest.ini testpaths."""
+        self.fs.create_file(
+            "pytest.ini",
+            contents="[pytest]\ntestpaths = tests\n",
+        )
+        self.fs.create_dir("tests")
+        self.fs.create_dir("tests/e2e")
+        self.fs.create_file(
+            "sonar-project.properties",
+            contents="sonar.tests=tests/e2e\n",
+        )
+        configuration = ConfigurationLoader.load()
+        self.assertEqual(configuration[SONAR_TESTS], "tests/e2e")
+
+    @patch("sys.argv", ["myscript.py"])
     @patch.dict("os.environ", {"SONAR_TOKEN": "TokenFromEnv", "SONAR_PROJECT_KEY": "KeyFromEnv"}, clear=True)
     def test_load_from_env_variables_only(self, mock_get_os, mock_get_arch):
         """Test that configuration can be loaded exclusively from environment variables"""

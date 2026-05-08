@@ -21,6 +21,7 @@ import logging
 import os
 import pathlib
 from subprocess import CompletedProcess
+from typing import Optional
 import subprocess
 
 import pytest
@@ -76,7 +77,7 @@ class CliClient:
             text=True,
             env=subproc_env,
         )
-        self.sq_client.wait_for_analysis_completion()
+        self._wait_for_ce_completion(workdir)
         return process
 
     def __run_analysis_normal(self, workdir: pathlib.Path, params: list[str], token: str) -> CompletedProcess:
@@ -94,5 +95,28 @@ class CliClient:
             text=True,
             cwd=workdir,
         )
-        self.sq_client.wait_for_analysis_completion()
+        self._wait_for_ce_completion(workdir)
         return process
+
+    def _wait_for_ce_completion(self, workdir: pathlib.Path) -> None:
+        """Wait for the CE task to reach a terminal state.
+
+        Reads the CE task ID written by the scanner to .sonar/report-task.txt and polls
+        api/ce/task until the task is done. Falls back to the queue-empty check when the
+        task file is absent (e.g. analysis failed before uploading the report).
+        """
+        task_id = self._read_ce_task_id(workdir)
+        if task_id:
+            self.sq_client.wait_for_ce_task_by_id(task_id)
+        else:
+            self.sq_client.wait_for_analysis_completion()
+
+    @staticmethod
+    def _read_ce_task_id(workdir: pathlib.Path) -> Optional[str]:
+        report_task_file = workdir / ".sonar" / "report-task.txt"
+        if not report_task_file.is_file():
+            return None
+        for line in report_task_file.read_text().splitlines():
+            if line.startswith("ceTaskId="):
+                return line.split("=", 1)[1].strip()
+        return None
