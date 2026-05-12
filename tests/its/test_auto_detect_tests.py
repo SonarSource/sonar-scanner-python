@@ -19,7 +19,7 @@
 #
 import pytest
 from tests.its.utils.sonarqube_client import SonarQubeClient
-from tests.its.utils.cli_client import CliClient
+from tests.its.utils.cli_client import CliClient, SOURCES_FOLDER_PATH
 
 
 pytestmark = pytest.mark.its
@@ -30,19 +30,17 @@ def test_auto_detect_tests_from_pyproject_toml(sonarqube_client: SonarQubeClient
     process = cli.run_analysis(sources_dir="with-tests", params=["--verbose"])
     assert process.returncode == 0, process.stdout
 
-    task = sonarqube_client.get_latest_ce_task()
-    projects = sonarqube_client.search_projects()
-    project_keys = [p["key"] for p in projects]
+    task_id = cli._read_ce_task_id(SOURCES_FOLDER_PATH / "with-tests")
+    assert (
+        task_id is not None
+    ), f"report-task.txt not written — analysis may have failed early.\nScanner output:\n{process.stdout}"
+    task = sonarqube_client.get_ce_task_by_id(task_id)
 
-    assert task is not None and task["status"] == "SUCCESS", (
-        f"SonarQube CE task did not succeed.\n"
-        f"Task: {task}\n"
-        f"Existing projects: {project_keys}\n"
-        f"Scanner output:\n{process.stdout}"
+    assert task["status"] == "SUCCESS", (
+        f"SonarQube CE task did not succeed.\n" f"Task: {task}\n" f"Scanner output:\n{process.stdout}"
     )
     assert task.get("componentKey") == "with-tests", (
         f"CE task succeeded for wrong component '{task.get('componentKey')}', expected 'with-tests'.\n"
-        f"Existing projects: {project_keys}\n"
         f"Scanner output:\n{process.stdout}"
     )
 

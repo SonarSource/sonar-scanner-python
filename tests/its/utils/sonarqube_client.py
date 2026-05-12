@@ -120,6 +120,11 @@ class SonarQubeClient:
         tasks = resp.json().get("tasks", [])
         return tasks[0] if tasks else None
 
+    def get_ce_task_by_id(self, task_id: str) -> dict:
+        resp = self.session.get(f"{self.base_url}/api/ce/task", params={"id": task_id})
+        resp.raise_for_status()
+        return resp.json().get("task", {})
+
     def wait_for_ce_task_by_id(self, task_id: str) -> None:
         """Poll a specific CE task until it reaches a terminal state."""
         for _ in range(self.MAX_RETRIES * 10):
