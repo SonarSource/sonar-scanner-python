@@ -93,106 +93,64 @@ def _load_from_pyproject_toml(base_dir: pathlib.Path) -> Optional[str]:
     try:
         with open(pyproject_path, "rb") as f:
             toml_dict = tomli.load(f)
-        testpaths = toml_dict.get("tool", {}).get("pytest", {}).get("ini_options", {}).get("testpaths")
-        if not testpaths:
-            return None
-        raw = [str(p) for p in (testpaths if isinstance(testpaths, list) else testpaths.split()) if str(p).strip()]
-        if not raw:
-            return None
-        paths = _existing_paths(base_dir, raw)
-        if paths:
-            result = ",".join(paths)
-            logging.debug(f"Detected test paths from pyproject.toml [tool.pytest.ini_options]: {result}")
-            return result
-        logging.warning(
-            f"testpaths is set in pyproject.toml [tool.pytest.ini_options] to {raw} "
-            f"but none of those paths exist as directories — sonar.tests will not be auto-detected"
-        )
-        return ""  # declared but all paths invalid: stop the chain
-    except Exception as e:
+    except tomli.TOMLDecodeError as e:
         logging.debug(f"Error reading pyproject.toml for pytest testpaths: {e}")
-    return None
+        return None
+    testpaths = toml_dict.get("tool", {}).get("pytest", {}).get("ini_options", {}).get("testpaths")
+    if not testpaths:
+        return None
+    raw = [str(p) for p in (testpaths if isinstance(testpaths, list) else testpaths.split()) if str(p).strip()]
+    if not raw:
+        return None
+    paths = _existing_paths(base_dir, raw)
+    if paths:
+        result = ",".join(paths)
+        logging.debug(f"Detected test paths from pyproject.toml [tool.pytest.ini_options]: {result}")
+        return result
+    logging.warning(
+        f"testpaths is set in pyproject.toml [tool.pytest.ini_options] to {raw} "
+        f"but none of those paths exist as directories — sonar.tests will not be auto-detected"
+    )
+    return ""  # declared but all paths invalid: stop the chain
+
+
+def _load_from_ini_file(base_dir: pathlib.Path, filename: str, section: str) -> Optional[str]:
+    config_path = base_dir / filename
+    if not config_path.is_file():
+        return None
+    try:
+        config = configparser.ConfigParser()
+        config.read(config_path)
+    except configparser.Error as e:
+        logging.debug(f"Error reading {filename} for pytest testpaths: {e}")
+        return None
+    if section not in config or "testpaths" not in config[section]:
+        return None
+    raw = [p for p in config[section]["testpaths"].split() if p]
+    if not raw:
+        return None
+    paths = _existing_paths(base_dir, raw)
+    if paths:
+        result = ",".join(paths)
+        logging.debug(f"Detected test paths from {filename} [{section}]: {result}")
+        return result
+    logging.warning(
+        f"testpaths is set in {filename} [{section}] to {raw} "
+        f"but none of those paths exist as directories — sonar.tests will not be auto-detected"
+    )
+    return ""
 
 
 def _load_from_pytest_ini(base_dir: pathlib.Path) -> Optional[str]:
-    pytest_ini_path = base_dir / "pytest.ini"
-    if not pytest_ini_path.is_file():
-        return None
-    try:
-        config = configparser.ConfigParser()
-        config.read(pytest_ini_path)
-        if "pytest" not in config or "testpaths" not in config["pytest"]:
-            return None
-        raw = [p for p in config["pytest"]["testpaths"].split() if p]
-        if not raw:
-            return None
-        paths = _existing_paths(base_dir, raw)
-        if paths:
-            result = ",".join(paths)
-            logging.debug(f"Detected test paths from pytest.ini: {result}")
-            return result
-        logging.warning(
-            f"testpaths is set in pytest.ini to {raw} "
-            f"but none of those paths exist as directories — sonar.tests will not be auto-detected"
-        )
-        return ""
-    except Exception as e:
-        logging.debug(f"Error reading pytest.ini for testpaths: {e}")
-    return None
+    return _load_from_ini_file(base_dir, "pytest.ini", "pytest")
 
 
 def _load_from_tox_ini(base_dir: pathlib.Path) -> Optional[str]:
-    tox_ini_path = base_dir / "tox.ini"
-    if not tox_ini_path.is_file():
-        return None
-    try:
-        config = configparser.ConfigParser()
-        config.read(tox_ini_path)
-        if "pytest" not in config or "testpaths" not in config["pytest"]:
-            return None
-        raw = [p for p in config["pytest"]["testpaths"].split() if p]
-        if not raw:
-            return None
-        paths = _existing_paths(base_dir, raw)
-        if paths:
-            result = ",".join(paths)
-            logging.debug(f"Detected test paths from tox.ini: {result}")
-            return result
-        logging.warning(
-            f"testpaths is set in tox.ini to {raw} "
-            f"but none of those paths exist as directories — sonar.tests will not be auto-detected"
-        )
-        return ""
-    except Exception as e:
-        logging.debug(f"Error reading tox.ini for testpaths: {e}")
-    return None
+    return _load_from_ini_file(base_dir, "tox.ini", "pytest")
 
 
 def _load_from_setup_cfg(base_dir: pathlib.Path) -> Optional[str]:
-    setup_cfg_path = base_dir / "setup.cfg"
-    if not setup_cfg_path.is_file():
-        return None
-    try:
-        config = configparser.ConfigParser()
-        config.read(setup_cfg_path)
-        if _SETUP_CFG_PYTEST_SECTION not in config or "testpaths" not in config[_SETUP_CFG_PYTEST_SECTION]:
-            return None
-        raw = [p for p in config[_SETUP_CFG_PYTEST_SECTION]["testpaths"].split() if p]
-        if not raw:
-            return None
-        paths = _existing_paths(base_dir, raw)
-        if paths:
-            result = ",".join(paths)
-            logging.debug(f"Detected test paths from setup.cfg [tool:pytest]: {result}")
-            return result
-        logging.warning(
-            f"testpaths is set in setup.cfg [tool:pytest] to {raw} "
-            f"but none of those paths exist as directories — sonar.tests will not be auto-detected"
-        )
-        return ""
-    except Exception as e:
-        logging.debug(f"Error reading setup.cfg for pytest testpaths: {e}")
-    return None
+    return _load_from_ini_file(base_dir, "setup.cfg", _SETUP_CFG_PYTEST_SECTION)
 
 
 def _load_from_filesystem(base_dir: pathlib.Path) -> Optional[str]:
