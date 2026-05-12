@@ -468,6 +468,28 @@ class TestConfigurationLoader(pyfakefs.TestCase):
         self.assertEqual(configuration[SONAR_TESTS], "tests/e2e")
 
     @patch("sys.argv", ["myscript.py"])
+    @patch.dict("os.environ", {"SONAR_TESTS": "env/tests"}, clear=False)
+    def test_env_var_sonar_tests_overrides_auto_detection(self, mock_get_os, mock_get_arch):
+        """sonar.tests from environment variable wins; auto-detection does not run."""
+        self.fs.create_dir("tests")  # auto-detection would find this
+        self.fs.create_dir("env/tests")
+        configuration = ConfigurationLoader.load()
+        self.assertEqual(configuration[SONAR_TESTS], "env/tests")
+
+    @patch("sys.argv", ["myscript.py"])
+    @patch("pysonar_scanner.configuration.configuration_loader.python_project_loader")
+    def test_python_project_loader_not_called_when_sonar_tests_already_set(
+        self, mock_loader, mock_get_os, mock_get_arch
+    ):
+        """python_project_loader must not run at all when sonar.tests is already set — avoids spurious warnings."""
+        self.fs.create_file(
+            "sonar-project.properties",
+            contents="sonar.tests=explicit/tests\n",
+        )
+        ConfigurationLoader.load()
+        mock_loader.load.assert_not_called()
+
+    @patch("sys.argv", ["myscript.py"])
     @patch.dict("os.environ", {"SONAR_TOKEN": "TokenFromEnv", "SONAR_PROJECT_KEY": "KeyFromEnv"}, clear=True)
     def test_load_from_env_variables_only(self, mock_get_os, mock_get_arch):
         """Test that configuration can be loaded exclusively from environment variables"""

@@ -24,7 +24,13 @@ from typing import Any
 from pysonar_scanner.configuration.cli import CliConfigurationLoader
 from pysonar_scanner.configuration.coveragerc_loader import CoverageRCConfigurationLoader
 from pysonar_scanner.configuration.pyproject_toml import TomlConfigurationLoader
-from pysonar_scanner.configuration.properties import SONAR_PROJECT_KEY, SONAR_TOKEN, SONAR_PROJECT_BASE_DIR, Key
+from pysonar_scanner.configuration.properties import (
+    SONAR_PROJECT_KEY,
+    SONAR_TOKEN,
+    SONAR_PROJECT_BASE_DIR,
+    SONAR_TESTS,
+    Key,
+)
 from pysonar_scanner.configuration.properties import PROPERTIES
 from pysonar_scanner.configuration import (
     sonar_project_properties,
@@ -61,12 +67,18 @@ class ConfigurationLoader:
         resolved_properties = get_static_default_properties()
         resolved_properties.update(dynamic_defaults_loader.load())
         resolved_properties.update(coverage_properties)
-        resolved_properties.update(python_project_loader.load(base_dir))
         resolved_properties.update(toml_properties.project_properties)
         resolved_properties.update(sonar_project_properties.load(base_dir))
         resolved_properties.update(toml_properties.sonar_properties)
         resolved_properties.update(environment_variables.load())
         resolved_properties.update(cli_properties)
+
+        # Auto-detect sonar.tests only when the user has not set it in any higher-priority source.
+        # Running python_project_loader unconditionally would emit confusing warnings about
+        # pytest config even when the result would be discarded.
+        if SONAR_TESTS not in resolved_properties:
+            resolved_properties.update(python_project_loader.load(base_dir))
+
         return resolved_properties
 
     @staticmethod
