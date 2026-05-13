@@ -364,6 +364,17 @@ class CliConfigurationLoader:
             help="Override the SonarQube configuration of skipping or not the analysis of unchanged Python files",
         )
         scanner_behavior_group.add_argument(
+            "--sonar-python-test-file-heuristic-disabled",
+            action=argparse.BooleanOptionalAction,
+            help="Disable the sonar-python heuristic that silences issues on test-like files when sonar.tests is not set. "
+            "Use this to analyse all files as main code regardless of their path.",
+        )
+        scanner_behavior_group.add_argument(
+            "-Dsonar.python.testFileHeuristic.disabled",
+            type=bool,
+            help="Equivalent to --sonar-python-test-file-heuristic-disabled",
+        )
+        scanner_behavior_group.add_argument(
             "--dry-run",
             action=argparse.BooleanOptionalAction,
             default=None,

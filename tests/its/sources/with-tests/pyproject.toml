@@ -1,0 +1,9 @@
+[project]
+name = "with-tests"
+
+[tool.sonar]
+projectKey = "with-tests"
+sources = "src"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

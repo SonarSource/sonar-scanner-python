@@ -171,3 +171,4 @@ cython_debug/
 # Sonar
 *.scanner
 *.scannerwork
+.sonar/

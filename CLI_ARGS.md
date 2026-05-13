@@ -68,6 +68,7 @@
 | `--sonar-python-analysis-parallel`, `--no-sonar-python-analysis-parallel`, `--analysis-in-parallel`, `--no-analysis-in-parallel`, `-Dsonar.python.analysis.parallel` | When set to False the analysis will be single threaded |
 | `--sonar-python-analysis-threads`, `--nr-analysis-threads`, `-Dsonar.python.analysis.threads` | Set the number of threads to use during analysis. This property is ignored if --sonar-python-analysis-parallel is set to False |
 | `--sonar-python-skip-unchanged`, `--no-sonar-python-skip-unchanged` | Override the SonarQube configuration of skipping or not the analysis of unchanged Python files |
+| `--sonar-python-test-file-heuristic-disabled`, `--no-sonar-python-test-file-heuristic-disabled` | Disable the sonar-python heuristic that silences issues on test-like files when sonar.tests is not set. Use this to analyse all files as main code regardless of their path. |
 | `--sonar-qualitygate-timeout`, `-Dsonar.qualitygate.timeout` | The number of seconds that the scanner should wait for a report to be processed |
 | `--sonar-qualitygate-wait`, `--no-sonar-qualitygate-wait` | Forces the analysis step to poll the server instance and wait for the Quality Gate status |
 | `--sonar-scanner-api-url`, `-Dsonar.scanner.apiUrl` | Base URL for all REST-compliant API calls, https://api.sonarcloud.io for example |
@@ -99,6 +100,7 @@
 | `--sonar-working-directory`, `-Dsonar.working.directory` | Path to the working directory used by the Sonar scanner during a project analysis to store temporary data |
 | `--toml-path` | Path to the pyproject.toml file or to the folder containing it. If not provided, it will look in the SONAR_PROJECT_BASE_DIR |
 | `-Dsonar.python.skipUnchanged` | Equivalent to --sonar-python-skip-unchanged |
+| `-Dsonar.python.testFileHeuristic.disabled` | Equivalent to --sonar-python-test-file-heuristic-disabled |
 | `-Dsonar.python.xunit.skipDetails` | Equivalent to -Dsonar.python.xunit.skipDetails |
 | `-Dsonar.qualitygate.wait` | Equivalent to --sonar-qualitygate-wait |
 | `-Dsonar.scm.exclusions.disabled` | Equivalent to --sonar-scm-exclusions-disabled |

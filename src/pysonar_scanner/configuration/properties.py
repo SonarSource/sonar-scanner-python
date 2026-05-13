@@ -94,6 +94,7 @@ SONAR_SOURCE_ENCODING: Key = "sonar.sourceEncoding"
 SONAR_WORKING_DIRECTORY: Key = "sonar.working.directory"
 SONAR_SCM_FORCE_RELOAD_ALL: Key = "sonar.scm.forceReloadAll"
 SONAR_MODULES: Key = "sonar.modules"
+SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED: Key = "sonar.python.testFileHeuristic.disabled"
 SONAR_PYTHON_ANALYSIS_PARALLEL: Key = "sonar.python.analysis.parallel"
 SONAR_PYTHON_ANALYSIS_THREADS: Key = "sonar.python.analysis.threads"
 SONAR_PYTHON_XUNIT_REPORT_PATH: Key = "sonar.python.xunit.reportPath"
@@ -503,6 +504,12 @@ PROPERTIES: list[Property] = [
         name=SONAR_PYTHON_SKIP_UNCHANGED,
         default_value=None,
         cli_getter=lambda args: args.sonar_python_skip_unchanged or getattr(args, "Dsonar.python.skipUnchanged")
+    ),
+    Property(
+        name=SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_python_test_file_heuristic_disabled
+        or getattr(args, "Dsonar.python.testFileHeuristic.disabled"),
     ),
     Property(
         name=SONAR_PYTHON_XUNIT_REPORT_PATH,

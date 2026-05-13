@@ -65,6 +65,7 @@ priority = "primary"
 [tool.pytest.ini_options]
 addopts = ['--import-mode=importlib', '--strict-markers']
 pythonpath = ['src']
+norecursedirs = ['tests/its/sources']
 markers = [
     "its: marks tests as its"
 ]

@@ -24,9 +24,21 @@ from typing import Any
 from pysonar_scanner.configuration.cli import CliConfigurationLoader
 from pysonar_scanner.configuration.coveragerc_loader import CoverageRCConfigurationLoader
 from pysonar_scanner.configuration.pyproject_toml import TomlConfigurationLoader
-from pysonar_scanner.configuration.properties import SONAR_PROJECT_KEY, SONAR_TOKEN, SONAR_PROJECT_BASE_DIR, Key
+from pysonar_scanner.configuration.properties import (
+    SONAR_PROJECT_KEY,
+    SONAR_TOKEN,
+    SONAR_PROJECT_BASE_DIR,
+    SONAR_TESTS,
+    SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED,
+    Key,
+)
 from pysonar_scanner.configuration.properties import PROPERTIES
-from pysonar_scanner.configuration import sonar_project_properties, environment_variables, dynamic_defaults_loader
+from pysonar_scanner.configuration import (
+    sonar_project_properties,
+    environment_variables,
+    dynamic_defaults_loader,
+    test_paths_loader,
+)
 
 from pysonar_scanner.exceptions import MissingProperty, MissingPropertyException
 
@@ -61,6 +73,19 @@ class ConfigurationLoader:
         resolved_properties.update(toml_properties.sonar_properties)
         resolved_properties.update(environment_variables.load())
         resolved_properties.update(cli_properties)
+
+        # Auto-detect sonar.tests only when the user has not set it in any higher-priority source
+        # and has not explicitly disabled the sonar-python test file heuristic. When the heuristic
+        # is disabled the intent is to analyse all files as main code with no test classification.
+        heuristic_disabled = (
+            str(resolved_properties.get(SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED, "")).lower() == "true"
+        )
+        if SONAR_TESTS not in resolved_properties and not heuristic_disabled:
+            inferred_props, disable_heuristic = test_paths_loader.load(base_dir)
+            resolved_properties.update(inferred_props)
+            if disable_heuristic and SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED not in resolved_properties:
+                resolved_properties[SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED] = "true"
+
         return resolved_properties
 
     @staticmethod
