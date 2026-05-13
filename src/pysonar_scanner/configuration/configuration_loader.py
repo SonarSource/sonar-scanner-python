@@ -77,7 +77,9 @@ class ConfigurationLoader:
         # Auto-detect sonar.tests only when the user has not set it in any higher-priority source
         # and has not explicitly disabled the sonar-python test file heuristic. When the heuristic
         # is disabled the intent is to analyse all files as main code with no test classification.
-        heuristic_disabled = resolved_properties.get(SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED, "").lower() == "true"
+        heuristic_disabled = (
+            str(resolved_properties.get(SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED, "")).lower() == "true"
+        )
         if SONAR_TESTS not in resolved_properties and not heuristic_disabled:
             inferred_props, disable_heuristic = test_paths_loader.load(base_dir)
             resolved_properties.update(inferred_props)

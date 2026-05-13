@@ -506,6 +506,12 @@ PROPERTIES: list[Property] = [
         cli_getter=lambda args: args.sonar_python_skip_unchanged or getattr(args, "Dsonar.python.skipUnchanged")
     ),
     Property(
+        name=SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED,
+        default_value=None,
+        cli_getter=lambda args: args.sonar_python_test_file_heuristic_disabled
+        or getattr(args, "Dsonar.python.testFileHeuristic.disabled"),
+    ),
+    Property(
         name=SONAR_PYTHON_XUNIT_REPORT_PATH,
         default_value=None,
         cli_getter=lambda args: args.sonar_python_xunit_report_path
