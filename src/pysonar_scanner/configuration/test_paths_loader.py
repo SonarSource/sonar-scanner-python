@@ -30,25 +30,27 @@ _CONVENTIONAL_TEST_DIRS = ["tests", "test", "testing"]
 _SETUP_CFG_PYTEST_SECTION = "tool:pytest"
 
 
-def load(base_dir: pathlib.Path) -> dict[str, str]:
+def load(base_dir: pathlib.Path) -> tuple[dict[str, str], bool]:
     """Infer sonar.tests from Python tooling configuration and filesystem conventions.
 
-    Returns sonar.tests if a test directory can be reliably inferred; empty dict otherwise.
-    Filesystem convention fallback only runs when no config file declares a testpaths key.
+    Returns (properties, disable_heuristic) where:
+    - properties contains sonar.tests if a test directory was reliably inferred
+    - disable_heuristic is True when a config file declared testpaths but all paths were
+      invalid — the user expressed intent, so the sonar-python heuristic should not fire
     """
     for loader in [_load_from_pyproject_toml, _load_from_pytest_ini, _load_from_tox_ini, _load_from_setup_cfg]:
         result = loader(base_dir)
         if result is None:
-            continue  # file absent or no testpaths key — try next source
+            continue  # file absent, no testpaths key, or empty testpaths (no restriction) — try next
         if result:
-            return {SONAR_TESTS: result}
-        return {}  # testpaths declared but all paths were invalid — stop chain, set nothing
+            return {SONAR_TESTS: result}, False
+        return {}, True  # declared but all paths invalid: user expressed intent, disable heuristic
 
-    # No config file declared a testpaths key; fall back to filesystem conventions.
+    # No config file gave a non-empty testpaths declaration; fall back to filesystem conventions.
     filesystem_result = _load_from_filesystem(base_dir)
     if filesystem_result:
-        return {SONAR_TESTS: filesystem_result}
-    return {}
+        return {SONAR_TESTS: filesystem_result}, False
+    return {}, False
 
 
 def _existing_paths(base_dir: pathlib.Path, paths: list[str]) -> list[str]:
@@ -96,12 +98,19 @@ def _load_from_pyproject_toml(base_dir: pathlib.Path) -> Optional[str]:
     except tomli.TOMLDecodeError as e:
         logging.debug(f"Error reading pyproject.toml for pytest testpaths: {e}")
         return None
-    testpaths = toml_dict.get("tool", {}).get("pytest", {}).get("ini_options", {}).get("testpaths")
-    if not testpaths:
+    ini_options = toml_dict.get("tool", {}).get("pytest", {}).get("ini_options", {})
+    if "testpaths" not in ini_options:
+        return None
+    testpaths = ini_options["testpaths"]
+    if not isinstance(testpaths, (list, str)):
+        logging.warning(
+            f"testpaths in pyproject.toml [tool.pytest.ini_options] has an unexpected type "
+            f"({type(testpaths).__name__}) — expected a list or string, skipping"
+        )
         return None
     raw = [str(p) for p in (testpaths if isinstance(testpaths, list) else testpaths.split()) if str(p).strip()]
     if not raw:
-        return None
+        return None  # testpaths = [] means "no path restriction" — same as key absent, continue chain
     paths = _existing_paths(base_dir, raw)
     if paths:
         result = ",".join(paths)
@@ -128,7 +137,7 @@ def _load_from_ini_file(base_dir: pathlib.Path, filename: str, section: str) -> 
         return None
     raw = [p for p in config[section]["testpaths"].split() if p]
     if not raw:
-        return None
+        return None  # empty testpaths means "no path restriction" — same as key absent, continue chain
     paths = _existing_paths(base_dir, raw)
     if paths:
         result = ",".join(paths)

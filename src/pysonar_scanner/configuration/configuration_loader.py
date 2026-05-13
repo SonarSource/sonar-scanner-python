@@ -29,6 +29,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_TOKEN,
     SONAR_PROJECT_BASE_DIR,
     SONAR_TESTS,
+    SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED,
     Key,
 )
 from pysonar_scanner.configuration.properties import PROPERTIES
@@ -36,7 +37,7 @@ from pysonar_scanner.configuration import (
     sonar_project_properties,
     environment_variables,
     dynamic_defaults_loader,
-    python_project_loader,
+    test_paths_loader,
 )
 
 from pysonar_scanner.exceptions import MissingProperty, MissingPropertyException
@@ -73,11 +74,15 @@ class ConfigurationLoader:
         resolved_properties.update(environment_variables.load())
         resolved_properties.update(cli_properties)
 
-        # Auto-detect sonar.tests only when the user has not set it in any higher-priority source.
-        # Running python_project_loader unconditionally would emit confusing warnings about
-        # pytest config even when the result would be discarded.
-        if SONAR_TESTS not in resolved_properties:
-            resolved_properties.update(python_project_loader.load(base_dir))
+        # Auto-detect sonar.tests only when the user has not set it in any higher-priority source
+        # and has not explicitly disabled the sonar-python test file heuristic. When the heuristic
+        # is disabled the intent is to analyse all files as main code with no test classification.
+        heuristic_disabled = resolved_properties.get(SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED, "").lower() == "true"
+        if SONAR_TESTS not in resolved_properties and not heuristic_disabled:
+            inferred_props, disable_heuristic = test_paths_loader.load(base_dir)
+            resolved_properties.update(inferred_props)
+            if disable_heuristic and SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED not in resolved_properties:
+                resolved_properties[SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED] = "true"
 
         return resolved_properties
 

@@ -79,19 +79,6 @@ class SonarQubeClient:
         resp.raise_for_status()
         return resp.json()
 
-    def wait_for_analysis_completion(self):
-        empty_queue = False
-        count = 0
-        while not empty_queue:
-            logger.info("Waiting for analysis completion")
-            if count > self.MAX_RETRIES:
-                raise RuntimeError("Too many retries on analysis report")
-            response = self.session.get(f"{self.base_url}/api/analysis_reports/is_queue_empty")
-            if "true" == response.text:
-                empty_queue = True
-            count = count + 1
-            time.sleep(2)
-
     def get_project_issues(self, project_key: str) -> IssuesSearch:
         resp = self.session.get(f"{self.base_url}/api/issues/search?projects={project_key}")
         resp.raise_for_status()
@@ -101,24 +88,6 @@ class SonarQubeClient:
         resp = self.session.get(f"{self.base_url}/api/project_analyses/search?project={project_key}")
         resp.raise_for_status()
         return resp.json()
-
-    def get_project_measures(self, project_key: str, metric_keys: list[str]) -> dict:
-        resp = self.session.get(
-            f"{self.base_url}/api/measures/component",
-            params={"component": project_key, "metricKeys": ",".join(metric_keys)},
-        )
-        resp.raise_for_status()
-        return resp.json()
-
-    def get_latest_ce_task(self) -> Optional[dict]:
-        """Return the most recent CE background task, or None if no task has completed yet."""
-        resp = self.session.get(
-            f"{self.base_url}/api/ce/activity",
-            params={"type": "REPORT", "ps": 1},
-        )
-        resp.raise_for_status()
-        tasks = resp.json().get("tasks", [])
-        return tasks[0] if tasks else None
 
     def get_ce_task_by_id(self, task_id: str) -> dict:
         resp = self.session.get(f"{self.base_url}/api/ce/task", params={"id": task_id})
@@ -136,11 +105,6 @@ class SonarQubeClient:
             logger.info("Waiting for CE task to complete")
             time.sleep(2)
         raise RuntimeError(f"CE task {task_id} did not complete in time")
-
-    def search_projects(self) -> list[dict]:
-        resp = self.session.get(f"{self.base_url}/api/projects/search")
-        resp.raise_for_status()
-        return resp.json().get("components", [])
 
     def get_project_test_files(self, project_key: str) -> list[dict]:
         """Return components classified as unit-test source files (qualifier UTS) for the given project."""

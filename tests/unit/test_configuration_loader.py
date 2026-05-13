@@ -53,6 +53,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_SCANNER_ARCH,
     SONAR_SCANNER_OS,
     SONAR_COVERAGE_EXCLUSIONS,
+    SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED,
 )
 from pysonar_scanner.utils import Arch, Os
 from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader, SONAR_PROJECT_BASE_DIR
@@ -477,17 +478,54 @@ class TestConfigurationLoader(pyfakefs.TestCase):
         self.assertEqual(configuration[SONAR_TESTS], "env/tests")
 
     @patch("sys.argv", ["myscript.py"])
-    @patch("pysonar_scanner.configuration.configuration_loader.python_project_loader")
-    def test_python_project_loader_not_called_when_sonar_tests_already_set(
-        self, mock_loader, mock_get_os, mock_get_arch
-    ):
-        """python_project_loader must not run at all when sonar.tests is already set — avoids spurious warnings."""
+    @patch("pysonar_scanner.configuration.configuration_loader.test_paths_loader")
+    def test_test_paths_loader_not_called_when_sonar_tests_already_set(self, mock_loader, mock_get_os, mock_get_arch):
+        """test_paths_loader must not run at all when sonar.tests is already set — avoids spurious warnings."""
         self.fs.create_file(
             "sonar-project.properties",
             contents="sonar.tests=explicit/tests\n",
         )
         ConfigurationLoader.load()
         mock_loader.load.assert_not_called()
+
+    @patch("sys.argv", ["myscript.py"])
+    @patch("pysonar_scanner.configuration.configuration_loader.test_paths_loader")
+    def test_test_paths_loader_not_called_when_heuristic_disabled(self, mock_loader, mock_get_os, mock_get_arch):
+        """test_paths_loader must not run when sonar.python.testFileHeuristic.disabled=true."""
+        self.fs.create_file(
+            "sonar-project.properties",
+            contents="sonar.python.testFileHeuristic.disabled=true\n",
+        )
+        self.fs.create_dir("tests")  # inference would find this if it ran
+        ConfigurationLoader.load()
+        mock_loader.load.assert_not_called()
+
+    @patch("sys.argv", ["myscript.py"])
+    def test_declared_invalid_testpaths_disables_heuristic_in_resolved_properties(self, mock_get_os, mock_get_arch):
+        """When testpaths is declared but all paths are invalid, the loader signals intent and
+        configuration_loader sets sonar.python.testFileHeuristic.disabled=true."""
+        self.fs.create_file(
+            "pytest.ini",
+            contents="[pytest]\ntestpaths = nonexistent\n",
+        )
+        configuration = ConfigurationLoader.load()
+        self.assertEqual(configuration.get(SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED), "true")
+        self.assertNotIn(SONAR_TESTS, configuration)
+
+    @patch("sys.argv", ["myscript.py"])
+    def test_user_heuristic_disable_not_overridden_by_loader(self, mock_get_os, mock_get_arch):
+        """An explicit sonar.python.testFileHeuristic.disabled set by the user is not overridden
+        by the loader's suggestion, even when testpaths resolves to nothing."""
+        self.fs.create_file(
+            "sonar-project.properties",
+            contents="sonar.python.testFileHeuristic.disabled=false\n",
+        )
+        self.fs.create_file(
+            "pytest.ini",
+            contents="[pytest]\ntestpaths = nonexistent\n",
+        )
+        configuration = ConfigurationLoader.load()
+        self.assertEqual(configuration.get(SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED), "false")
 
     @patch("sys.argv", ["myscript.py"])
     @patch.dict("os.environ", {"SONAR_TOKEN": "TokenFromEnv", "SONAR_PROJECT_KEY": "KeyFromEnv"}, clear=True)
