@@ -12,7 +12,7 @@ concurrency:
 jobs:
   build:
     name: "Build"
-    runs-on: github-ubuntu-latest-s
+    runs-on: warp-custom-ubuntu-24-04
     outputs:
       build-number: ${{ steps.build-poetry.outputs.BUILD_NUMBER }}
     permissions:
@@ -34,7 +34,7 @@ jobs:
 
   install_deps:
     name: "Install and Cache Poetry Dependencies"
-    runs-on: github-ubuntu-latest-s
+    runs-on: warp-custom-ubuntu-24-04
     permissions:
       id-token: write
       contents: write
@@ -49,7 +49,7 @@ jobs:
   formatting:
     name: "Formatting and Licenses headers"
     needs: [install_deps]
-    runs-on: github-ubuntu-latest-s
+    runs-on: warp-custom-ubuntu-24-04
     permissions:
       id-token: write
       contents: write
@@ -66,7 +66,7 @@ jobs:
 
   documentation:
     name: "CLI Documentation"
-    runs-on: github-ubuntu-latest-s
+    runs-on: warp-custom-ubuntu-24-04
     needs: [install_deps]
     permissions:
       id-token: write
@@ -83,7 +83,7 @@ jobs:
 
   coverage:
     name: "Coverage report generation"
-    runs-on: github-ubuntu-latest-s
+    runs-on: warp-custom-ubuntu-24-04
     needs: [install_deps]
     permissions:
       id-token: write
@@ -106,7 +106,7 @@ jobs:
 
   analysis:
     name: "NEXT Analysis"
-    runs-on: github-ubuntu-latest-s
+    runs-on: warp-custom-ubuntu-24-04
     needs: [coverage]
     permissions:
       id-token: write
@@ -129,7 +129,7 @@ jobs:
 
   qa:
     name: "Test Python ${{ matrix.python-version }}"
-    runs-on: github-ubuntu-latest-s
+    runs-on: warp-custom-ubuntu-24-04
     needs: [install_deps]
     permissions:
       id-token: write
@@ -168,7 +168,7 @@ jobs:
 
   its:
     name: "Integration Tests"
-    runs-on: github-ubuntu-latest-s
+    runs-on: warp-custom-ubuntu-24-04
     permissions:
       id-token: write
       contents: write
@@ -210,7 +210,7 @@ jobs:
         qa-windows,
         its,
       ]
-    runs-on: github-ubuntu-latest-s
+    runs-on: warp-custom-ubuntu-24-04
     permissions:
       id-token: write
       contents: write
