@@ -456,6 +456,33 @@ class TestConfigurationLoader(pyfakefs.TestCase):
         self.assertEqual(configuration[SONAR_SOURCES], "src")
 
     @patch("sys.argv", ["myscript.py"])
+    def test_default_sources_adds_test_dirs_to_exclusions(self, mock_get_os, mock_get_arch):
+        """When sonar.sources defaults to '.' and sonar.tests is set, test dirs must be excluded from sources."""
+        self.fs.create_dir("tests")
+        configuration = ConfigurationLoader.load()
+        self.assertEqual(configuration[SONAR_SOURCES], ".")
+        self.assertEqual(configuration[SONAR_TESTS], "tests")
+        self.assertEqual(configuration[SONAR_EXCLUSIONS], "tests/**")
+
+    @patch("sys.argv", ["myscript.py"])
+    def test_default_sources_appends_test_dirs_to_existing_exclusions(self, mock_get_os, mock_get_arch):
+        """When sonar.exclusions is already set, test dirs are appended rather than replacing it."""
+        self.fs.create_dir("tests")
+        self.fs.create_file("sonar-project.properties", contents="sonar.exclusions=generated/**\n")
+        configuration = ConfigurationLoader.load()
+        self.assertEqual(configuration[SONAR_SOURCES], ".")
+        self.assertEqual(configuration[SONAR_EXCLUSIONS], "generated/**,tests/**")
+
+    @patch("sys.argv", ["myscript.py", "--sonar-sources", "."])
+    def test_auto_detected_tests_add_exclusions_even_when_sources_explicit(self, mock_get_os, mock_get_arch):
+        """Auto-detected test dirs are added to sonar.exclusions even when sonar.sources was explicitly set."""
+        self.fs.create_dir("tests")
+        configuration = ConfigurationLoader.load()
+        self.assertEqual(configuration[SONAR_SOURCES], ".")
+        self.assertEqual(configuration[SONAR_TESTS], "tests")
+        self.assertEqual(configuration[SONAR_EXCLUSIONS], "tests/**")
+
+    @patch("sys.argv", ["myscript.py"])
     def test_sonar_project_properties_sonar_tests_overrides_auto_detection(self, mock_get_os, mock_get_arch):
         """sonar.tests in sonar-project.properties must override auto-detected value from filesystem/pytest config."""
         self.fs.create_dir("tests")  # auto-detection would find this
