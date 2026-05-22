@@ -79,6 +79,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
         expected_configuration = {
             SONAR_TOKEN: "myToken",
             SONAR_PROJECT_KEY: "myProjectKey",
+            SONAR_SOURCES: ".",
             SONAR_SCANNER_APP: "python",
             SONAR_SCANNER_APP_VERSION: "1.0",
             SONAR_SCANNER_BOOTSTRAP_START_TIME: configuration[SONAR_SCANNER_BOOTSTRAP_START_TIME],
@@ -103,7 +104,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
         self, get_static_default_properties_mock, mock_load, mock_get_os, mock_get_arch
     ):
         config = ConfigurationLoader.load()
-        self.assertDictEqual(config, {})
+        self.assertDictEqual(config, {SONAR_SOURCES: "."})
 
     @patch("pysonar_scanner.configuration.configuration_loader.get_static_default_properties", return_value={})
     @patch("sys.argv", ["myscript.py"])
@@ -115,6 +116,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
                 SONAR_PROJECT_BASE_DIR: os.getcwd(),
                 SONAR_SCANNER_OS: Os.LINUX.value,
                 SONAR_SCANNER_ARCH: Arch.X64.value,
+                SONAR_SOURCES: ".",
             },
         )
 
@@ -404,6 +406,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_OS: Os.LINUX.value,
             SONAR_SCANNER_ARCH: Arch.X64.value,
             SONAR_COVERAGE_EXCLUSIONS: "*/.local/*, /usr/*, utils/tirefire.py",
+            SONAR_SOURCES: ".",
             SONAR_SCANNER_DRY_RUN: False,
         }
         self.assertDictEqual(configuration, expected_configuration)
@@ -439,6 +442,45 @@ class TestConfigurationLoader(pyfakefs.TestCase):
         )
         configuration = ConfigurationLoader.load()
         self.assertEqual(configuration[SONAR_TESTS], "src/test")
+
+    @patch("sys.argv", ["myscript.py"])
+    def test_default_sources_when_not_set(self, mock_get_os, mock_get_arch):
+        """sonar.sources defaults to '.' when not set in any configuration source."""
+        configuration = ConfigurationLoader.load()
+        self.assertEqual(configuration[SONAR_SOURCES], ".")
+
+    @patch("sys.argv", ["myscript.py", "--sonar-sources", "src"])
+    def test_explicit_sources_overrides_default(self, mock_get_os, mock_get_arch):
+        """An explicit sonar.sources must not be overridden by the default."""
+        configuration = ConfigurationLoader.load()
+        self.assertEqual(configuration[SONAR_SOURCES], "src")
+
+    @patch("sys.argv", ["myscript.py"])
+    def test_default_sources_adds_test_dirs_to_exclusions(self, mock_get_os, mock_get_arch):
+        """When sonar.sources defaults to '.' and sonar.tests is set, test dirs must be excluded from sources."""
+        self.fs.create_dir("tests")
+        configuration = ConfigurationLoader.load()
+        self.assertEqual(configuration[SONAR_SOURCES], ".")
+        self.assertEqual(configuration[SONAR_TESTS], "tests")
+        self.assertEqual(configuration[SONAR_EXCLUSIONS], "tests/**")
+
+    @patch("sys.argv", ["myscript.py"])
+    def test_default_sources_appends_test_dirs_to_existing_exclusions(self, mock_get_os, mock_get_arch):
+        """When sonar.exclusions is already set, test dirs are appended rather than replacing it."""
+        self.fs.create_dir("tests")
+        self.fs.create_file("sonar-project.properties", contents="sonar.exclusions=generated/**\n")
+        configuration = ConfigurationLoader.load()
+        self.assertEqual(configuration[SONAR_SOURCES], ".")
+        self.assertEqual(configuration[SONAR_EXCLUSIONS], "generated/**,tests/**")
+
+    @patch("sys.argv", ["myscript.py", "--sonar-sources", "."])
+    def test_auto_detected_tests_add_exclusions_even_when_sources_explicit(self, mock_get_os, mock_get_arch):
+        """Auto-detected test dirs are added to sonar.exclusions even when sonar.sources was explicitly set."""
+        self.fs.create_dir("tests")
+        configuration = ConfigurationLoader.load()
+        self.assertEqual(configuration[SONAR_SOURCES], ".")
+        self.assertEqual(configuration[SONAR_TESTS], "tests")
+        self.assertEqual(configuration[SONAR_EXCLUSIONS], "tests/**")
 
     @patch("sys.argv", ["myscript.py"])
     def test_sonar_project_properties_sonar_tests_overrides_auto_detection(self, mock_get_os, mock_get_arch):

@@ -28,6 +28,8 @@ from pysonar_scanner.configuration.properties import (
     SONAR_PROJECT_KEY,
     SONAR_TOKEN,
     SONAR_PROJECT_BASE_DIR,
+    SONAR_EXCLUSIONS,
+    SONAR_SOURCES,
     SONAR_TESTS,
     SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED,
     Key,
@@ -80,11 +82,35 @@ class ConfigurationLoader:
         heuristic_disabled = (
             str(resolved_properties.get(SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED, "")).lower() == "true"
         )
+        tests_auto_detected = False
         if SONAR_TESTS not in resolved_properties and not heuristic_disabled:
             inferred_props, disable_heuristic = test_paths_loader.load(base_dir)
             resolved_properties.update(inferred_props)
+            tests_auto_detected = SONAR_TESTS in resolved_properties
             if disable_heuristic and SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED not in resolved_properties:
                 resolved_properties[SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED] = "true"
+
+        sources_defaulted = SONAR_SOURCES not in resolved_properties
+        if sources_defaulted:
+            logging.info(
+                "sonar.sources is not set; defaulting to the current directory '.'. "
+                "Set sonar.sources explicitly to override this behavior."
+            )
+            resolved_properties[SONAR_SOURCES] = "."
+
+        if (sources_defaulted or tests_auto_detected) and SONAR_TESTS in resolved_properties:
+            test_dirs = [d.strip() for d in resolved_properties[SONAR_TESTS].split(",") if d.strip()]
+            test_exclusion_patterns = ",".join(f"{d}/**" for d in test_dirs)
+            existing = resolved_properties.get(SONAR_EXCLUSIONS, "")
+            resolved_properties[SONAR_EXCLUSIONS] = (
+                f"{existing},{test_exclusion_patterns}" if existing else test_exclusion_patterns
+            )
+            logging.info(
+                "Adding test directories to sonar.exclusions to avoid overlap with sonar.sources: '%s'. "
+                "To manage this manually, set sonar.sources to a path that does not include the test directories, "
+                "or set sonar.tests explicitly to disable auto-detection.",
+                test_exclusion_patterns,
+            )
 
         return resolved_properties
 
