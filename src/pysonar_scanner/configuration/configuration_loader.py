@@ -28,6 +28,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_PROJECT_KEY,
     SONAR_TOKEN,
     SONAR_PROJECT_BASE_DIR,
+    SONAR_SOURCES,
     SONAR_TESTS,
     SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED,
     Key,
@@ -85,6 +86,10 @@ class ConfigurationLoader:
             resolved_properties.update(inferred_props)
             if disable_heuristic and SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED not in resolved_properties:
                 resolved_properties[SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED] = "true"
+
+        if SONAR_SOURCES not in resolved_properties:
+            logging.info("sonar.sources is not set; defaulting to the current directory '.'")
+            resolved_properties[SONAR_SOURCES] = "."
 
         return resolved_properties
 
