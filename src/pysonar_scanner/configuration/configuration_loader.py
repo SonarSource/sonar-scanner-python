@@ -92,7 +92,10 @@ class ConfigurationLoader:
 
         sources_defaulted = SONAR_SOURCES not in resolved_properties
         if sources_defaulted:
-            logging.info("sonar.sources is not set; defaulting to the current directory '.'")
+            logging.info(
+                "sonar.sources is not set; defaulting to the current directory '.'. "
+                "Set sonar.sources explicitly to override this behavior."
+            )
             resolved_properties[SONAR_SOURCES] = "."
 
         if (sources_defaulted or tests_auto_detected) and SONAR_TESTS in resolved_properties:
@@ -103,7 +106,9 @@ class ConfigurationLoader:
                 f"{existing},{test_exclusion_patterns}" if existing else test_exclusion_patterns
             )
             logging.info(
-                "Adding test directories to sonar.exclusions to avoid overlap with sonar.sources: '%s'",
+                "Adding test directories to sonar.exclusions to avoid overlap with sonar.sources: '%s'. "
+                "To manage this manually, set sonar.sources to a path that does not include the test directories, "
+                "or set sonar.tests explicitly to disable auto-detection.",
                 test_exclusion_patterns,
             )
 
