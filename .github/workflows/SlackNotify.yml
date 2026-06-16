@@ -1,22 +1,49 @@
 ---
 name: Slack Notifications
 on:
-  check_suite:
-    types: [completed]
+  workflow_run:
+    workflows:
+      - Build
+      - Iris sync
+      - Releasability status
+      - macOS Nightly Build
+      - sonar-release
+    types:
+      - completed
 
 permissions:
   contents: read
   id-token: write
-  checks: read
+
 jobs:
   notify:
-    if: >-
-      contains(fromJSON('["main", "master"]'), github.event.check_suite.head_branch) || startsWith(github.event.check_suite.head_branch, 'dogfood-') || startsWith(github.event.check_suite.head_branch, 'branch-')
+    if: >
+      github.event.workflow_run.conclusion == 'failure' &&
+      (
+        github.event.workflow_run.name == 'sonar-release' ||
+        github.event.workflow_run.head_branch == 'master' ||
+        startsWith(github.event.workflow_run.head_branch, 'branch-') ||
+        startsWith(github.event.workflow_run.head_branch, 'dogfood-')
+      )
     runs-on: ubuntu-latest
     steps:
-      - name: Send Slack Notification
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        uses: SonarSource/gh-action_slack-notify@9532fdcfa4143ed5da2da7b0e77172abbe24ae33 # 1.0.2
+      - name: Vault Secrets
+        id: secrets
+        uses: SonarSource/vault-action-wrapper@v3
         with:
-          slackChannel: squad-python-notifs
+          secrets: |
+            development/kv/data/slack token | SLACK_TOKEN;
+
+      - name: Send Slack Notification
+        uses: rtCamp/action-slack-notify@e31e87e03dd19038e411e38ae27cbad084a90661 # v2.3.3
+        env:
+          SLACK_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).SLACK_TOKEN }}
+          SLACK_CHANNEL: ops-ci-experience
+          SLACK_COLOR: danger
+          SLACK_TITLE: Workflow Failed
+          SLACK_MESSAGE: |
+            Workflow failed in ${{ github.repository }} 🚨
+            Workflow: ${{ github.event.workflow_run.name }}
+            Branch: ${{ github.event.workflow_run.head_branch }}
+            ${{ github.event.workflow_run.html_url }}
+          SLACK_USERNAME: BuildBot

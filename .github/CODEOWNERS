@@ -1,2 +1,2 @@
 # https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
-.github/CODEOWNERS @SonarSource/quality-data-ml-squad
+.github/CODEOWNERS @SonarSource/code-quality-ci-experience-squad
