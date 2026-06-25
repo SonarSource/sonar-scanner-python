@@ -222,8 +222,13 @@ jobs:
           experimental: true
       - name: Configure poetry for Windows
         uses: SonarSource/ci-github-actions/config-poetry@v1
+        continue-on-error: true
         with:
           artifactory-reader-role: private-reader
+      - name: Clean up local action symlinks
+        if: ${{ always() }}
+        shell: bash
+        run: rm -rf .actions
       - name: Install dependencies
         run: poetry install
       - name: Execute the test suite
