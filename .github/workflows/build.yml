@@ -5,6 +5,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+env:
+  POETRY_CACHE_DIR: ${{ github.workspace }}/.cache/pypoetry
+  POETRY_VIRTUALENVS_PATH: ${{ github.workspace }}/.cache/pypoetry/virtualenvs
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -21,8 +25,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Install mise and tools
-        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
       - name: Build the scanner
         uses: SonarSource/ci-github-actions/build-poetry@v1
         id: build-poetry
@@ -41,8 +43,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Install mise and tools
+        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
+        with:
+          version: 2026.5.9
+          tool_versions: |
+            python 3.12.1
+          experimental: true
       - name: Configure poetry
-        uses: ./.github/actions/config-poetry # We use this job to cache the poetry depend
+        uses: SonarSource/ci-github-actions/config-poetry@v1
+        with:
+          artifactory-reader-role: private-reader
       - run: |
           poetry install
 
@@ -56,8 +67,19 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Install mise and tools
+        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
+        with:
+          version: 2026.5.9
+          tool_versions: |
+            python 3.12.1
+          experimental: true
       - name: Configure poetry
-        uses: ./.github/actions/config-poetry
+        uses: SonarSource/ci-github-actions/config-poetry@v1
+        with:
+          artifactory-reader-role: private-reader
+      - name: Install dependencies
+        run: poetry install
       - run: |
           poetry run black src/ tests/ --check
           poetry run licenseheaders -t license_header.tmpl -o "SonarSource Sàrl" -y 2011-2026 -n "Sonar Scanner Python" -E .py -d src/
@@ -76,6 +98,17 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Install mise and tools
         uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
+        with:
+          version: 2026.5.9
+          tool_versions: |
+            python 3.12.1
+          experimental: true
+      - name: Configure poetry
+        uses: SonarSource/ci-github-actions/config-poetry@v1
+        with:
+          artifactory-reader-role: private-reader
+      - name: Install dependencies
+        run: poetry install
       - name: Check for incorrect documentation
         run: |
           poetry run python tools/generate_cli_documentation.py
@@ -91,8 +124,19 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Install mise and tools
+        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
+        with:
+          version: 2026.5.9
+          tool_versions: |
+            python 3.12.1
+          experimental: true
       - name: Configure poetry
-        uses: ./.github/actions/config-poetry
+        uses: SonarSource/ci-github-actions/config-poetry@v1
+        with:
+          artifactory-reader-role: private-reader
+      - name: Install dependencies
+        run: poetry install
       - run: |
           poetry run pytest --cov-report=xml:coverage.xml --cov-config=pyproject.toml --cov=src --cov-branch tests
           poetry run mypy src/ > mypy-report.txt || true
@@ -118,8 +162,6 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: coverage-reports
-      - name: Install mise and tools
-        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
       - name: Analysis the project on next
         uses: SonarSource/ci-github-actions/build-poetry@v1
         with:
@@ -142,10 +184,19 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Configure poetry
-        uses: ./.github/actions/config-poetry
+      - name: Install mise and tools
+        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
         with:
-          python-version: ${{ matrix.python-version }}
+          version: 2026.5.9
+          tool_versions: |
+            python ${{ matrix.python-version }}
+          experimental: true
+      - name: Configure poetry
+        uses: SonarSource/ci-github-actions/config-poetry@v1
+        with:
+          artifactory-reader-role: private-reader
+      - name: Install dependencies
+        run: poetry install
       - name: Execute the test suite
         run: |
           poetry run pytest tests/
@@ -160,8 +211,19 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Install mise and tools
+        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
+        with:
+          version: 2026.5.9
+          tool_versions: |
+            python 3.12.1
+          experimental: true
       - name: Configure poetry for Windows
-        uses: ./.github/actions/config-poetry
+        uses: SonarSource/ci-github-actions/config-poetry@v1
+        with:
+          artifactory-reader-role: private-reader
+      - name: Install dependencies
+        run: poetry install
       - name: Execute the test suite
         run: |
           poetry run pytest tests/
@@ -192,8 +254,17 @@ jobs:
           if [ ! -f sonarqube_cache/sonarqube.zip ]; then
             wget -q https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-$SONARQUBE_VERSION.zip -O sonarqube_cache/sonarqube.zip
           fi
+      - name: Install mise and tools
+        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
+        with:
+          version: 2026.5.9
+          tool_versions: |
+            python 3.12.1
+          experimental: true
       - name: Configure poetry
-        uses: ./.github/actions/config-poetry
+        uses: SonarSource/ci-github-actions/config-poetry@v1
+        with:
+          artifactory-reader-role: private-reader
       - name: Execute the integration tests
         run: ./.github/scripts/run_its.sh
 

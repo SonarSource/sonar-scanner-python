@@ -4,6 +4,10 @@ on:
     - cron: "0 2 * * *"
   workflow_dispatch:
 
+env:
+  POETRY_CACHE_DIR: ${{ github.workspace }}/.cache/pypoetry
+  POETRY_VIRTUALENVS_PATH: ${{ github.workspace }}/.cache/pypoetry/virtualenvs
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -18,8 +22,19 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Install mise and tools
+        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
+        with:
+          version: 2026.5.9
+          tool_versions: |
+            python 3.12.1
+          experimental: true
       - name: Configure poetry
-        uses: ./.github/actions/config-poetry
+        uses: SonarSource/ci-github-actions/config-poetry@v1
+        with:
+          artifactory-reader-role: private-reader
+      - name: Install dependencies
+        run: poetry install
       - run: |
           poetry run pytest --cov-report=xml:coverage.xml --cov-config=pyproject.toml --cov=src --cov-branch tests
           poetry run mypy src/ > mypy-report.txt || true
