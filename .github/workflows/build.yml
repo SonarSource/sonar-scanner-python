@@ -6,6 +6,8 @@ on:
   workflow_dispatch:
 
 env:
+  MISE_EXPERIMENTAL: "1"
+  MISE_PYTHON_GITHUB_ATTESTATIONS: "false"
   POETRY_CACHE_DIR: ${{ github.workspace }}/.cache/pypoetry
   POETRY_VIRTUALENVS_PATH: ${{ github.workspace }}/.cache/pypoetry/virtualenvs
 
