@@ -1,5 +1,7 @@
 name: Build
 on:
+  schedule:
+    - cron: "0 1 * * *"
   push:
     branches: [master, branch-*, dogfood-*]
   pull_request:
