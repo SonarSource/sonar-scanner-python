@@ -321,6 +321,7 @@ jobs:
 
   promote:
     name: "Promote"
+    if: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/branch-') || startsWith(github.ref, 'refs/heads/dogfood-') }}
     needs:
       [
         build,
