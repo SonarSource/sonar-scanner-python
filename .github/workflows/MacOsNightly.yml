@@ -13,6 +13,12 @@ on:
         type: boolean
 
 # Only allow one instance of this workflow to run at a time
+env:
+  MISE_EXPERIMENTAL: "1"
+  MISE_PYTHON_GITHUB_ATTESTATIONS: "false"
+  POETRY_CACHE_DIR: ${{ github.workspace }}/.cache/pypoetry
+  POETRY_VIRTUALENVS_PATH: ${{ github.workspace }}/.cache/pypoetry/virtualenvs
+
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: true
@@ -35,10 +41,21 @@ jobs:
       - name: Setup Cloudflare WARP
         uses: SonarSource/gh-action_setup-cloudflare-warp@v1
 
-      - name: Configure poetry
-        uses: ./.github/actions/config-poetry
+      - name: Install mise and tools
+        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
         with:
-          python-version: ${{ matrix.python-version }}
+          version: 2026.5.9
+          tool_versions: |
+            python ${{ matrix.python-version }}
+          experimental: true
+
+      - name: Configure poetry
+        uses: SonarSource/ci-github-actions/config-poetry@v1
+        with:
+          artifactory-reader-role: private-reader
+
+      - name: Install dependencies
+        run: poetry install
 
       - name: Execute the test suite
         run: poetry run pytest tests/
@@ -76,8 +93,18 @@ jobs:
             wget -q https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-$SONARQUBE_VERSION.zip -O sonarqube_cache/sonarqube.zip
           fi
 
+      - name: Install mise and tools
+        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
+        with:
+          version: 2026.5.9
+          tool_versions: |
+            python 3.12.1
+          experimental: true
+
       - name: Configure poetry
-        uses: ./.github/actions/config-poetry
+        uses: SonarSource/ci-github-actions/config-poetry@v1
+        with:
+          artifactory-reader-role: private-reader
 
       - name: Execute the integration tests
         run: ./.github/scripts/run_its.sh

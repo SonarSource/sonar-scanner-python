@@ -4,7 +4,6 @@ on:
   workflow_run:
     workflows:
       - Build
-      - Iris sync
       - Releasability status
       - macOS Nightly Build
       - sonar-release
