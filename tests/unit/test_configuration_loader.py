@@ -132,14 +132,12 @@ class TestConfigurationLoader(pyfakefs.TestCase):
 
         self.fs.create_file(
             "sonar-project.properties",
-            contents=(
-                """
+            contents=("""
                 sonar.projectKey=overwritten-project-key
                 sonar.projectName=My Project\n
                 sonar.sources=src # my sources\n
                 sonar.exclusions=**/generated/**/*,**/deprecated/**/*,**/testdata/**/*\n
-                """
-            ),
+                """),
         )
         configuration = ConfigurationLoader.load()
         expected_configuration = {
@@ -181,14 +179,12 @@ class TestConfigurationLoader(pyfakefs.TestCase):
         self.fs.create_dir("custom/path")
         self.fs.create_file(
             "custom/path/sonar-project.properties",
-            contents=(
-                """
+            contents=("""
                 sonar.projectKey=custom-path-project-key
                 sonar.projectName=Custom Path Project
                 sonar.sources=src/main
                 sonar.tests=src/test
-                """
-            ),
+                """),
         )
         configuration = ConfigurationLoader.load()
         expected_configuration = {
@@ -230,15 +226,13 @@ class TestConfigurationLoader(pyfakefs.TestCase):
         self.fs.create_dir("custom/path")
         self.fs.create_file(
             "custom/path/pyproject.toml",
-            contents=(
-                """
+            contents=("""
                 [tool.sonar]
                  projectKey = "custom-path-project-key"
                  project-name = "Custom Path Project"
                  sources = "src/main"
                  tests= "src/test"
-                """
-            ),
+                """),
         )
         configuration = ConfigurationLoader.load()
         expected_configuration = {
@@ -280,16 +274,14 @@ class TestConfigurationLoader(pyfakefs.TestCase):
         self.fs.create_dir("custom/path")
         self.fs.create_file(
             "custom/path/pyproject.toml",
-            contents=(
-                """
+            contents=("""
                 [tool.sonar]
                 projectKey = "custom-path-project-key"
                 project-name = "Custom Path Project"
                 sources = "src/main"
                 tests= "src/test"
                 scanner.javaHeapSize = "8000Mb"
-                """
-            ),
+                """),
         )
         configuration = ConfigurationLoader.load()
         expected_configuration = {
@@ -333,16 +325,14 @@ class TestConfigurationLoader(pyfakefs.TestCase):
         self.fs.create_dir("custom/path")
         self.fs.create_file(
             "custom/path/pyproject.toml",
-            contents=(
-                """
+            contents=("""
                 [tool.sonar]
                 projectKey = "custom-path-project-key"
                 project-name = "Custom Path Project"
                 sources = "src/main"
                 tests= "src/test"
                 scanner.javaHeapSize = "8000Mb"
-                """
-            ),
+                """),
         )
         configuration = ConfigurationLoader.load()
         expected_configuration = {
@@ -380,15 +370,13 @@ class TestConfigurationLoader(pyfakefs.TestCase):
         self.fs.create_dir("custom/path")
         self.fs.create_file(
             ".coveragerc",
-            contents=(
-                """
+            contents=("""
                 [run]
                 omit =
                     */.local/*
                     /usr/*
                     utils/tirefire.py
-                """
-            ),
+                """),
         )
         configuration = ConfigurationLoader.load()
         expected_configuration = {
@@ -616,8 +604,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
         # Create both configuration files
         self.fs.create_file(
             "sonar-project.properties",
-            contents=(
-                """
+            contents=("""
                 sonar.projectKey=ProjectKeyFromProperties
                 sonar.projectName=Properties Project
                 sonar.projectDescription=Properties Project Description
@@ -625,13 +612,11 @@ class TestConfigurationLoader(pyfakefs.TestCase):
                 sonar.tests=test/properties
                 sonar.exclusions=properties-exclusions/**/*
                 sonar.userHome=/properties/sonar/home
-                """
-            ),
+                """),
         )
         self.fs.create_file(
             "pyproject.toml",
-            contents=(
-                """
+            contents=("""
                 [project]
                 name = "My Overridden Project Name"
                 description = "My Project Description"
@@ -642,8 +627,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
                 sources = "src/toml"
                 exclusions = "toml-exclusions/**/*"
                 userHome = "/toml/sonar/home"
-                """
-            ),
+                """),
         )
 
         configuration = ConfigurationLoader.load()

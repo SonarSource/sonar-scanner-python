@@ -189,8 +189,7 @@ class TestTomlFile(TestCase):
     def test_load_toml_file_project_content(self):
         self.fs.create_file(
             "pyproject.toml",
-            contents=(
-                """
+            contents=("""
                 [project]
                 name = "My Overridden Project Name"
                 description = "My Project Description"
@@ -198,8 +197,7 @@ class TestTomlFile(TestCase):
                 [tool.sonar]
                 project-key = "my-project"
                 project-name = "My Project"
-                """
-            ),
+                """),
         )
         properties = TomlConfigurationLoader.load(Path("."))
 

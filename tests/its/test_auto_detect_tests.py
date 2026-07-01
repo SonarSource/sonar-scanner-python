@@ -21,7 +21,6 @@ import pytest
 from tests.its.utils.sonarqube_client import SonarQubeClient
 from tests.its.utils.cli_client import CliClient, SOURCES_FOLDER_PATH
 
-
 pytestmark = pytest.mark.its
 
 
