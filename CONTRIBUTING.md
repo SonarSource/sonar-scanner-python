@@ -19,14 +19,14 @@ Run `poetry install` to install the dependencies. By default, the dependencies a
 
 To configure your credentials for Jfrog, go to your Jfrog user profile, and generate an identity token. Then set the following two environment variables:
 ```shell
-poetry config http-basic.jfrog-server <username> <password>
+poetry config http-basic.repox <username> <password>
 ```
 Where `<username>` is your Jfrog username and `<password>` is the identity token you generated.
 
 If you wish to install the dependencies from the public PyPI repository, remove the following source from `pyproject.toml`:
 ```toml
 [[tool.poetry.source]]
-name = 'jfrog-server'
+name = 'repox'
 url = 'https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple'
 ```
 
