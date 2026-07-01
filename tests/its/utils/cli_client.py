@@ -29,7 +29,6 @@ import pytest
 
 from tests.its.utils.sonarqube_client import SonarQubeClient
 
-
 SOURCES_FOLDER_PATH: pathlib.Path = pathlib.Path(__file__).resolve().parent / "../sources"
 DEBUGPY_PORT: int = 5678
 

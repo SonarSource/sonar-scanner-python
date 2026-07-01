@@ -22,7 +22,6 @@ import pytest
 from tests.its.utils.sonarqube_client import SonarQubeClient
 from tests.its.utils.cli_client import CliClient
 
-
 # Marks this module
 pytestmark = pytest.mark.its
 
