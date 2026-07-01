@@ -424,8 +424,6 @@ class TestScannerEngineProvisioner(pyfakefs.TestCase):
     def test_permission_error(self):
         with self.assertRaises(PermissionError), sq_api_utils.sq_api_mocker() as mocker:
             mocker.mock_analysis_engine(filename="scanner-engine.jar", sha256=self.test_file_checksum)
-            mocker.mock_analysis_engine_download(body=self.test_file_content)
-
             self.fs.chmod("/some-folder/cache-folder", mode=0o000, force_unix_mode=True)
 
             ScannerEngineProvisioner(self.api, self.cache).provision()
