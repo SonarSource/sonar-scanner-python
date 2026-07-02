@@ -153,7 +153,7 @@ class TestMain(pyfakefs.TestCase):
             scanner = create_scanner_engine(Mock(), Mock(), config)
 
         self.assertEqual(scanner.scanner_engine_path, pathlib.Path(engine_jar.name))
-        self.assertEqual(config[SONAR_SCANNER_JAVA_EXE_PATH], "jre/bin/java")
+        self.assertEqual(pathlib.Path(config[SONAR_SCANNER_JAVA_EXE_PATH]), pathlib.Path("jre/bin/java"))
         provision_mock.assert_not_called()
 
     @patch.object(ScannerEngineProvisioner, "provision")
