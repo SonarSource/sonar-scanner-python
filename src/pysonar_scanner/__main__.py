@@ -19,6 +19,7 @@
 #
 
 import logging
+import pathlib
 from typing import Any
 from pysonar_scanner import app_logging
 from pysonar_scanner import cache
@@ -36,6 +37,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_SCANNER_OS,
     SONAR_SCANNER_ARCH,
     SONAR_SCANNER_DRY_RUN,
+    SONAR_SCANNER_ENGINE_JAR_PATH,
     SONAR_PROJECT_BASE_DIR,
     SONAR_PYTHON_COVERAGE_REPORT_PATHS,
 )
@@ -119,7 +121,11 @@ def create_scanner_engine(api, cache_manager, config):
     jre_path = create_jre(api, cache_manager, config)
     config[SONAR_SCANNER_JAVA_EXE_PATH] = str(jre_path.path)
     logging.debug(f"JRE path: {jre_path.path}")
-    scanner_engine_path = ScannerEngineProvisioner(api, cache_manager).provision()
+    if config.get(SONAR_SCANNER_ENGINE_JAR_PATH):
+        scanner_engine_path = pathlib.Path(config[SONAR_SCANNER_ENGINE_JAR_PATH])
+        logging.debug(f"Using local scanner engine JAR: {scanner_engine_path}")
+    else:
+        scanner_engine_path = ScannerEngineProvisioner(api, cache_manager).provision()
     scanner = ScannerEngine(jre_path, scanner_engine_path)
     return scanner
 

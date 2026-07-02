@@ -22,7 +22,7 @@ from unittest.mock import patch, Mock, call
 
 from pyfakefs import fake_filesystem_unittest as pyfakefs
 
-from pysonar_scanner.__main__ import scan, main, check_version, create_jre
+from pysonar_scanner.__main__ import scan, main, check_version, create_jre, create_scanner_engine
 from pysonar_scanner.api import SQVersion, SonarQubeApi
 from pysonar_scanner.cache import Cache
 from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader
@@ -35,6 +35,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_SCANNER_PROXY_PORT,
     SONAR_SCANNER_OS,
     SONAR_SCANNER_ARCH,
+    SONAR_SCANNER_ENGINE_JAR_PATH,
     SONAR_SCANNER_JAVA_EXE_PATH,
 )
 from pysonar_scanner.exceptions import SQTooOldException
@@ -137,3 +138,18 @@ class TestMain(pyfakefs.TestCase):
         api = SonarQubeApi(Mock(), Mock())
         cache = Cache(Mock())
         create_jre(api, cache, {SONAR_SCANNER_OS: "linux", SONAR_SCANNER_ARCH: "x64"})
+
+    @patch.object(ScannerEngineProvisioner, "provision")
+    @patch("pysonar_scanner.__main__.create_jre", return_value=JREResolvedPath(pathlib.Path("jre/bin/java")))
+    def test_create_scanner_engine_uses_local_engine_jar_path(self, create_jre_mock, provision_mock):
+        config = {
+            SONAR_SCANNER_OS: "linux",
+            SONAR_SCANNER_ARCH: "x64",
+            SONAR_SCANNER_ENGINE_JAR_PATH: "/path/to/scanner-engine.jar",
+        }
+
+        scanner = create_scanner_engine(Mock(), Mock(), config)
+
+        self.assertEqual(scanner.scanner_engine_path, pathlib.Path("/path/to/scanner-engine.jar"))
+        self.assertEqual(config[SONAR_SCANNER_JAVA_EXE_PATH], "jre/bin/java")
+        provision_mock.assert_not_called()
