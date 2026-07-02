@@ -19,6 +19,7 @@
 #
 
 import logging
+import os
 import pathlib
 from typing import Any
 from pysonar_scanner import app_logging
@@ -118,16 +119,32 @@ def update_config_with_api_urls(config, base_urls: BaseUrls):
 
 
 def create_scanner_engine(api, cache_manager, config):
+    configured_scanner_engine_path = get_configured_scanner_engine_path(config)
     jre_path = create_jre(api, cache_manager, config)
     config[SONAR_SCANNER_JAVA_EXE_PATH] = str(jre_path.path)
     logging.debug(f"JRE path: {jre_path.path}")
-    if config.get(SONAR_SCANNER_ENGINE_JAR_PATH):
-        scanner_engine_path = pathlib.Path(config[SONAR_SCANNER_ENGINE_JAR_PATH])
-        logging.debug(f"Using local scanner engine JAR: {scanner_engine_path}")
-    else:
-        scanner_engine_path = ScannerEngineProvisioner(api, cache_manager).provision()
+    scanner_engine_path = configured_scanner_engine_path or ScannerEngineProvisioner(api, cache_manager).provision()
     scanner = ScannerEngine(jre_path, scanner_engine_path)
     return scanner
+
+
+def get_configured_scanner_engine_path(config: dict[str, Any]) -> pathlib.Path | None:
+    if not config.get(SONAR_SCANNER_ENGINE_JAR_PATH):
+        return None
+
+    scanner_engine_path = pathlib.Path(config[SONAR_SCANNER_ENGINE_JAR_PATH])
+    if not scanner_engine_path.is_file():
+        raise exceptions.InconsistentConfiguration(
+            f"Configured scanner engine JAR does not exist or is not a file: {scanner_engine_path}. "
+            f"Please check the '{SONAR_SCANNER_ENGINE_JAR_PATH}' property."
+        )
+    if not os.access(scanner_engine_path, os.R_OK):
+        raise exceptions.InconsistentConfiguration(
+            f"Configured scanner engine JAR is not readable: {scanner_engine_path}. "
+            f"Please check file permissions for the '{SONAR_SCANNER_ENGINE_JAR_PATH}' property."
+        )
+    logging.debug(f"Using local scanner engine JAR: {scanner_engine_path}")
+    return scanner_engine_path
 
 
 def create_jre(api, cache, config: dict[str, Any]) -> JREResolvedPath:
