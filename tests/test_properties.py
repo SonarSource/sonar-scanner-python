@@ -29,6 +29,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_SCANNER_SOCKET_TIMEOUT,
     SONAR_SCANNER_PROXY_PASSWORD,
     SONAR_SCANNER_INTERNAL_DUMP_TO_FILE,
+    SONAR_SCANNER_ENGINE_JAR_PATH,
     SONAR_PROJECT_KEY,
     SONAR_PROJECT_BASE_DIR,
     PROPERTIES,
@@ -47,6 +48,7 @@ class TestProperties(unittest.TestCase):
             (SONAR_SCANNER_APP_VERSION, "sonar.scanner.app-version"),
             (SONAR_SCANNER_SOCKET_TIMEOUT, "sonar.scanner.socket-timeout"),
             (SONAR_SCANNER_PROXY_PASSWORD, "sonar.scanner.proxy-password"),
+            (SONAR_SCANNER_ENGINE_JAR_PATH, "sonar.scanner.engine-jar-path"),
             # Complex properties
             (SONAR_SCANNER_INTERNAL_DUMP_TO_FILE, "sonar.scanner.internal.dump-to-file"),
             (SONAR_PROJECT_KEY, "sonar.project-key"),
@@ -82,6 +84,7 @@ class TestProperties(unittest.TestCase):
             (SONAR_SCANNER_APP_VERSION, "SONAR_SCANNER_APP_VERSION"),
             (SONAR_SCANNER_SOCKET_TIMEOUT, "SONAR_SCANNER_SOCKET_TIMEOUT"),
             (SONAR_SCANNER_PROXY_PASSWORD, "SONAR_SCANNER_PROXY_PASSWORD"),
+            (SONAR_SCANNER_ENGINE_JAR_PATH, "SONAR_SCANNER_ENGINE_JAR_PATH"),
             # Complex properties
             (SONAR_SCANNER_INTERNAL_DUMP_TO_FILE, "SONAR_SCANNER_INTERNAL_DUMP_TO_FILE"),
             (SONAR_PROJECT_KEY, "SONAR_PROJECT_KEY"),

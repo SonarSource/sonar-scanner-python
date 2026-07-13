@@ -75,6 +75,7 @@
 | `--sonar-scanner-arch`, `-Dsonar.scanner.arch` | Architecture on which the scanner will be running |
 | `--sonar-scanner-cloud-url`, `-Dsonar.scanner.cloudUrl` | SonarQube Cloud base URL, https://sonarcloud.io for example |
 | `--sonar-scanner-connect-timeout`, `-Dsonar.scanner.connectTimeout` | Time period to establish connections with the server (in seconds) |
+| `--sonar-scanner-engine-jar-path`, `-Dsonar.scanner.engineJarPath` | Path to a local scanner engine JAR. If set, the scanner engine will not be downloaded from the server |
 | `--sonar-scanner-internal-dump-to-file`, `-Dsonar.scanner.internal.dumpToFile` | Filename where the input to the scanner engine will be dumped. Useful for debugging |
 | `--sonar-scanner-internal-sq-version`, `-Dsonar.scanner.internal.sqVersion` | Emulate the result of the call to get SQ server version.  Useful for debugging with --sonar-scanner-internal-dump-to-file |
 | `--sonar-scanner-java-exe-path`, `-Dsonar.scanner.javaExePath` | If defined, the scanner engine will be run with this JRE |

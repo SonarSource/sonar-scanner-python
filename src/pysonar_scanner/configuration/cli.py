@@ -408,6 +408,12 @@ class CliConfigurationLoader:
             type=str,
             help="Arguments specifies the heap size provided to the JVM when running the scanner",
         )
+        jvm_group.add_argument(
+            "--sonar-scanner-engine-jar-path",
+            "-Dsonar.scanner.engineJarPath",
+            type=str,
+            help="Path to a local scanner engine JAR. If set, the scanner engine will not be downloaded from the server",
+        )
 
         truststore_group = parser.add_argument_group("Truststore arguments")
         truststore_group.add_argument(
