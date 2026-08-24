@@ -164,9 +164,11 @@ class TestMain(pyfakefs.TestCase):
             SONAR_SCANNER_ARCH: "x64",
             SONAR_SCANNER_ENGINE_JAR_PATH: "/path/to/missing-scanner-engine.jar",
         }
+        api = Mock()
+        cache = Mock()
 
         with self.assertRaisesRegex(InconsistentConfiguration, "Configured scanner engine JAR does not exist"):
-            create_scanner_engine(Mock(), Mock(), config)
+            create_scanner_engine(api, cache, config)
 
         create_jre_mock.assert_not_called()
         provision_mock.assert_not_called()
