@@ -26,6 +26,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_HOST_URL,
     SONAR_REGION,
     SONAR_SCANNER_ARCH,
+    SONAR_SCANNER_ENGINE_JAR_PATH,
     SONAR_SCANNER_JAVA_OPTS,
     SONAR_SCANNER_OS,
     SONAR_TOKEN,
@@ -51,6 +52,7 @@ class TestEnvironmentVariables(unittest.TestCase):
             "SONAR_HOST_URL": "https://sonarqube.example.com",
             "SONAR_USER_HOME": "/custom/sonar/home",
             "SONAR_SCANNER_JAVA_OPTS": "-Xmx1024m -XX:MaxPermSize=256m",
+            "SONAR_SCANNER_ENGINE_JAR_PATH": "/path/to/scanner-engine.jar",
             "SONAR_REGION": "us",
         }
         with patch.dict("os.environ", env, clear=True):
@@ -60,9 +62,10 @@ class TestEnvironmentVariables(unittest.TestCase):
                 SONAR_HOST_URL: "https://sonarqube.example.com",
                 SONAR_USER_HOME: "/custom/sonar/home",
                 SONAR_SCANNER_JAVA_OPTS: "-Xmx1024m -XX:MaxPermSize=256m",
+                SONAR_SCANNER_ENGINE_JAR_PATH: "/path/to/scanner-engine.jar",
                 SONAR_REGION: "us",
             }
-            self.assertEqual(len(properties), 5)
+            self.assertEqual(len(properties), 6)
             self.assertDictEqual(properties, expected_properties)
 
     def test_irrelevant_environment_variables(self):
