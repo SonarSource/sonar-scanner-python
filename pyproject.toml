@@ -36,10 +36,10 @@ jproperties = ">=2.1,<3"
 [tool.poetry.group]
 [tool.poetry.group.dev]
 [tool.poetry.group.dev.dependencies]
-responses = "0.26.2"
+responses = "0.26.3"
 pyfakefs = "6.2.0"
 black = "26.5.1"
-coverage = "7.15.4"
+coverage = "7.16.0"
 licenseheaders = "0.8.8"
 mypy = "2.3.1"
 pytest = '9.1.1'
