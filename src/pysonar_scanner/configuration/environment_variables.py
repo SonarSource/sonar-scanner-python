@@ -22,6 +22,7 @@ import os
 import json
 from typing import Dict
 
+from pysonar_scanner import app_logging
 from pysonar_scanner.configuration.properties import Key, PROPERTIES
 
 
@@ -53,7 +54,7 @@ def load_json_env_variables():
             logging.warning(
                 f"The JSON in SONAR_SCANNER_JSON_PARAMS environment variable is invalid. The other environment variables will still be loaded. Error : {e}"
             )
-    logging.debug("Loaded %d properties from SONAR_SCANNER_JSON_PARAMS", len(properties))
+    logging.debug("Loaded environment properties: %s", app_logging.redact_properties(properties))
     return properties
 
 

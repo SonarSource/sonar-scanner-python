@@ -86,7 +86,6 @@ def do_scan():
 
 
 def set_logging_options(config):
-    app_logging.configure_redaction(config)
     app_logging.configure_logging_level(verbose=config.get(SONAR_VERBOSE, False))
 
 

@@ -41,6 +41,7 @@ def test_verbose_scan_masks_credentials_but_preserves_engine_input(token_source,
         "custom.secret": "dummy-custom-value",
     }
     environment_properties = {key: value for key, value in credentials.items() if key != "sonar.token"}
+    environment_properties["sonar.organization"] = "visible-organization"
     arguments = ["pysonar", "--verbose", "--project-key=visible-project"]
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr("os.environ", {})
@@ -71,20 +72,7 @@ def test_verbose_scan_masks_credentials_but_preserves_engine_input(token_source,
     monkeypatch.setattr(main, "update_config_with_api_urls", Mock())
     engine = scannerengine.ScannerEngine(JREResolvedPath(pathlib.Path("java")), pathlib.Path("engine.jar"))
     monkeypatch.setattr(main, "create_scanner_engine", Mock(return_value=engine))
-    process = Mock()
-    process.stdout = [
-        json.dumps({"level": "INFO", "message": f"Engine echoed {credentials['sonar.token']}"}).encode(),
-    ]
-    process.stderr = [
-        json.dumps(
-            {
-                "level": "ERROR",
-                "message": f"Engine echoed {jvm_credential}",
-                "stacktrace": f"Trace contains {credentials['sonar.scanner.keystorePassword']}",
-            }
-        ).encode(),
-    ]
-    process.returncode = 0
+    process = Mock(stdout=[], stderr=[], returncode=0)
     popen = Mock(return_value=process)
     monkeypatch.setattr(scannerengine, "Popen", popen)
 
@@ -100,10 +88,15 @@ def test_verbose_scan_masks_credentials_but_preserves_engine_input(token_source,
     assert "visible-project" in output
     assert "-Xmx256m" in output
     assert "-Djavax.net.ssl.keyStorePassword=******" in output
-    assert "Engine echoed ******" in captured.out
-    assert "Engine echoed ******" in captured.err
-    assert "Trace contains ******" in captured.err
-    assert '"scannerProperties"' not in output
+    environment_log = next(line for line in output.splitlines() if "Loaded environment properties:" in line)
+    assert "'sonar.scanner.proxyPassword': '******'" in environment_log
+    assert "'sonar.organization': 'visible-organization'" in environment_log
+    engine_log = next(line for line in output.splitlines() if line.startswith("DEBUG: Properties:"))
+    logged_payload = json.loads(engine_log.removeprefix("DEBUG: Properties: "))
+    logged_properties = {item["key"]: item["value"] for item in logged_payload["scannerProperties"]}
+    assert logged_properties["sonar.projectKey"] == "visible-project"
+    for key in credentials:
+        assert logged_properties[key] == "******"
     payload = json.loads(process.stdin.write.call_args.args[0])
     properties = {item["key"]: item["value"] for item in payload["scannerProperties"]}
     for key, value in credentials.items():

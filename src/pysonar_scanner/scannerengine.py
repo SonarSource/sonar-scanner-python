@@ -158,6 +158,7 @@ class ScannerEngine:
         cmd = self.__build_command(self.jre_path, self.scanner_engine_path, java_opts)
         logging.debug("Command: %s", app_logging.redact_command(cmd))
         properties_str = self.__config_to_json(config)
+        logging.debug("Properties: %s", self.__config_to_json(app_logging.redact_properties(config)))
         return CmdExecutor(cmd, properties_str).execute()
 
     def __build_command(
