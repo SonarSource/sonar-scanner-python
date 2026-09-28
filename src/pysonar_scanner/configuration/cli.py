@@ -346,7 +346,7 @@ class CliConfigurationLoader:
             "--sonar-working-directory",
             "-Dsonar.working.directory",
             type=str,
-            help="Path to the working directory used by the Sonar scanner during a project analysis to store temporary data",
+            help="Path to the working directory used by the Sonar scanner during a project analysis to store temporary data (default: .scannerwork, relative to sonar.projectBaseDir)",
         )
         scanner_behavior_group.add_argument(
             "--sonar-scm-force-reload-all",

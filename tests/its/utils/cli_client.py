@@ -39,7 +39,9 @@ class CliClient:
         self.is_debugging = is_debugging
         self.caplog = caplog
 
-    def run_analysis(self, sources_dir: str, params: list[str] = None, token: str = None) -> CompletedProcess:
+    def run_analysis(
+        self, sources_dir: str | pathlib.Path, params: list[str] = None, token: str = None
+    ) -> CompletedProcess:
         if params is None:
             params = []
         token = token or self.sq_client.get_user_token()
@@ -104,7 +106,7 @@ class CliClient:
 
     @staticmethod
     def _read_ce_task_id(workdir: pathlib.Path) -> Optional[str]:
-        report_task_file = workdir / ".sonar" / "report-task.txt"
+        report_task_file = workdir / ".scannerwork" / "report-task.txt"
         if not report_task_file.is_file():
             return None
         for line in report_task_file.read_text().splitlines():

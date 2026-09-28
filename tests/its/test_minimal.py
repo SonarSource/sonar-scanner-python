@@ -17,10 +17,12 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-import logging
+import shutil
+from pathlib import Path
+
 import pytest
 from tests.its.utils.sonarqube_client import SonarQubeClient
-from tests.its.utils.cli_client import CliClient
+from tests.its.utils.cli_client import CliClient, SOURCES_FOLDER_PATH
 
 # Marks this module
 pytestmark = pytest.mark.its
@@ -36,6 +38,31 @@ def test_minimal_project(sonarqube_client: SonarQubeClient, cli: CliClient):
     analyses_data = sonarqube_client.get_project_analyses("minimal")
     latest_analysis_data = analyses_data["analyses"][0]
     assert latest_analysis_data["projectVersion"] == "1.2"
+
+
+def test_project_local_user_home_preserves_cache(
+    sonarqube_client: SonarQubeClient, cli: CliClient, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    project_dir = tmp_path / "minimal"
+    shutil.copytree(
+        SOURCES_FOLDER_PATH / "minimal", project_dir, ignore=shutil.ignore_patterns(".sonar", ".scannerwork")
+    )
+    sonar_user_home = project_dir / ".sonar"
+    cached_file = sonar_user_home / "cache" / "scanpy-212-cache-sentinel"
+    cached_file.parent.mkdir(parents=True)
+    cached_file.write_text("preserve cached scanner data")
+    monkeypatch.setenv("SONAR_USER_HOME", str(sonar_user_home))
+
+    process = cli.run_analysis(sources_dir=project_dir, params=["-Dsonar.projectKey=minimal-gitlab-cache"])
+
+    if process.returncode != 0:
+        pytest.fail(process.stdout)
+    assert cached_file.read_text() == "preserve cached scanner data"
+    task_id = cli._read_ce_task_id(project_dir)
+    assert task_id is not None, f"No report-task.txt in .scannerwork.\n{process.stdout}"
+    task = sonarqube_client.get_ce_task_by_id(task_id)
+    assert task["status"] == "SUCCESS", f"CE task did not succeed: {task}\n{process.stdout}"
+    assert task["componentKey"] == "minimal-gitlab-cache"
 
 
 def test_minimal_project_unexpected_arg(cli: CliClient):
