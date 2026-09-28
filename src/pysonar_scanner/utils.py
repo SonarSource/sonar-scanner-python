@@ -18,15 +18,17 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import hashlib
+import logging
 import pathlib
 import platform
-import sys
 import tarfile
 import typing
 from enum import Enum
 
 OsStr = typing.Literal["windows", "linux", "mac", "alpine", "other"]
 ArchStr = typing.Literal["x64", "aarch64", "other"]
+
+logger = logging.getLogger(__name__)
 
 
 def remove_trailing_slash(url: str) -> str:
@@ -95,7 +97,11 @@ def filter_none_values(dictionary: dict) -> dict:
 
 def extract_tar(path: pathlib.Path, target_dir: pathlib.Path):
     with tarfile.open(path, "r:gz") as tar_ref:
-        if sys.version_info >= (3, 12):
+        if hasattr(tarfile, "data_filter"):
             tar_ref.extractall(target_dir, filter="data")
         else:
+            logger.warning(
+                "Tar extraction is not protected by the data filter because this Python runtime does not support it. "
+                "Upgrade Python to a patched version."
+            )
             tar_ref.extractall(target_dir)

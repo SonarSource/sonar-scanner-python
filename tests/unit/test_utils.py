@@ -140,8 +140,9 @@ class TestExtractTar(unittest.TestCase):
         self.test_target_dir = pathlib.Path("/fake/target/dir")
 
     @unittest.mock.patch("tarfile.open")
-    @unittest.mock.patch("sys.version_info", (3, 12, 0))
-    def test_extract_tar_python_3_12_or_higher(self, mock_open):
+    @unittest.mock.patch("tarfile.data_filter", create=True)
+    @unittest.mock.patch("sys.version_info", (3, 11, 0))
+    def test_extract_tar_with_backported_data_filter(self, mock_data_filter, mock_open):
         mock_tar = unittest.mock.MagicMock()
         mock_open.return_value.__enter__.return_value = mock_tar
 
@@ -150,13 +151,17 @@ class TestExtractTar(unittest.TestCase):
         mock_open.assert_called_once_with(self.test_path, "r:gz")
         mock_tar.extractall.assert_called_once_with(self.test_target_dir, filter="data")
 
-    @unittest.mock.patch("tarfile.open")
-    @unittest.mock.patch("sys.version_info", (3, 11, 0))
-    def test_extract_tar_python_older_than_3_12(self, mock_open):
+    @unittest.mock.patch("pysonar_scanner.utils.tarfile", spec=["open"])
+    @unittest.mock.patch("pysonar_scanner.utils.logger.warning")
+    def test_extract_tar_without_data_filter(self, mock_warning, mock_tarfile):
         mock_tar = unittest.mock.MagicMock()
-        mock_open.return_value.__enter__.return_value = mock_tar
+        mock_tarfile.open.return_value.__enter__.return_value = mock_tar
 
         extract_tar(self.test_path, self.test_target_dir)
 
-        mock_open.assert_called_once_with(self.test_path, "r:gz")
+        mock_tarfile.open.assert_called_once_with(self.test_path, "r:gz")
         mock_tar.extractall.assert_called_once_with(self.test_target_dir)
+        mock_warning.assert_called_once_with(
+            "Tar extraction is not protected by the data filter because this Python runtime does not support it. "
+            "Upgrade Python to a patched version."
+        )
