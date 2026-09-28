@@ -52,6 +52,46 @@ class TestCache(pyfakefs.TestCase):
         self.assertEqual(cache_file.filepath, pathlib.Path("/folder1/folder2/test"))
         self.assertEqual(cache_file.checksum, "123")
 
+    def test_preserves_valid_filenames(self):
+        cache = Cache.create_cache(pathlib.Path("/folder1/folder2/"))
+        for filename in (
+            "sonar-scanner-engine-shaded-8.9.0.43852-all.jar",
+            "OpenJDK21U-jre_x64_linux_hotspot_21.0.12.1_1.tar.gz",
+            "jdk-21.0.12.1+1-jre.zip_unzip",
+            "engine with spaces.jar",
+        ):
+            with self.subTest(filename=filename):
+                expected_path = cache.cache_folder / filename
+                self.assertEqual(cache.get_file_path(filename), expected_path)
+                self.assertEqual(cache.get_file(filename, "123"), CacheFile(expected_path, "123"))
+
+    def test_rejects_paths_as_filenames(self):
+        cache = Cache.create_cache(pathlib.Path("/folder1/folder2/"))
+        for filename in (
+            "",
+            ".",
+            "..",
+            "../engine.jar",
+            "nested/engine.jar",
+            "./engine.jar",
+            "engine.jar/",
+            "/tmp/engine.jar",
+            r"..\engine.jar",
+            r"nested\engine.jar",
+            "engine.jar\\",
+            r"C:\temp\engine.jar",
+            "C:engine.jar",
+            r"\\server\share\engine.jar",
+            r"\\?\C:\engine.jar",
+        ):
+            for get_path in (cache.get_file_path, lambda name: cache.get_file(name, "123")):
+                with self.subTest(filename=filename, method=get_path):
+                    with self.assertRaises(ValueError) as error:
+                        get_path(filename)
+                    self.assertEqual(
+                        str(error.exception), f"Invalid cache filename {filename!r}: expected a plain filename."
+                    )
+
     def test_get_default(self):
         self.assertEqual(cache.get_cache({}).cache_folder, pathlib.Path.home() / ".sonar/cache")
 

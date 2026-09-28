@@ -56,11 +56,20 @@ class Cache:
         self.cache_folder = cache_folder
 
     def get_file(self, filename: str, checksum: str) -> CacheFile:
-        path = self.cache_folder / filename
-        return CacheFile(path, checksum)
+        return CacheFile(self.get_file_path(filename), checksum)
 
     def get_file_path(self, filename: str) -> pathlib.Path:
+        self.__validate_file_path(filename)
         return self.cache_folder / filename
+
+    @staticmethod
+    def __validate_file_path(filename: str) -> None:
+        if (
+            filename in ("", ".", "..")
+            or pathlib.PurePosixPath(filename).name != filename
+            or pathlib.PureWindowsPath(filename).name != filename
+        ):
+            raise ValueError(f"Invalid cache filename {filename!r}: expected a plain filename.")
 
     @staticmethod
     def create_cache(cache_folder: pathlib.Path):
