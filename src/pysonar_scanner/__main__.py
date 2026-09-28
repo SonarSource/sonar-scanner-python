@@ -76,7 +76,7 @@ def do_scan():
     api = build_api(config)
     check_version(api)
     update_config_with_api_urls(config, api.base_urls)
-    logging.debug(f"Final loaded configuration: {config}")
+    logging.debug("Final loaded configuration: %s", app_logging.redact_properties(config))
 
     cache_manager = cache.get_cache(config)
     scanner = create_scanner_engine(api, cache_manager, config)
@@ -86,6 +86,7 @@ def do_scan():
 
 
 def set_logging_options(config):
+    app_logging.configure_redaction(config)
     app_logging.configure_logging_level(verbose=config.get(SONAR_VERBOSE, False))
 
 
