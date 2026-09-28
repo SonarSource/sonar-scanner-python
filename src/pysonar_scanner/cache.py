@@ -59,11 +59,11 @@ class Cache:
         return CacheFile(self.get_file_path(filename), checksum)
 
     def get_file_path(self, filename: str) -> pathlib.Path:
-        self.validate_file_path(filename)
+        self.__validate_file_path(filename)
         return self.cache_folder / filename
 
     @staticmethod
-    def validate_file_path(filename: str) -> None:
+    def __validate_file_path(filename: str) -> None:
         if (
             filename in ("", ".", "..")
             or pathlib.PurePosixPath(filename).name != filename
