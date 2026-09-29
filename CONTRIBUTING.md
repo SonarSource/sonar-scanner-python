@@ -44,7 +44,7 @@ Run `poetry run pytest --cov-report=xml:coverage.xml --cov-config=pyproject.toml
 
 ## Run the ITs
 
-On Linux or macOS, install Java 17 or 21, `curl`, and `unzip`, then run `./scripts/run_its.sh`.
+On Linux or macOS, install Java 21, `curl`, and `unzip`, then run `./scripts/run_its.sh`.
 The script installs the Python dependencies, downloads and caches the same SonarQube version used in CI,
 starts a fresh instance on port 9000, runs the ITs, and stops the instance when finished.
 Port 9000 must be available.

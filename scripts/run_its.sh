@@ -2,7 +2,7 @@
 set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
-SONARQUBE_VERSION="${SONARQUBE_VERSION:-25.3.0.104237}"
+SONARQUBE_VERSION="${SONARQUBE_VERSION:-26.9.0.129388}"
 ARCHIVE="sonarqube_cache/sonarqube-${SONARQUBE_VERSION}.zip"
 
 case "$(uname)" in

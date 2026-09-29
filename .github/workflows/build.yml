@@ -286,7 +286,7 @@ jobs:
       id-token: write
       contents: write
     env:
-      SONARQUBE_VERSION: 25.3.0.104237
+      SONARQUBE_VERSION: 26.9.0.129388
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -301,6 +301,7 @@ jobs:
           version: 2026.5.9
           tool_versions: |
             python 3.12.1
+            java temurin-21
           experimental: true
       - name: Configure poetry
         uses: SonarSource/ci-github-actions/config-poetry@v1
