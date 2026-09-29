@@ -172,3 +172,4 @@ cython_debug/
 *.scanner
 *.scannerwork
 .sonar/
+sonarqube_cache/

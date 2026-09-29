@@ -69,7 +69,6 @@ jobs:
       contents: read
     env:
       SONARQUBE_VERSION: 25.3.0.104237
-      SKIP_DOCKER: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -79,19 +78,9 @@ jobs:
 
       - name: Cache SonarQube
         uses: SonarSource/gh-action_cache@v1
-        id: sonarqube-cache
         with:
           path: sonarqube_cache/
-          key: sonarqube-macos-${{ env.SONARQUBE_VERSION }}
-          restore-keys: sonarqube-macos-
-
-      - name: Download SonarQube
-        if: ${{ !steps.sonarqube-cache.outputs.cache-hit }}
-        run: |
-          mkdir -p sonarqube_cache
-          if [ ! -f sonarqube_cache/sonarqube.zip ]; then
-            wget -q https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-$SONARQUBE_VERSION.zip -O sonarqube_cache/sonarqube.zip
-          fi
+          key: sonarqube-macos-zip-${{ env.SONARQUBE_VERSION }}
 
       - name: Install mise and tools
         uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
@@ -107,4 +96,4 @@ jobs:
           artifactory-reader-role: private-reader
 
       - name: Execute the integration tests
-        run: ./.github/scripts/run_its.sh
+        run: ./scripts/run_its.sh

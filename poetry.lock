@@ -1044,31 +1044,6 @@ url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
 reference = "repox"
 
 [[package]]
-name = "pytest-docker"
-version = "3.2.5"
-description = "Simple pytest fixtures for Docker and Docker Compose based tests"
-optional = false
-python-versions = ">=3.8"
-groups = ["dev"]
-files = [
-    {file = "pytest_docker-3.2.5-py3-none-any.whl", hash = "sha256:79f3d209f928f45d4385cb825944861bc8a8cccd309804d9c9cd63bcef03edba"},
-    {file = "pytest_docker-3.2.5.tar.gz", hash = "sha256:c9662567522911280b394af4da2edd57facaf644494601fac962ff1e396d7ab6"},
-]
-
-[package.dependencies]
-attrs = ">=19.2.0"
-pytest = ">=4.0,<10.0"
-
-[package.extras]
-docker-compose-v1 = ["docker-compose (>=1.27.3,<2.0)"]
-tests = ["mypy (>=0.500,<2.0)", "pytest-mypy (>=0.10,<1.0)", "pytest-pycodestyle (>=2.0.0,<3.0)", "pytest-pylint (>=0.14.1,<1.0)", "requests (>=2.22.0,<3.0)", "types-requests (>=2.31,<3.0)", "types-setuptools (>=69.0,<70.0)"]
-
-[package.source]
-type = "legacy"
-url = "https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple"
-reference = "repox"
-
-[[package]]
 name = "pytest-subtests"
 version = "0.15.0"
 description = "unittest subTest() support and subtests fixture"
@@ -1578,4 +1553,4 @@ reference = "repox"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10"
-content-hash = "0dd6a0abd07f67543d362d77d5dc259f6d46d5b21cca5d0cb0db4d54917ea474"
+content-hash = "3a570fe088ddbbf21cd01f5d6d8902ec7e4ec6eee147ff008fb673fb6b744c8f"
