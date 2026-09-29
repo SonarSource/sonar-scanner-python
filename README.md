@@ -18,20 +18,6 @@ pip install pysonar
 Once installed, the `pysonar` scanner can be run from the command line to perform an analysis.
 It assumes a running SonarQube server or a project configured on SonarCloud.
 
-## Working directory and cache
-
-The scanner uses `.scannerwork` under `sonar.projectBaseDir` for temporary analysis files,
-including `report-task.txt`. Override it with `sonar.working.directory` if needed.
-This directory is cleaned before each analysis and must be separate from `sonar.userHome`
-(or `SONAR_USER_HOME`), which stores cached downloads and other persistent scanner data.
-For example, GitLab CI can use `SONAR_USER_HOME=$CI_PROJECT_DIR/.sonar` while keeping the
-default `.scannerwork` working directory.
-
-Earlier versions used `.sonar` as the default working directory. Update custom consumers
-of `.sonar/report-task.txt` to read `.scannerwork/report-task.txt`. If you previously worked
-around the directory collision by setting `sonar.userHome` to `.scannerwork`, remove that
-override or choose a working directory outside the scanner user home.
-
 ## Setting up analysis properties
 
 In order for the analysis to run, analysis properties need to be defined. 
