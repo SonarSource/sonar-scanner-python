@@ -23,6 +23,7 @@ fi
 RUN_DIR=$(mktemp -d "${TMPDIR:-/tmp}/pysonar-its.XXXXXX")
 unzip -q "$ARCHIVE" -d "$RUN_DIR"
 SONAR_SCRIPT="$RUN_DIR/sonarqube-${SONARQUBE_VERSION}/bin/${PLATFORM}/sonar.sh"
+chmod +x "$SONAR_SCRIPT"
 
 # Stop the test server and remove its temporary files when the script exits.
 trap '"$SONAR_SCRIPT" stop || true; rm -rf "$RUN_DIR"' EXIT
