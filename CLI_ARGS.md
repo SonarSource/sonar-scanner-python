@@ -98,7 +98,7 @@
 | `--sonar-scm-revision`, `-Dsonar.scm.revision` | Overrides the revision, for instance, the Git sha1, displayed in analysis results |
 | `--sonar-source-encoding`, `-Dsonar.sourceEncoding` | Encoding of the source files. For example, UTF-8, MacRoman, Shift_JIS |
 | `--sonar-user-home`, `-Dsonar.userHome` | Base sonar directory, ~/.sonar by default |
-| `--sonar-working-directory`, `-Dsonar.working.directory` | Path to the working directory used by the Sonar scanner during a project analysis to store temporary data |
+| `--sonar-working-directory`, `-Dsonar.working.directory` | Path to the working directory used by the Sonar scanner during a project analysis to store temporary data (default: .scannerwork, relative to sonar.projectBaseDir) |
 | `--toml-path` | Path to the pyproject.toml file or to the folder containing it. If not provided, it will look in the SONAR_PROJECT_BASE_DIR |
 | `-Dsonar.python.skipUnchanged` | Equivalent to --sonar-python-skip-unchanged |
 | `-Dsonar.python.testFileHeuristic.disabled` | Equivalent to --sonar-python-test-file-heuristic-disabled |

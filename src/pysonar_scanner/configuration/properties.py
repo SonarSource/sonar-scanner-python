@@ -483,7 +483,7 @@ PROPERTIES: list[Property] = [
     ),
     Property(
         name=SONAR_WORKING_DIRECTORY, 
-        default_value=None, 
+        default_value=".scannerwork",
         cli_getter=lambda args: args.sonar_working_directory
     ),
     Property(

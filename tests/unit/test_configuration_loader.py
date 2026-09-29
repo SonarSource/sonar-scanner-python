@@ -45,6 +45,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_TOKEN,
     SONAR_USER_HOME,
     SONAR_VERBOSE,
+    SONAR_WORKING_DIRECTORY,
     TOML_PATH,
     SONAR_PROJECT_DESCRIPTION,
     SONAR_PYTHON_VERSION,
@@ -94,8 +95,33 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_OS: Os.LINUX.value,
             SONAR_SCANNER_ARCH: Arch.X64.value,
             SONAR_SCANNER_DRY_RUN: False,
+            SONAR_WORKING_DIRECTORY: ".scannerwork",
         }
         self.assertDictEqual(configuration, expected_configuration)
+
+    @patch("sys.argv", ["myscript.py"])
+    def test_working_directory_is_separate_from_gitlab_user_home(self, mock_get_os, mock_get_arch):
+        user_home = os.path.join(os.getcwd(), ".sonar")
+        with patch.dict("os.environ", {"SONAR_USER_HOME": user_home}):
+            configuration = ConfigurationLoader.load()
+
+        self.assertEqual(configuration[SONAR_USER_HOME], user_home)
+        self.assertEqual(configuration.get(SONAR_WORKING_DIRECTORY), ".scannerwork")
+
+    @patch("sys.argv", ["myscript.py"])
+    def test_explicit_working_directory_overrides_default(self, mock_get_os, mock_get_arch):
+        self.fs.create_file("sonar-project.properties", contents="sonar.working.directory=properties-work\n")
+        self.assertEqual(ConfigurationLoader.load()[SONAR_WORKING_DIRECTORY], "properties-work")
+
+        self.fs.create_file("pyproject.toml", contents='[tool.sonar]\n"working.directory" = "toml-work"\n')
+        self.assertEqual(ConfigurationLoader.load()[SONAR_WORKING_DIRECTORY], "toml-work")
+
+        with patch.dict("os.environ", {"SONAR_WORKING_DIRECTORY": "env-work"}):
+            self.assertEqual(ConfigurationLoader.load()[SONAR_WORKING_DIRECTORY], "env-work")
+
+            for option in ("--sonar-working-directory", "-Dsonar.working.directory"):
+                with self.subTest(option=option), patch("sys.argv", ["myscript.py", option, "cli-work"]):
+                    self.assertEqual(ConfigurationLoader.load()[SONAR_WORKING_DIRECTORY], "cli-work")
 
     @patch("pysonar_scanner.configuration.configuration_loader.get_static_default_properties", return_value={})
     @patch("pysonar_scanner.configuration.dynamic_defaults_loader.load", return_value={})
@@ -160,6 +186,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_OS: Os.LINUX.value,
             SONAR_SCANNER_ARCH: Arch.X64.value,
             SONAR_SCANNER_DRY_RUN: False,
+            SONAR_WORKING_DIRECTORY: ".scannerwork",
         }
         self.assertDictEqual(configuration, expected_configuration)
 
@@ -207,6 +234,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_OS: Os.LINUX.value,
             SONAR_SCANNER_ARCH: Arch.X64.value,
             SONAR_SCANNER_DRY_RUN: False,
+            SONAR_WORKING_DIRECTORY: ".scannerwork",
         }
         self.assertDictEqual(configuration, expected_configuration)
 
@@ -255,6 +283,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SCANNER_OS: Os.LINUX.value,
             SONAR_SCANNER_ARCH: Arch.X64.value,
             SONAR_SCANNER_DRY_RUN: False,
+            SONAR_WORKING_DIRECTORY: ".scannerwork",
         }
         self.assertDictEqual(configuration, expected_configuration)
 
@@ -306,6 +335,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             TOML_PATH: "custom/path",
             SONAR_SCANNER_JAVA_HEAP_SIZE: "8000Mb",
             SONAR_SCANNER_DRY_RUN: False,
+            SONAR_WORKING_DIRECTORY: ".scannerwork",
         }
         self.assertDictEqual(configuration, expected_configuration)
 
@@ -357,6 +387,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             TOML_PATH: "custom/path/pyproject.toml",
             SONAR_SCANNER_JAVA_HEAP_SIZE: "8000Mb",
             SONAR_SCANNER_DRY_RUN: False,
+            SONAR_WORKING_DIRECTORY: ".scannerwork",
         }
         self.assertDictEqual(configuration, expected_configuration)
 
@@ -396,6 +427,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_COVERAGE_EXCLUSIONS: "*/.local/*, /usr/*, utils/tirefire.py",
             SONAR_SOURCES: ".",
             SONAR_SCANNER_DRY_RUN: False,
+            SONAR_WORKING_DIRECTORY: ".scannerwork",
         }
         self.assertDictEqual(configuration, expected_configuration)
 
