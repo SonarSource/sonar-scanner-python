@@ -77,11 +77,9 @@ public class CloudScanTest {
       assertTrue(scannerOutput, scannerOutput.contains("Detected languages: [py]"));
 
       waitForComputeEngine(orchestrator.getDatabase(), projectDirectory);
-      await().atMost(Duration.ofMinutes(2)).pollInterval(Duration.ofSeconds(1)).untilAsserted(() -> {
-        var analyses = client.projectAnalyses().search(new SearchRequest().setProject(PROJECT_KEY)).getAnalysesList();
-        assertFalse("No SQC analysis was recorded", analyses.isEmpty());
-        assertEquals("1.2", analyses.get(0).getProjectVersion());
-      });
+      var analyses = client.projectAnalyses().search(new SearchRequest().setProject(PROJECT_KEY)).getAnalysesList();
+      assertFalse("No SQC analysis was recorded", analyses.isEmpty());
+      assertEquals("1.2", analyses.get(0).getProjectVersion());
     } finally {
       orchestrator.stopAll();
     }
@@ -195,7 +193,7 @@ public class CloudScanTest {
     processBuilder.redirectOutput(outputFile);
     processBuilder.environment().put("SONAR_TOKEN", ROOT_TOKEN);
     processBuilder.environment().put("SONAR_USER_HOME", temporaryFolder.newFolder("sonar-user-home").getAbsolutePath());
-    processBuilder.environment().remove("GITHUB_ACTIONS");
+    processBuilder.environment().keySet().removeIf(key -> key.startsWith("GITHUB_"));
 
     Process process = processBuilder.start();
     boolean finished = process.waitFor(5, TimeUnit.MINUTES);
