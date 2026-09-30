@@ -18,12 +18,14 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import pathlib
+import subprocess
+import sys
 import tempfile
 from unittest.mock import patch, Mock, call
 
 from pyfakefs import fake_filesystem_unittest as pyfakefs
 
-from pysonar_scanner.__main__ import scan, main, check_version, create_jre, create_scanner_engine
+from pysonar_scanner.__main__ import scan, main, check_version, create_jre, create_scanner_engine, set_logging_options
 from pysonar_scanner.api import SQVersion, SonarQubeApi
 from pysonar_scanner.cache import Cache
 from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader
@@ -38,14 +40,27 @@ from pysonar_scanner.configuration.properties import (
     SONAR_SCANNER_ARCH,
     SONAR_SCANNER_ENGINE_JAR_PATH,
     SONAR_SCANNER_JAVA_EXE_PATH,
+    SONAR_SCANNER_APP_VERSION,
+    SONAR_VERBOSE,
 )
 from pysonar_scanner.exceptions import InconsistentConfiguration, SQTooOldException
 from pysonar_scanner.jre import JREResolvedPath, JREResolver
 from pysonar_scanner.scannerengine import ScannerEngine, ScannerEngineProvisioner
+from pysonar_scanner.version import UNKNOWN_VERSION, get_version
 from tests.unit import sq_api_utils
 
 
 class TestMain(pyfakefs.TestCase):
+
+    @patch("pysonar_scanner.__main__.logging")
+    @patch("pysonar_scanner.__main__.app_logging.configure_logging_level")
+    def test_unknown_version_logs_debug_when_verbose(self, configure_logging_level, mock_logging):
+        set_logging_options({SONAR_VERBOSE: True, SONAR_SCANNER_APP_VERSION: UNKNOWN_VERSION})
+
+        configure_logging_level.assert_called_once_with(verbose=True)
+        mock_logging.debug.assert_called_once_with(
+            "Pysonar package version metadata is unavailable; using %s", UNKNOWN_VERSION
+        )
 
     @patch("pysonar_scanner.__main__.logging")
     @patch.object(pathlib.Path, "home", return_value=pathlib.Path("home/user"))
@@ -90,10 +105,10 @@ class TestMain(pyfakefs.TestCase):
         self.assertEqual(expected_config, config)
 
         info_logs = [
+            call("Starting Pysonar %s, the Sonar scanner CLI for Python", get_version()),
             call(
                 "Enhance your workflow: Pair pysonar with SonarQube Server per your license or SonarQube Cloud for deeper analysis, and try SonarQube-IDE in your favourite IDE."
             ),
-            call("Starting Pysonar, the Sonar scanner CLI for Python"),
             call("Starting the analysis..."),
         ]
         mock_logging.info.assert_has_calls(info_logs)
@@ -172,3 +187,29 @@ class TestMain(pyfakefs.TestCase):
 
         create_jre_mock.assert_not_called()
         provision_mock.assert_not_called()
+
+
+def test_version_switch_prints_only_the_version():
+    process = subprocess.run(
+        [sys.executable, "-c", "from pysonar_scanner.__main__ import main; main()", "--version"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert process.returncode == 0
+    assert process.stdout == f"pysonar {get_version()}\n"
+    assert process.stderr == ""
+
+
+def test_startup_error_logs_version_before_loading_configuration():
+    process = subprocess.run(
+        [sys.executable, "-c", "from pysonar_scanner.__main__ import main; main()", "-unexpected"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert process.returncode == 1
+    assert process.stdout.startswith(f"INFO: Starting Pysonar {get_version()},")
+    assert "Unexpected argument: -unexpected" in process.stderr

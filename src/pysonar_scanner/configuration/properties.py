@@ -158,7 +158,7 @@ PROPERTIES: list[Property] = [
     ),
     Property(
         name=SONAR_SCANNER_APP_VERSION, 
-        default_value="1.0", 
+        default_value=None,
         cli_getter=None
     ),
     Property(

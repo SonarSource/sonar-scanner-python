@@ -59,6 +59,7 @@ from pysonar_scanner.configuration.properties import (
 from pysonar_scanner.utils import Arch, Os
 from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader, SONAR_PROJECT_BASE_DIR
 from pysonar_scanner.exceptions import MissingPropertyException
+from pysonar_scanner.version import get_version
 
 
 # Mock utils.get_os and utils.get_arch at the module level
@@ -82,7 +83,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_PROJECT_KEY: "myProjectKey",
             SONAR_SOURCES: ".",
             SONAR_SCANNER_APP: "python",
-            SONAR_SCANNER_APP_VERSION: "1.0",
+            SONAR_SCANNER_APP_VERSION: get_version(),
             SONAR_SCANNER_BOOTSTRAP_START_TIME: configuration[SONAR_SCANNER_BOOTSTRAP_START_TIME],
             SONAR_VERBOSE: False,
             SONAR_SCANNER_SKIP_JRE_PROVISIONING: False,
@@ -98,6 +99,14 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_WORKING_DIRECTORY: ".scannerwork",
         }
         self.assertDictEqual(configuration, expected_configuration)
+
+    @patch("sys.argv", ["myscript.py", "-Dsonar.scanner.appVersion=from-cli"])
+    def test_app_version_cannot_be_overridden(self, mock_get_os, mock_get_arch):
+        with patch.dict("os.environ", {"SONAR_SCANNER_APP_VERSION": "from-environment"}):
+            configuration = ConfigurationLoader.load()
+
+        self.assertEqual(configuration[SONAR_SCANNER_APP_VERSION], get_version())
+        self.assertNotIn(configuration[SONAR_SCANNER_APP_VERSION], {"from-cli", "from-environment"})
 
     @patch("sys.argv", ["myscript.py"])
     def test_working_directory_is_separate_from_gitlab_user_home(self, mock_get_os, mock_get_arch):
@@ -130,7 +139,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
         self, get_static_default_properties_mock, mock_load, mock_get_os, mock_get_arch
     ):
         config = ConfigurationLoader.load()
-        self.assertDictEqual(config, {SONAR_SOURCES: "."})
+        self.assertDictEqual(config, {SONAR_SOURCES: ".", SONAR_SCANNER_APP_VERSION: get_version()})
 
     @patch("pysonar_scanner.configuration.configuration_loader.get_static_default_properties", return_value={})
     @patch("sys.argv", ["myscript.py"])
@@ -143,6 +152,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
                 SONAR_SCANNER_OS: Os.LINUX.value,
                 SONAR_SCANNER_ARCH: Arch.X64.value,
                 SONAR_SOURCES: ".",
+                SONAR_SCANNER_APP_VERSION: get_version(),
             },
         )
 
@@ -173,7 +183,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SOURCES: "src # my sources",
             SONAR_EXCLUSIONS: "**/generated/**/*,**/deprecated/**/*,**/testdata/**/*",
             SONAR_SCANNER_APP: "python",
-            SONAR_SCANNER_APP_VERSION: "1.0",
+            SONAR_SCANNER_APP_VERSION: get_version(),
             SONAR_SCANNER_BOOTSTRAP_START_TIME: configuration[SONAR_SCANNER_BOOTSTRAP_START_TIME],
             SONAR_VERBOSE: False,
             SONAR_SCANNER_SKIP_JRE_PROVISIONING: False,
@@ -222,7 +232,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_PROJECT_BASE_DIR: "custom/path",
             SONAR_TESTS: "src/test",
             SONAR_SCANNER_APP: "python",
-            SONAR_SCANNER_APP_VERSION: "1.0",
+            SONAR_SCANNER_APP_VERSION: get_version(),
             SONAR_SCANNER_BOOTSTRAP_START_TIME: configuration[SONAR_SCANNER_BOOTSTRAP_START_TIME],
             SONAR_VERBOSE: False,
             SONAR_SCANNER_SKIP_JRE_PROVISIONING: False,
@@ -271,7 +281,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_PROJECT_BASE_DIR: "custom/path",
             SONAR_TESTS: "src/test",
             SONAR_SCANNER_APP: "python",
-            SONAR_SCANNER_APP_VERSION: "1.0",
+            SONAR_SCANNER_APP_VERSION: get_version(),
             SONAR_SCANNER_BOOTSTRAP_START_TIME: configuration[SONAR_SCANNER_BOOTSTRAP_START_TIME],
             SONAR_VERBOSE: False,
             SONAR_SCANNER_SKIP_JRE_PROVISIONING: False,
@@ -320,7 +330,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SOURCES: "src/main",
             SONAR_TESTS: "src/test",
             SONAR_SCANNER_APP: "python",
-            SONAR_SCANNER_APP_VERSION: "1.0",
+            SONAR_SCANNER_APP_VERSION: get_version(),
             SONAR_SCANNER_BOOTSTRAP_START_TIME: configuration[SONAR_SCANNER_BOOTSTRAP_START_TIME],
             SONAR_VERBOSE: False,
             SONAR_SCANNER_SKIP_JRE_PROVISIONING: False,
@@ -372,7 +382,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_SOURCES: "src/main",
             SONAR_TESTS: "src/test",
             SONAR_SCANNER_APP: "python",
-            SONAR_SCANNER_APP_VERSION: "1.0",
+            SONAR_SCANNER_APP_VERSION: get_version(),
             SONAR_SCANNER_BOOTSTRAP_START_TIME: configuration[SONAR_SCANNER_BOOTSTRAP_START_TIME],
             SONAR_VERBOSE: False,
             SONAR_SCANNER_SKIP_JRE_PROVISIONING: False,
@@ -412,7 +422,7 @@ class TestConfigurationLoader(pyfakefs.TestCase):
         configuration = ConfigurationLoader.load()
         expected_configuration = {
             SONAR_SCANNER_APP: "python",
-            SONAR_SCANNER_APP_VERSION: "1.0",
+            SONAR_SCANNER_APP_VERSION: get_version(),
             SONAR_SCANNER_BOOTSTRAP_START_TIME: configuration[SONAR_SCANNER_BOOTSTRAP_START_TIME],
             SONAR_VERBOSE: False,
             SONAR_SCANNER_SKIP_JRE_PROVISIONING: False,
