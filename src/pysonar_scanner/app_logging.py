@@ -28,8 +28,10 @@ _JAVA_OPTIONS = (SONAR_SCANNER_JAVA_OPTS, SONAR_SCANNER_OPTS)
 
 
 def _is_sensitive(key: str) -> bool:
-    key = key.lower()
-    return "password" in key or "secret" in key or key.endswith(("token", ".login", ".secured"))
+    key = key.lower().replace("_", "").replace("-", "")
+    return any(
+        term in key for term in ("password", "secret", "credential", "apikey", "accesskey", "authorization")
+    ) or key.endswith(("token", ".login", ".secured"))
 
 
 def redact_properties(config: dict[str, Any]) -> dict[str, Any]:

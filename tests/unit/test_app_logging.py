@@ -18,38 +18,31 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import logging
-import unittest
-from unittest.mock import patch
 
 import pytest
 
 from pysonar_scanner import app_logging
 
 
-class TestAppLogging(unittest.TestCase):
-    @pytest.fixture(autouse=True)
-    def set_capsys(self, capsys):
-        self.capsys = capsys
-
-    def setUp(self) -> None:
-        logger = logging.getLogger()
-        handlers = patch.object(logger, "handlers", [])
-        handlers.start()
-        self.addCleanup(handlers.stop)
-        level = logger.level
-        self.addCleanup(logger.setLevel, level)
+def test_logging_output_destinations(capsys):
+    logger = logging.getLogger()
+    original_level = logger.level
+    original_handlers = set(logger.handlers)
+    try:
         app_logging.setup()
         app_logging.configure_logging_level(verbose=True)
-
-    def test_logging_output_destinations(self):
         logging.info("hello world")
         logging.error("boom!")
 
-        captured = self.capsys.readouterr()
-        self.assertIn("INFO: hello world", captured.out)
-        self.assertIn("ERROR: boom!", captured.err)
-        self.assertEqual(len(captured.err.splitlines()), 1)
-        self.assertEqual(len(captured.out.splitlines()), 1)
+        captured = capsys.readouterr()
+        assert "INFO: hello world" in captured.out
+        assert "ERROR: boom!" in captured.err
+        assert len(captured.err.splitlines()) == 1
+        assert len(captured.out.splitlines()) == 1
+    finally:
+        for handler in set(logger.handlers) - original_handlers:
+            logger.removeHandler(handler)
+        logger.setLevel(original_level)
 
 
 @pytest.mark.parametrize(
@@ -62,6 +55,11 @@ class TestAppLogging(unittest.TestCase):
         "sonar.scanner.keystorePassword",
         "sonar.scanner.truststorePassword",
         "custom.apiToken",
+        "custom.apiKey",
+        "custom.api_key",
+        "custom.access-key",
+        "custom.credential",
+        "custom.authorization",
         "custom.secret",
         "custom.secured",
         "sonar.scanner.javaOpts",
@@ -83,6 +81,8 @@ def test_redacts_sensitive_jvm_arguments_without_mutating_them():
         "java",
         "-Xmx256m",
         "-Djavax.net.ssl.keyStorePassword=dummy=value",
+        "-Dcustom.apiKey=dummy-key",
+        "-Dcustom.credential=dummy-credential",
         "-Dordinary=value",
         "-jar",
         "engine.jar",
@@ -91,6 +91,8 @@ def test_redacts_sensitive_jvm_arguments_without_mutating_them():
         "java",
         "-Xmx256m",
         "-Djavax.net.ssl.keyStorePassword=******",
+        "-Dcustom.apiKey=******",
+        "-Dcustom.credential=******",
         "-Dordinary=value",
         "-jar",
         "engine.jar",

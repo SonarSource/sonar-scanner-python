@@ -29,8 +29,21 @@ from pysonar_scanner import scannerengine
 from pysonar_scanner.jre import JREResolvedPath
 
 
+@pytest.fixture
+def restore_logging_handlers(caplog):
+    logger = logging.getLogger()
+    original_handlers = set(logger.handlers)
+    original_level = logger.level
+    yield
+    for handler in set(logger.handlers) - original_handlers:
+        logger.removeHandler(handler)
+    logger.setLevel(original_level)
+
+
 @pytest.mark.parametrize("token_source", ["cli", "environment", "json", "properties", "toml"])
-def test_verbose_scan_masks_credentials_but_preserves_engine_input(token_source, monkeypatch, capsys, tmp_path):
+def test_verbose_scan_masks_credentials_but_preserves_engine_input(
+    token_source, monkeypatch, caplog, restore_logging_handlers, tmp_path
+):
     credentials = {
         "sonar.token": "dummy-auth-value",
         "sonar.login": "dummy-login-value",
@@ -39,6 +52,8 @@ def test_verbose_scan_masks_credentials_but_preserves_engine_input(token_source,
         "sonar.scanner.keystorePassword": 'dummy-key-\\value-"é',
         "sonar.scanner.truststorePassword": "dummy-trust-value",
         "custom.secret": "dummy-custom-value",
+        "custom.apiKey": "dummy-api-key-value",
+        "custom.credential": "dummy-credential-value",
     }
     environment_properties = {key: value for key, value in credentials.items() if key != "sonar.token"}
     environment_properties["sonar.organization"] = "visible-organization"
@@ -61,11 +76,13 @@ def test_verbose_scan_masks_credentials_but_preserves_engine_input(token_source,
         environment_properties.pop("sonar.token")
     monkeypatch.setenv("SONAR_SCANNER_JSON_PARAMS", json.dumps(environment_properties))
     jvm_credential = "dummy jvm=value"
-    arguments.append(f'--sonar-scanner-java-opts=-Xmx256m -Djavax.net.ssl.keyStorePassword="{jvm_credential}"')
+    arguments.append(
+        f'--sonar-scanner-java-opts=-Xmx256m -Djavax.net.ssl.keyStorePassword="{jvm_credential}" '
+        '-Dcustom.apiKey="dummy jvm api key"'
+    )
     monkeypatch.setattr("sys.argv", arguments)
-    # Exercise an already-enabled logger, which exposes configuration-loading diagnostics.
-    monkeypatch.setattr(logging.getLogger(), "handlers", [])
-    monkeypatch.setattr(logging.getLogger(), "level", logging.DEBUG)
+    # Capture configuration-loading diagnostics before --verbose takes effect.
+    caplog.set_level("DEBUG")
     monkeypatch.setattr(main.cache, "get_cache", Mock())
     monkeypatch.setattr(main, "build_api", Mock())
     monkeypatch.setattr(main, "check_version", Mock())
@@ -78,9 +95,8 @@ def test_verbose_scan_masks_credentials_but_preserves_engine_input(token_source,
 
     assert main.scan() == 0
 
-    captured = capsys.readouterr()
-    output = captured.out + captured.err
-    for value in [*credentials.values(), jvm_credential, "dummy-overridden-value"]:
+    output = "\n".join(caplog.messages)
+    for value in [*credentials.values(), jvm_credential, "dummy-overridden-value", "dummy jvm api key"]:
         assert value not in output
         assert repr(value)[1:-1] not in output
         assert json.dumps(value)[1:-1] not in output
@@ -88,11 +104,12 @@ def test_verbose_scan_masks_credentials_but_preserves_engine_input(token_source,
     assert "visible-project" in output
     assert "-Xmx256m" in output
     assert "-Djavax.net.ssl.keyStorePassword=******" in output
+    assert "-Dcustom.apiKey=******" in output
     environment_log = next(line for line in output.splitlines() if "Loaded environment properties:" in line)
     assert "'sonar.scanner.proxyPassword': '******'" in environment_log
     assert "'sonar.organization': 'visible-organization'" in environment_log
-    engine_log = next(line for line in output.splitlines() if line.startswith("DEBUG: Properties:"))
-    logged_payload = json.loads(engine_log.removeprefix("DEBUG: Properties: "))
+    engine_log = next(line for line in caplog.messages if line.startswith("Properties:"))
+    logged_payload = json.loads(engine_log.removeprefix("Properties: "))
     logged_properties = {item["key"]: item["value"] for item in logged_payload["scannerProperties"]}
     assert logged_properties["sonar.projectKey"] == "visible-project"
     for key in credentials:
