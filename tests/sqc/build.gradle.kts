@@ -9,6 +9,7 @@ val pythonPlugin = configurations.create("pythonPlugin") { isTransitive = false 
 
 dependencyLocking {
     lockAllConfigurations()
+    lockMode = LockMode.STRICT
 }
 
 dependencies {
