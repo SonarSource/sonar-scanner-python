@@ -86,9 +86,11 @@ public class CloudScanTest {
       assertTrue(scannerOutput, scannerOutput.contains("Detected languages: [py]"));
 
       waitForComputeEngine(orchestrator.getDatabase(), projectDirectory);
-      var analyses = client.projectAnalyses().search(new SearchRequest().setProject(PROJECT_KEY)).getAnalysesList();
-      assertFalse("No SQC analysis was recorded", analyses.isEmpty());
-      assertEquals("1.2", analyses.get(0).getProjectVersion());
+      await().atMost(Duration.ofMinutes(2)).pollInterval(Duration.ofSeconds(1)).untilAsserted(() -> {
+        var analyses = client.projectAnalyses().search(new SearchRequest().setProject(PROJECT_KEY)).getAnalysesList();
+        assertFalse("No SQC analysis was recorded", analyses.isEmpty());
+        assertEquals("1.2", analyses.get(0).getProjectVersion());
+      });
     } finally {
       orchestrator.stopAll();
     }
