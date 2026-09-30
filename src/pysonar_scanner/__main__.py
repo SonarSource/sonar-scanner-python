@@ -21,6 +21,7 @@
 import logging
 import os
 import pathlib
+import sys
 from typing import Any
 from pysonar_scanner import app_logging
 from pysonar_scanner import cache
@@ -41,11 +42,13 @@ from pysonar_scanner.configuration.properties import (
     SONAR_SCANNER_ENGINE_JAR_PATH,
     SONAR_PROJECT_BASE_DIR,
     SONAR_PYTHON_COVERAGE_REPORT_PATHS,
+    SONAR_SCANNER_APP_VERSION,
 )
 from pysonar_scanner.exceptions import SQTooOldException
 from pysonar_scanner.jre import JREResolvedPath, JREProvisioner, JREResolver, JREResolverConfiguration
 from pysonar_scanner.scannerengine import ScannerEngine, ScannerEngineProvisioner
 from pysonar_scanner.dry_run_reporter import DryRunReporter, CoverageReportValidator, ValidationResult
+from pysonar_scanner.version import UNKNOWN_VERSION, get_version
 
 
 def main():
@@ -61,10 +64,13 @@ def scan():
 
 def do_scan():
     app_logging.setup()
-    logging.info(
-        "Enhance your workflow: Pair pysonar with SonarQube Server per your license or SonarQube Cloud for deeper analysis, and try SonarQube-IDE in your favourite IDE."
-    )
-    logging.info("Starting Pysonar, the Sonar scanner CLI for Python")
+    informational_request = any(arg in ("--version", "--help", "-h") for arg in sys.argv[1:])
+    if not informational_request:
+        app_logging.configure_logging_level(verbose=False)
+        logging.info("Starting Pysonar %s, the Sonar scanner CLI for Python", get_version())
+        logging.info(
+            "Enhance your workflow: Pair pysonar with SonarQube Server per your license or SonarQube Cloud for deeper analysis, and try SonarQube-IDE in your favourite IDE."
+        )
     config = ConfigurationLoader.load()
     set_logging_options(config)
 
@@ -87,6 +93,8 @@ def do_scan():
 
 def set_logging_options(config):
     app_logging.configure_logging_level(verbose=config.get(SONAR_VERBOSE, False))
+    if config.get(SONAR_SCANNER_APP_VERSION) == UNKNOWN_VERSION:
+        logging.debug("Pysonar package version metadata is unavailable; using %s", UNKNOWN_VERSION)
 
 
 def build_api(config: dict[str, Any]) -> SonarQubeApi:

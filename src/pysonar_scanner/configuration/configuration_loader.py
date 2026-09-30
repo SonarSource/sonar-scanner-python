@@ -32,6 +32,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_SOURCES,
     SONAR_TESTS,
     SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED,
+    SONAR_SCANNER_APP_VERSION,
     Key,
 )
 from pysonar_scanner.configuration.properties import PROPERTIES
@@ -43,6 +44,7 @@ from pysonar_scanner.configuration import (
 )
 
 from pysonar_scanner.exceptions import MissingProperty, MissingPropertyException
+from pysonar_scanner.version import get_version
 
 
 def get_static_default_properties() -> dict[Key, Any]:
@@ -52,11 +54,10 @@ def get_static_default_properties() -> dict[Key, Any]:
 class ConfigurationLoader:
     @staticmethod
     def load() -> dict[Key, Any]:
-        logging.debug("Loading configuration properties...")
-
         # each property loader is required to return NO default values.
         # E.g. if no property has been set, an empty dict must be returned.
         # Default values should be set through the get_static_default_properties() method
+        logging.debug("Loading configuration properties...")
         cli_properties = CliConfigurationLoader.load()
         # CLI properties have a higher priority than properties file,
         # but we need to resolve them first to load the properties file
@@ -75,6 +76,7 @@ class ConfigurationLoader:
         resolved_properties.update(toml_properties.sonar_properties)
         resolved_properties.update(environment_variables.load())
         resolved_properties.update(cli_properties)
+        resolved_properties[SONAR_SCANNER_APP_VERSION] = get_version()
 
         # Auto-detect sonar.tests only when the user has not set it in any higher-priority source
         # and has not explicitly disabled the sonar-python test file heuristic. When the heuristic
