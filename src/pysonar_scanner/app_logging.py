@@ -19,6 +19,34 @@
 #
 import logging
 import sys
+from typing import Any
+
+from pysonar_scanner.configuration.properties import SONAR_SCANNER_JAVA_OPTS, SONAR_SCANNER_OPTS
+
+REDACTED = "******"
+_JAVA_OPTIONS = (SONAR_SCANNER_JAVA_OPTS, SONAR_SCANNER_OPTS)
+
+
+def _is_sensitive(key: str) -> bool:
+    key = key.lower().replace("_", "").replace("-", "")
+    return any(
+        term in key for term in ("password", "secret", "credential", "apikey", "accesskey", "authorization")
+    ) or key.endswith(("token", ".login", ".secured"))
+
+
+def redact_properties(config: dict[str, Any]) -> dict[str, Any]:
+    # JVM options can contain arbitrary credentials; the command diagnostic shows safe arguments separately.
+    return {key: REDACTED if _is_sensitive(key) or key in _JAVA_OPTIONS else value for key, value in config.items()}
+
+
+def redact_command(command: list[str]) -> list[str]:
+    result = []
+    for argument in command:
+        key, separator, _ = argument.partition("=")
+        result.append(
+            f"{key}={REDACTED}" if separator and key.startswith("-D") and _is_sensitive(key[2:]) else argument
+        )
+    return result
 
 
 class LevelFilter(logging.Filter):
