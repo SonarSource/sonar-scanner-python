@@ -3,7 +3,6 @@ plugins {
 }
 
 val sonarcloudCoreVersion = providers.gradleProperty("sonarcloudCoreVersion").get()
-val cloudDistribution = configurations.create("cloudDistribution") { isTransitive = false }
 val asyncIndexer = configurations.create("asyncIndexer") { isTransitive = false }
 val pythonPlugin = configurations.create("pythonPlugin") { isTransitive = false }
 
@@ -13,9 +12,6 @@ dependencyLocking {
 }
 
 dependencies {
-    cloudDistribution("com.sonarsource.sonarcloud:edition-sonarcloud:$sonarcloudCoreVersion") {
-        artifact { type = "zip" }
-    }
     asyncIndexer("com.sonarsource.sonarcloud.async-issues-indexer:async-issues-indexer-it-runner:${providers.gradleProperty("asyncIndexerVersion").get()}") {
         artifact { classifier = "jar-with-dependencies" }
     }
@@ -48,7 +44,6 @@ tasks.test {
     useJUnit()
     maxHeapSize = "2g"
 
-    systemProperty("sqc.distribution", cloudDistribution.singleFile.absolutePath)
     systemProperty("sqc.async.indexer", asyncIndexer.singleFile.absolutePath)
     systemProperty("sqc.python.plugin", pythonPlugin.singleFile.absolutePath)
     systemProperty("sqc.sample.dir", rootProject.file("../../tests/its/sources/minimal").absolutePath)
