@@ -24,6 +24,7 @@ import os
 import tomli
 
 from pysonar_scanner.configuration import properties
+from pysonar_scanner.exceptions import InconsistentConfiguration
 
 
 class TomlProperties:
@@ -37,12 +38,16 @@ class TomlProperties:
 
 class TomlConfigurationLoader:
     @staticmethod
-    def load(toml_path: Path) -> TomlProperties:
+    def load(toml_path: Path, *, required: bool = False) -> TomlProperties:
         if toml_path.name == "pyproject.toml":
             filepath = toml_path
         else:
             filepath = toml_path / "pyproject.toml"
         if not os.path.isfile(filepath):
+            if required:
+                raise InconsistentConfiguration(
+                    f"Configured pyproject.toml file does not exist or is not a file: {filepath}"
+                )
             logging.debug(f"No pyproject.toml at {filepath}")
             return TomlProperties({}, {})
         logging.debug(f"pyproject.toml loaded from {filepath}")
@@ -55,6 +60,10 @@ class TomlConfigurationLoader:
             project_properties = TomlConfigurationLoader.__read_project_properties(toml_dict)
             return TomlProperties(sonar_properties, project_properties)
         except Exception as e:
+            if required:
+                raise InconsistentConfiguration(
+                    f"Could not read configured pyproject.toml file at {filepath}: {e}"
+                ) from e
             logging.warning(
                 f"There was an error reading the pyproject.toml file. No properties from the TOML file were extracted. Error: {e}"
             )

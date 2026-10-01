@@ -157,7 +157,12 @@ class CliConfigurationLoader:
         parser.add_argument(
             "--toml-path",
             type=str,
-            help="Path to the pyproject.toml file or to the folder containing it. If not provided, it will look in the SONAR_PROJECT_BASE_DIR",
+            help=(
+                "Path to the pyproject.toml file or its folder. Relative paths use the current working directory. "
+                "An explicitly selected file must exist and be readable and valid TOML. "
+                "If omitted, pyproject.toml is optional and is loaded from the CLI project base directory "
+                "or the current working directory"
+            ),
         )
 
         parser.add_argument(
