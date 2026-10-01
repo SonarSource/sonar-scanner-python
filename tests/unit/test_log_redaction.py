@@ -26,7 +26,6 @@ import pytest
 
 from pysonar_scanner import __main__ as main
 from pysonar_scanner import scannerengine
-from pysonar_scanner.configuration import environment_variables
 from pysonar_scanner.jre import JREResolvedPath
 
 
@@ -100,6 +99,9 @@ def test_verbose_scan_masks_credentials_but_preserves_engine_input(
         assert repr(value)[1:-1] not in output
         assert json.dumps(value)[1:-1] not in output
     assert "Final loaded configuration:" in output
+    environment_log = next(line for line in output.splitlines() if "Loaded environment properties:" in line)
+    assert "'sonar.scanner.proxyPassword': '******'" in environment_log
+    assert "'sonar.organization': 'visible-organization'" in environment_log
     assert "visible-project" in output
     assert "-Xmx256m" in output
     assert "-Djavax.net.ssl.keyStorePassword=******" in output
@@ -115,23 +117,3 @@ def test_verbose_scan_masks_credentials_but_preserves_engine_input(
     for key, value in credentials.items():
         assert properties[key] == value
     assert f"-Djavax.net.ssl.keyStorePassword={jvm_credential}" in popen.call_args.args[0]
-
-
-def test_json_environment_diagnostic_masks_credentials(monkeypatch, caplog):
-    properties = {
-        "sonar.token": "dummy-auth-value",
-        "sonar.scanner.proxyPassword": "dummy-proxy-value",
-        "sonar.organization": "visible-organization",
-    }
-    monkeypatch.setenv("SONAR_SCANNER_JSON_PARAMS", json.dumps(properties))
-
-    with caplog.at_level(logging.DEBUG):
-        loaded_properties = environment_variables.load_json_env_variables()
-
-    diagnostic = next(message for message in caplog.messages if message.startswith("Loaded environment properties:"))
-    assert loaded_properties == properties
-    assert "'sonar.token': '******'" in diagnostic
-    assert "'sonar.scanner.proxyPassword': '******'" in diagnostic
-    assert "'sonar.organization': 'visible-organization'" in diagnostic
-    assert "dummy-auth-value" not in diagnostic
-    assert "dummy-proxy-value" not in diagnostic
