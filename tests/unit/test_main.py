@@ -25,8 +25,16 @@ from unittest.mock import patch, Mock, call
 
 from pyfakefs import fake_filesystem_unittest as pyfakefs
 
-from pysonar_scanner.__main__ import scan, main, check_version, create_jre, create_scanner_engine, set_logging_options
-from pysonar_scanner.api import SQVersion, SonarQubeApi
+from pysonar_scanner.__main__ import (
+    scan,
+    main,
+    check_version,
+    create_jre,
+    create_scanner_engine,
+    set_logging_options,
+    update_config_with_api_urls,
+)
+from pysonar_scanner.api import BaseUrls, SQVersion, SonarQubeApi
 from pysonar_scanner.cache import Cache
 from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader
 from pysonar_scanner.configuration.properties import (
@@ -112,6 +120,23 @@ class TestMain(pyfakefs.TestCase):
             call("Starting the analysis..."),
         ]
         mock_logging.info.assert_has_calls(info_logs)
+
+    def test_explicit_proxy_port_survives_url_resolution(self):
+        base_urls = BaseUrls("https://sonar.example.com", "https://sonar.example.com/api", False)
+        for port in (8080, "8080"):
+            with self.subTest(port=port):
+                config = {SONAR_SCANNER_PROXY_PORT: port}
+
+                update_config_with_api_urls(config, base_urls)
+
+                self.assertEqual(config[SONAR_SCANNER_PROXY_PORT], port)
+
+    def test_http_proxy_port_defaults_when_unspecified(self):
+        config = {}
+
+        update_config_with_api_urls(config, BaseUrls("http://localhost:9000", "http://localhost:9000/api", False))
+
+        self.assertEqual(config[SONAR_SCANNER_PROXY_PORT], "80")
 
     @patch.object(ConfigurationLoader, "load")
     def test_scan_with_exception(self, load_mock):
