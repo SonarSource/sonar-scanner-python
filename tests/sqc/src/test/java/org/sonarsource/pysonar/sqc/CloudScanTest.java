@@ -21,9 +21,7 @@ package org.sonarsource.pysonar.sqc;
 
 import com.sonar.orchestrator.MockUserService;
 import com.sonar.orchestrator.Orchestrator;
-import com.sonar.orchestrator.db.Database;
 import com.sonar.orchestrator.locator.FileLocation;
-import com.sonarsource.users.client.model.RestGroup;
 import com.sonarsource.users.client.model.RestUser;
 import java.io.File;
 import java.io.InputStream;
@@ -33,8 +31,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.OffsetDateTime;
 import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
@@ -43,10 +41,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockserver.socket.PortFactory;
+import org.sonarqube.ws.Ce;
 import org.sonarqube.ws.Organizations.Organization;
 import org.sonarqube.ws.client.HttpConnector;
 import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.WsClientFactories;
+import org.sonarqube.ws.client.ce.TaskRequest;
 import org.sonarqube.ws.client.organizations.CreateRequest;
 import org.sonarqube.ws.client.projectanalyses.SearchRequest;
 
@@ -74,7 +74,7 @@ public class CloudScanTest {
 
       WsClient client = rootClient(orchestrator);
       configureRootUser(orchestrator);
-      Organization organization = createOrganization(orchestrator, client);
+      Organization organization = createOrganization(client);
       client.projects().create(new org.sonarqube.ws.client.projects.CreateRequest()
         .setProject(PROJECT_KEY)
         .setName("pysonar SQC integration test")
@@ -85,7 +85,7 @@ public class CloudScanTest {
       String scannerOutput = scan(orchestrator, organization, projectDirectory);
       assertTrue(scannerOutput, scannerOutput.contains("Detected languages: [py]"));
 
-      waitForComputeEngine(orchestrator.getDatabase(), projectDirectory);
+      waitForComputeEngine(client, projectDirectory);
       await().atMost(Duration.ofMinutes(2)).pollInterval(Duration.ofSeconds(1)).untilAsserted(() -> {
         var analyses = client.projectAnalyses().search(new SearchRequest().setProject(PROJECT_KEY)).getAnalysesList();
         assertFalse("No SQC analysis was recorded", analyses.isEmpty());
@@ -137,8 +137,7 @@ public class CloudScanTest {
   }
 
   private static void configureRootUser(Orchestrator orchestrator) {
-    Database database = orchestrator.getDatabase();
-    Map<String, String> admin = database.executeSql("select uuid, uuid_v4 from users where login='admin'").get(0);
+    Map<String, String> admin = orchestrator.getDatabase().executeSql("select uuid, uuid_v4 from users where login='admin'").get(0);
     UUID adminId = UUID.fromString(admin.get("UUID_V4"));
     OffsetDateTime now = OffsetDateTime.now();
     orchestrator.getUserService().addUser(new RestUser(adminId, "sonarqube", now, now, admin.get("UUID"), true)
@@ -146,35 +145,15 @@ public class CloudScanTest {
       .name("Administrator")
       .externalLogin("admin"));
     orchestrator.getUserService().addRole(new MockUserService.RoleKey(adminId, null, "sqc"), "root");
-    database.executeDdl("""
-      insert into internal_properties (kee, is_empty, text_value, created_at)
-      values ('organization.enabled', 'false', 'true', '1000')
-      on conflict do nothing
-      """);
   }
 
-  private static Organization createOrganization(Orchestrator orchestrator, WsClient client) {
-    Organization organization = client.organizations().create(new CreateRequest()
+  private static Organization createOrganization(WsClient client) {
+    return client.organizations().create(new CreateRequest()
       .setKey("scanpy-it")
       .setName("pysonar integration tests")
       .setDescription("Local Cloud scan")
       .setUrl("http://localhost"))
       .getOrganization();
-
-    Database database = orchestrator.getDatabase();
-    String organizationKey = organization.getKey();
-    Map<String, String> organizationRow = database.executeSql(
-      "select uuid, uuid_v4 from organizations where kee='" + organizationKey + "'").get(0);
-    UUID organizationId = UUID.fromString(organizationRow.get("UUID_V4"));
-    Map<String, String> ownersGroup = database.executeSql(
-      "select uuid_v4, id from groups where name='Owners' and org_uuid_v4='" + organizationId + "'").get(0);
-    orchestrator.getUserService().addGroup(new RestGroup(
-      UUID.fromString(ownersGroup.get("UUID_V4")), Integer.parseInt(ownersGroup.get("ID")))
-      .organizationId(organizationId)
-      .name("Owners")
-      .description("Organization owners"));
-    orchestrator.getQualityGatesService().associateBuiltInQualityGatesToOrganization(organizationRow.get("UUID"));
-    return organization;
   }
 
   private Path copySampleProject() throws Exception {
@@ -217,7 +196,7 @@ public class CloudScanTest {
     return output;
   }
 
-  private static void waitForComputeEngine(Database database, Path projectDirectory) throws Exception {
+  private static void waitForComputeEngine(WsClient client, Path projectDirectory) throws Exception {
     Properties taskProperties = new Properties();
     try (InputStream report = Files.newInputStream(projectDirectory.resolve(".scannerwork/report-task.txt"))) {
       taskProperties.load(report);
@@ -226,15 +205,12 @@ public class CloudScanTest {
     assertFalse("Scanner report has no CE task ID", taskId == null || taskId.isBlank());
 
     await().atMost(Duration.ofMinutes(2)).pollInterval(Duration.ofSeconds(1)).until(() -> {
-      var tasks = database.executeSql("select status, error_message from ce_activity where uuid='" + taskId + "'");
-      if (tasks.isEmpty()) {
-        return false;
+      Ce.Task task = client.ce().task(new TaskRequest().setId(taskId)).getTask();
+      Ce.TaskStatus status = task.getStatus();
+      if (status == Ce.TaskStatus.FAILED || status == Ce.TaskStatus.CANCELED) {
+        fail("CE task ended with " + status + ": " + task.getErrorMessage());
       }
-      String status = tasks.get(0).get("STATUS");
-      if ("FAILED".equals(status) || "CANCELED".equals(status)) {
-        fail("CE task ended with " + status + ": " + tasks.get(0).get("ERROR_MESSAGE"));
-      }
-      return "SUCCESS".equals(status);
+      return status == Ce.TaskStatus.SUCCESS;
     });
   }
 }
