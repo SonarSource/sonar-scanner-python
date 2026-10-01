@@ -6,9 +6,8 @@ val sonarcloudCoreVersion = providers.gradleProperty("sonarcloudCoreVersion").ge
 val asyncIndexer = configurations.create("asyncIndexer") { isTransitive = false }
 val pythonPlugin = configurations.create("pythonPlugin") { isTransitive = false }
 
-dependencyLocking {
-    lockAllConfigurations()
-    lockMode = LockMode.STRICT
+configurations.configureEach {
+    resolutionStrategy.cacheDynamicVersionsFor(0, "seconds")
 }
 
 dependencies {
@@ -43,6 +42,7 @@ java {
 tasks.test {
     useJUnit()
     maxHeapSize = "2g"
+    outputs.upToDateWhen { false }
 
     systemProperty("sqc.async.indexer", asyncIndexer.singleFile.absolutePath)
     systemProperty("sqc.python.plugin", pythonPlugin.singleFile.absolutePath)
@@ -55,6 +55,18 @@ tasks.test {
     if (!artifactoryPassword.isNullOrEmpty()) {
         systemProperty("orchestrator.artifactory.apiKey", artifactoryPassword)
         systemProperty("orchestrator.artifactory.accessToken", artifactoryPassword)
+    }
+
+    doFirst {
+        val coreVersions = configurations.testRuntimeClasspath.get().resolvedConfiguration.resolvedArtifacts
+            .map { it.moduleVersion.id }
+            .filter { it.group == "com.sonarsource.sonarcloud" || it.group == "com.sonarsource.sonarcloud.core" }
+            .map { it.version }
+            .toSet()
+        check(coreVersions.size == 1) { "Expected one SonarCloud Core JAR version, found $coreVersions" }
+        val coreVersion = coreVersions.single()
+        logger.lifecycle("SQC Core JAR version: {}", coreVersion)
+        systemProperty("sqc.core.jar.version", coreVersion)
     }
 
     testLogging {

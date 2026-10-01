@@ -68,7 +68,8 @@ public class CloudScanTest {
   public void scansMinimalPythonProjectOnCloud() throws Exception {
     Orchestrator orchestrator = newOrchestrator();
     try {
-      orchestrator.install();
+      String distributionVersion = orchestrator.install().version().toString();
+      assertEquals("SQC distribution and Core JAR versions differ", System.getProperty("sqc.core.jar.version"), distributionVersion);
       disableDiskWatermark(orchestrator);
       orchestrator.start();
       orchestrator.getFileSourcesService().setSourceLinesResponseFromExpectedCoreOutput("{\"sources\":[{}]}");
