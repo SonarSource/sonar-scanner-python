@@ -59,9 +59,12 @@ class ConfigurationLoader:
         # Default values should be set through the get_static_default_properties() method
         logging.debug("Loading configuration properties...")
         cli_properties = CliConfigurationLoader.load()
-        # CLI properties have a higher priority than properties file,
-        # but we need to resolve them first to load the properties file
-        base_dir = Path(cli_properties.get(SONAR_PROJECT_BASE_DIR, "."))
+        environment_properties = environment_variables.load()
+        # Resolve the project root before discovering configuration files, using the
+        # same CLI-over-environment precedence as the final configuration.
+        base_dir = Path(
+            cli_properties.get(SONAR_PROJECT_BASE_DIR, environment_properties.get(SONAR_PROJECT_BASE_DIR, "."))
+        )
 
         toml_path_property = cli_properties.get("toml-path", ".")
         toml_path = Path(toml_path_property) if "toml-path" in cli_properties else base_dir
@@ -74,7 +77,7 @@ class ConfigurationLoader:
         resolved_properties.update(toml_properties.project_properties)
         resolved_properties.update(sonar_project_properties.load(base_dir))
         resolved_properties.update(toml_properties.sonar_properties)
-        resolved_properties.update(environment_variables.load())
+        resolved_properties.update(environment_properties)
         resolved_properties.update(cli_properties)
         resolved_properties[SONAR_SCANNER_APP_VERSION] = get_version()
 

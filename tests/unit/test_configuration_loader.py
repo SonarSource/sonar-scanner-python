@@ -17,6 +17,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+import json
 import os
 from unittest.mock import MagicMock, patch
 
@@ -626,6 +627,45 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             with self.subTest(argument=argument), patch("sys.argv", ["pysonar", argument]):
                 configuration = ConfigurationLoader.load()
                 self.assertIs(configuration[SONAR_QUALITYGATE_WAIT], False)
+
+    @patch("sys.argv", ["myscript.py"])
+    def test_environment_base_dir_selects_all_configuration_sources(self, mock_get_os, mock_get_arch):
+        self.fs.create_file("pyproject.toml", contents='[tool.sonar]\nproject-name = "Wrong project"\n')
+        self.fs.create_file(
+            "selected-project/pyproject.toml",
+            contents='[tool.sonar]\nproject-name = "Selected project"\n',
+        )
+        self.fs.create_file("selected-project/sonar-project.properties", contents="sonar.projectKey=selected-key\n")
+        self.fs.create_file("selected-project/.coveragerc", contents="[run]\nomit = generated/**\n")
+        self.fs.create_file("selected-project/pytest.ini", contents="[pytest]\ntestpaths = specs\n")
+        self.fs.create_dir("selected-project/specs")
+
+        with patch.dict("os.environ", {"SONAR_PROJECT_BASE_DIR": "selected-project"}):
+            configuration = ConfigurationLoader.load()
+
+        self.assertEqual(configuration[SONAR_PROJECT_BASE_DIR], "selected-project")
+        self.assertEqual(configuration[SONAR_PROJECT_NAME], "Selected project")
+        self.assertEqual(configuration[SONAR_PROJECT_KEY], "selected-key")
+        self.assertEqual(configuration[SONAR_COVERAGE_EXCLUSIONS], "generated/**")
+        self.assertEqual(configuration[SONAR_TESTS], "specs")
+
+    def test_project_base_dir_discovery_precedence(self, mock_get_os, mock_get_arch):
+        for directory in ("json-project", "environment-project", "cli-project"):
+            self.fs.create_file(f"{directory}/pyproject.toml", contents=f'[tool.sonar]\nproject-name = "{directory}"\n')
+
+        json_environment = {"SONAR_SCANNER_JSON_PARAMS": json.dumps({SONAR_PROJECT_BASE_DIR: "json-project"})}
+        environment = {**json_environment, "SONAR_PROJECT_BASE_DIR": "environment-project"}
+        for env, args, expected_directory in (
+            (json_environment, [], "json-project"),
+            (environment, [], "environment-project"),
+            (environment, ["--sonar-project-base-dir", "cli-project"], "cli-project"),
+        ):
+            with self.subTest(source=expected_directory), patch.dict("os.environ", env, clear=True), patch(
+                "sys.argv", ["myscript.py", *args]
+            ):
+                configuration = ConfigurationLoader.load()
+                self.assertEqual(configuration[SONAR_PROJECT_BASE_DIR], expected_directory)
+                self.assertEqual(configuration[SONAR_PROJECT_NAME], expected_directory)
 
     @patch(
         "sys.argv",
