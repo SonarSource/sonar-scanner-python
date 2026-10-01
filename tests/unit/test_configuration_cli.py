@@ -24,6 +24,7 @@ from io import StringIO
 
 from pysonar_scanner.configuration.configuration_loader import CliConfigurationLoader
 from pysonar_scanner.configuration.properties import (
+    PROPERTIES,
     SONAR_HOST_URL,
     SONAR_ORGANIZATION,
     SONAR_PYTHON_ANALYSIS_PARALLEL,
@@ -32,10 +33,12 @@ from pysonar_scanner.configuration.properties import (
     SONAR_PYTHON_FLAKE8_REPORT_PATHS,
     SONAR_PYTHON_MYPY_REPORT_PATHS,
     SONAR_PYTHON_RUFF_REPORT_PATHS,
+    SONAR_PYTHON_VERSION,
     SONAR_REGION,
     SONAR_SCANNER_API_BASE_URL,
     SONAR_SCANNER_ARCH,
     SONAR_SCANNER_CONNECT_TIMEOUT,
+    SONAR_SCANNER_DRY_RUN,
     SONAR_SCANNER_ENGINE_JAR_PATH,
     SONAR_SCANNER_INTERNAL_DUMP_TO_FILE,
     SONAR_SCANNER_INTERNAL_SQ_VERSION,
@@ -97,6 +100,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_PYTHON_XUNIT_REPORT_PATH,
     SONAR_PYTHON_XUNIT_SKIP_DETAILS,
     SONAR_MODULES,
+    TOML_PATH,
 )
 from pysonar_scanner.exceptions import UnexpectedCliArgument
 
@@ -182,12 +186,20 @@ EXPECTED_CONFIGURATION = {
     SONAR_PYTHON_FLAKE8_REPORT_PATHS: "path/to/flake8/reports",
     SONAR_PYTHON_RUFF_REPORT_PATHS: "path/to/ruff/reports",
     SONAR_MODULES: "module1,module2",
+    TOML_PATH: "custom/pyproject.toml",
+    SONAR_PYTHON_VERSION: "3.11",
+    SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED: True,
+    SONAR_SCANNER_DRY_RUN: True,
 }
 
 
 class TestCliConfigurationLoader(unittest.TestCase):
     def setUp(self):
         self.maxDiff = None
+
+    def test_all_explicit_cli_properties_have_mapping_cases(self):
+        declared_properties = {prop.name for prop in PROPERTIES if prop.cli_getter is not None}
+        self.assertSetEqual(set(EXPECTED_CONFIGURATION), declared_properties)
 
     @patch("sys.argv", ["myscript.py", "--token", "myToken", "--sonar-project-key", "myProjectKey"])
     def test_minimal_cli_args(self):
@@ -455,6 +467,12 @@ class TestCliConfigurationLoader(unittest.TestCase):
             "--analysis-in-parallel",
             "--nr-analysis-threads",
             "2",
+            "--toml-path",
+            "custom/pyproject.toml",
+            "--sonar-python-version",
+            "3.11",
+            "--sonar-python-test-file-heuristic-disabled",
+            "--dry-run",
         ],
     )
     def test_all_cli_args(self):
@@ -537,6 +555,10 @@ class TestCliConfigurationLoader(unittest.TestCase):
             "-Dsonar.python.ruff.reportPaths=path/to/ruff/reports",
             "-Dsonar.modules=module1,module2",
             "-Dsonar.scanner.javaHeapSize=8000Mb",
+            "-Dtoml-path=custom/pyproject.toml",
+            "-Dsonar.python.version=3.11",
+            "-Dsonar.python.testFileHeuristic.disabled=true",
+            "--dry-run",
         ],
     )
     def test_jvm_style_cli_args(self):
