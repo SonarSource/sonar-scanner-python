@@ -28,6 +28,7 @@ import pyfakefs.fake_filesystem_unittest as pyfakefs
 
 from pysonar_scanner import cache, scannerengine
 from pysonar_scanner.configuration.properties import (
+    SONAR_QUALITYGATE_WAIT,
     SONAR_SCANNER_APP_VERSION,
     SONAR_SCANNER_JAVA_OPTS,
     SONAR_SCANNER_OPTS,
@@ -150,6 +151,7 @@ class TestScannerEngineWithFake(pyfakefs.TestCase):
             "sonar.scanner.os": "linux",
             "sonar.scanner.arch": "x64",
             "sonar.scanner.javaExePath": "jre/bin/java",
+            SONAR_QUALITYGATE_WAIT: False,
         }
 
         expected_std_in = json.dumps(
@@ -160,6 +162,7 @@ class TestScannerEngineWithFake(pyfakefs.TestCase):
                     {"key": "sonar.scanner.os", "value": "linux"},
                     {"key": "sonar.scanner.arch", "value": "x64"},
                     {"key": "sonar.scanner.javaExePath", "value": "jre/bin/java"},
+                    {"key": SONAR_QUALITYGATE_WAIT, "value": False},
                 ]
             }
         )

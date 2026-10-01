@@ -28,6 +28,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_PROJECT_KEY,
     SONAR_PROJECT_NAME,
     SONAR_PROJECT_BASE_DIR,
+    SONAR_QUALITYGATE_WAIT,
     SONAR_SCANNER_APP,
     SONAR_SCANNER_APP_VERSION,
     SONAR_SCANNER_BOOTSTRAP_START_TIME,
@@ -611,6 +612,20 @@ class TestConfigurationLoader(pyfakefs.TestCase):
 
         # Default values should still be populated
         self.assertEqual(configuration[SONAR_SCANNER_APP], "python")
+
+    @patch.dict("os.environ", {"SONAR_QUALITYGATE_WAIT": "true"})
+    def test_cli_false_overrides_true_from_environment(self, mock_get_os, mock_get_arch):
+        for argument in ("--no-sonar-qualitygate-wait", "-Dsonar.qualitygate.wait=false"):
+            with self.subTest(argument=argument), patch("sys.argv", ["pysonar", argument]):
+                configuration = ConfigurationLoader.load()
+                self.assertIs(configuration[SONAR_QUALITYGATE_WAIT], False)
+
+    def test_cli_false_overrides_true_from_toml(self, mock_get_os, mock_get_arch):
+        self.fs.create_file("pyproject.toml", contents="[tool.sonar]\nqualitygate.wait = true\n")
+        for argument in ("--no-sonar-qualitygate-wait", "-Dsonar.qualitygate.wait=false"):
+            with self.subTest(argument=argument), patch("sys.argv", ["pysonar", argument]):
+                configuration = ConfigurationLoader.load()
+                self.assertIs(configuration[SONAR_QUALITYGATE_WAIT], False)
 
     @patch(
         "sys.argv",

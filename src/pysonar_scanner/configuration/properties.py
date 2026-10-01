@@ -364,7 +364,7 @@ PROPERTIES: list[Property] = [
     Property(
         name=SONAR_SCM_EXCLUSIONS_DISABLED,
         default_value=None,
-        cli_getter=lambda args: args.sonar_scm_exclusions_disabled or getattr(args, "Dsonar.scm.exclusions.disabled")
+        cli_getter=lambda args: args.sonar_scm_exclusions_disabled
     ),
     Property(
         name=SONAR_CPD_PYTHON_MINIMUM_TOKENS,
@@ -404,7 +404,7 @@ PROPERTIES: list[Property] = [
     Property(
         name=SONAR_QUALITYGATE_WAIT, 
         default_value=None, 
-        cli_getter=lambda args: args.sonar_qualitygate_wait or getattr(args, "Dsonar.qualitygate.wait")
+        cli_getter=lambda args: args.sonar_qualitygate_wait
     ),
     Property(
         name=SONAR_QUALITYGATE_TIMEOUT, 
@@ -489,7 +489,7 @@ PROPERTIES: list[Property] = [
     Property(
         name=SONAR_SCM_FORCE_RELOAD_ALL, 
         default_value=None, 
-        cli_getter=lambda args: args.sonar_scm_force_reload_all or getattr(args, "Dsonar.scm.forceReloadAll")
+        cli_getter=lambda args: args.sonar_scm_force_reload_all
     ),
     Property(
         name=SONAR_PYTHON_PYLINT_REPORT_PATH,
@@ -509,13 +509,12 @@ PROPERTIES: list[Property] = [
     Property(
         name=SONAR_PYTHON_SKIP_UNCHANGED,
         default_value=None,
-        cli_getter=lambda args: args.sonar_python_skip_unchanged or getattr(args, "Dsonar.python.skipUnchanged")
+        cli_getter=lambda args: args.sonar_python_skip_unchanged
     ),
     Property(
         name=SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED,
         default_value=None,
-        cli_getter=lambda args: args.sonar_python_test_file_heuristic_disabled
-        or getattr(args, "Dsonar.python.testFileHeuristic.disabled"),
+        cli_getter=lambda args: args.sonar_python_test_file_heuristic_disabled,
     ),
     Property(
         name=SONAR_PYTHON_XUNIT_REPORT_PATH,
@@ -525,7 +524,7 @@ PROPERTIES: list[Property] = [
     Property(
         name=SONAR_PYTHON_XUNIT_SKIP_DETAILS,
         default_value=None,
-        cli_getter=lambda args: args.sonar_python_xunit_skip_details or getattr(args, "Dsonar.python.xunit.skipDetails")
+        cli_getter=lambda args: args.sonar_python_xunit_skip_details
     ),
     Property(
         name=SONAR_PYTHON_MYPY_REPORT_PATHS,
