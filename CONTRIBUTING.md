@@ -44,9 +44,15 @@ Run `poetry run pytest --cov-report=xml:coverage.xml --cov-config=pyproject.toml
 
 ## Run the ITs
 
-Run `poetry run pytest tests/its --its` to run the its.
+On Linux or macOS, install Java 21, `curl`, and `unzip`, then run `./scripts/run_its.sh`.
+The script installs the Python dependencies, downloads and caches the same SonarQube version used in CI,
+starts a fresh instance on port 9000, runs the ITs, and stops the instance when finished.
+Port 9000 must be available.
+Additional arguments are passed to pytest, for example `./scripts/run_its.sh -k test_minimal_project`.
 
-To see the ITs in the VSCode test explorer, add the `--its` argument to the `python.testing.pytestArgs` setting in `.vscode/settings.json`.
+To run pytest directly or use the VSCode test explorer, first start a disposable SonarQube instance on
+`http://localhost:9000` with the default administrator credentials. Then run `poetry run pytest tests/its --its`
+or add the `--its` argument to the `python.testing.pytestArgs` setting in `.vscode/settings.json`.
 
 The the following keys should be present:
 ```json
@@ -58,7 +64,7 @@ The the following keys should be present:
 
 ### Debugging the ITs
 
-To debug the sonar-scanner being run in the its, the ITs have to be run with `poetry run pytest tests/its --its --debug-its`
+To debug the sonar-scanner being run in the ITs, run `./scripts/run_its.sh --debug-its`.
 
 The `pysonar` process will wait until VSCode or any other debug adapter protocol client connects on the port `5678`.
 

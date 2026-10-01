@@ -1,12 +1,34 @@
-#!/bin/env bash
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-pushd "$SCRIPT_DIR/../its"
+#!/usr/bin/env bash
+set -euo pipefail
 
-python3 -m venv .its-venv
-source .its-venv/bin/activate
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+SONARQUBE_VERSION="${SONARQUBE_VERSION:-26.9.0.129388}"
+readonly SONARQUBE_CACHE=".sonarqube_cache"
+ARCHIVE="$SONARQUBE_CACHE/sonarqube-${SONARQUBE_VERSION}.zip"
+
+case "$(uname)" in
+  Linux) PLATFORM="linux-x86-64" ;;
+  Darwin) PLATFORM="macosx-universal-64" ;;
+  *) echo "Integration tests require Linux or macOS." >&2; exit 1 ;;
+esac
+
+unset SONAR_TOKEN SONAR_HOST_URL
 poetry install
-pip install ..
 
-poetry run pytest
+mkdir -p "$SONARQUBE_CACHE"
+if [[ ! -f "$ARCHIVE" ]]; then
+  curl --fail --location "https://repo.maven.apache.org/maven2/org/sonarsource/sonarqube/sonar-application/${SONARQUBE_VERSION}/sonar-application-${SONARQUBE_VERSION}.zip" -o "$ARCHIVE.part"
+  mv "$ARCHIVE.part" "$ARCHIVE"
+fi
 
-popd
+RUN_DIR=$(mktemp -d "${TMPDIR:-/tmp}/pysonar-its.XXXXXX")
+unzip -q "$ARCHIVE" -d "$RUN_DIR"
+SONAR_SCRIPT="$RUN_DIR/sonarqube-${SONARQUBE_VERSION}/bin/${PLATFORM}/sonar.sh"
+chmod +x "$SONAR_SCRIPT"
+
+# Stop the test server and remove its temporary files when the script exits.
+trap '"$SONAR_SCRIPT" stop || true; rm -rf "$RUN_DIR"' EXIT
+
+"$SONAR_SCRIPT" start
+
+poetry run pytest --its tests/its "$@"

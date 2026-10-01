@@ -17,54 +17,36 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-import os
+from time import monotonic, sleep
+
 import pytest
-import pytest_docker.plugin as docker
-from requests.exceptions import ConnectionError, HTTPError
+from requests.exceptions import ConnectionError, HTTPError, Timeout
 
 from tests.its.utils.cli_client import CliClient
 from tests.its.utils.sonarqube_client import SonarQubeClient
 
 
-@pytest.fixture(scope="session")
-def docker_compose_file(pytestconfig: pytest.Config):
-    return pytestconfig.rootpath / "tests/its/compose.yaml"
-
-
 def check_health(sonarqube_client: SonarQubeClient) -> bool:
     try:
         return sonarqube_client.get_system_health()["health"] == "GREEN"
-    except (ConnectionError, HTTPError):
+    except (ConnectionError, HTTPError, Timeout):
         return False
 
 
-if "SKIP_DOCKER" in os.environ:
-    from time import sleep
-
-    @pytest.fixture(scope="session")
-    def sonarqube_client() -> SonarQubeClient:
-        """Ensure that sonarqube service is up and responsive."""
-        url = "http://localhost:9000"
-        sonarqube_client = SonarQubeClient(url)
-        while not check_health(sonarqube_client):
-            print("Waiting for SonarQube to be up")
-            sleep(10)
-        status = sonarqube_client.get_system_status()["status"]
-        assert status == "UP"
-        return sonarqube_client
-
-else:
-
-    @pytest.fixture(scope="session")
-    def sonarqube_client(docker_ip: str, docker_services: docker.Services) -> SonarQubeClient:
-        """Ensure that sonarqube service is up and responsive."""
-        port = docker_services.port_for("sonarqube", 9000)
-        url = f"http://{docker_ip}:{port}"
-        sonarqube_client = SonarQubeClient(url)
-        docker_services.wait_until_responsive(timeout=120.0, pause=5, check=lambda: check_health(sonarqube_client))
-        status = sonarqube_client.get_system_status()["status"]
-        assert status == "UP"
-        return sonarqube_client
+@pytest.fixture(scope="session")
+def sonarqube_client() -> SonarQubeClient:
+    """Ensure that sonarqube service is up and responsive."""
+    url = "http://localhost:9000"
+    sonarqube_client = SonarQubeClient(url)
+    deadline = monotonic() + 120
+    while not check_health(sonarqube_client):
+        if monotonic() >= deadline:
+            pytest.fail(f"SonarQube at {url} did not become ready within 120 seconds.")
+        print("Waiting for SonarQube to be up")
+        sleep(10)
+    status = sonarqube_client.get_system_status()["status"]
+    assert status == "UP"
+    return sonarqube_client
 
 
 def pytest_addoption(parser):

@@ -70,12 +70,12 @@ class SonarQubeClient:
         return token_json["token"]
 
     def get_system_health(self) -> SystemHealth:
-        resp = self.session.get(f"{self.base_url}/api/system/health")
+        resp = self.session.get(f"{self.base_url}/api/system/health", timeout=5)
         resp.raise_for_status()
         return resp.json()
 
     def get_system_status(self) -> SystemStatus:
-        resp = self.session.get(f"{self.base_url}/api/system/status")
+        resp = self.session.get(f"{self.base_url}/api/system/status", timeout=5)
         resp.raise_for_status()
         return resp.json()
 
