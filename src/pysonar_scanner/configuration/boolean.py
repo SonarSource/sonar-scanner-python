@@ -18,6 +18,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
+from typing import Any
+
+from pysonar_scanner.exceptions import InconsistentConfiguration
+
 
 def parse_bool(value: bool | str) -> bool:
     """Parse a boolean without treating nonempty strings such as 'false' as true."""
@@ -29,3 +33,10 @@ def parse_bool(value: bool | str) -> bool:
         if value.lower() == "false":
             return False
     raise ValueError("Expected 'true' or 'false'")
+
+
+def get_boolean_property(config: dict[str, Any], key: str) -> bool:
+    try:
+        return parse_bool(config.get(key, False))
+    except ValueError as e:
+        raise InconsistentConfiguration(f"Invalid boolean value for '{key}': expected true or false.") from e

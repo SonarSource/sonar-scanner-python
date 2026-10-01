@@ -35,6 +35,7 @@ from pysonar_scanner.configuration.properties import (
 )
 from pysonar_scanner.exceptions import (
     ChecksumException,
+    InconsistentConfiguration,
     JreProvisioningException,
     NoJreAvailableException,
     UnsupportedArchiveFormat,
@@ -315,6 +316,10 @@ class TestJREResolvedPath(unittest.TestCase):
 
 
 class TestJREResolverConfiguration(unittest.TestCase):
+    def test_invalid_jre_switch_identifies_the_property(self):
+        with self.assertRaisesRegex(InconsistentConfiguration, "sonar.scanner.skipJreProvisioning"):
+            JREResolverConfiguration.from_dict({SONAR_SCANNER_SKIP_JRE_PROVISIONING: "invalid"})
+
     def test_default(self):
         config = JREResolverConfiguration.from_dict({})
 
@@ -337,6 +342,16 @@ class TestJREResolverConfiguration(unittest.TestCase):
 
 
 class TestJREResolver(unittest.TestCase):
+    def test_string_false_keeps_jre_provisioning_enabled(self):
+        config = JREResolverConfiguration.from_dict({SONAR_SCANNER_SKIP_JRE_PROVISIONING: "false"})
+        provisioner = Mock()
+        provisioner.provision.return_value = JREResolvedPath(pathlib.Path("provisioned-java"))
+
+        result = JREResolver(config, provisioner).resolve_jre()
+
+        provisioner.provision.assert_called_once_with()
+        self.assertEqual(result, provisioner.provision.return_value)
+
     def test_resolve_jre(self):
         class TestCaseDict(TypedDict):
             name: str
