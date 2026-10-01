@@ -28,6 +28,7 @@ from pysonar_scanner import cache
 from pysonar_scanner import exceptions
 from pysonar_scanner.api import get_base_urls, SonarQubeApi, BaseUrls, MIN_SUPPORTED_SQ_VERSION
 from pysonar_scanner.configuration import configuration_loader
+from pysonar_scanner.configuration.boolean import get_boolean_property
 from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader
 from pysonar_scanner.configuration.properties import (
     SONAR_VERBOSE,
@@ -76,7 +77,7 @@ def do_scan():
     config = ConfigurationLoader.load()
     set_logging_options(config)
 
-    if config.get(SONAR_SCANNER_DRY_RUN, False):
+    if get_boolean_property(config, SONAR_SCANNER_DRY_RUN):
         return run_dry_run(config)
 
     ConfigurationLoader.check_configuration(config)
@@ -94,7 +95,7 @@ def do_scan():
 
 
 def set_logging_options(config):
-    app_logging.configure_logging_level(verbose=config.get(SONAR_VERBOSE, False))
+    app_logging.configure_logging_level(verbose=get_boolean_property(config, SONAR_VERBOSE))
     if config.get(SONAR_SCANNER_APP_VERSION) == UNKNOWN_VERSION:
         logging.debug("Pysonar package version metadata is unavailable; using %s", UNKNOWN_VERSION)
 
