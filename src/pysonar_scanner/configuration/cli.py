@@ -21,9 +21,17 @@ import argparse
 from typing import Any
 
 from pysonar_scanner.configuration import properties
+from pysonar_scanner.configuration.boolean import parse_bool
 from pysonar_scanner.configuration.verbosity import add_verbosity_argument
 from pysonar_scanner.exceptions import UnexpectedCliArgument
 from pysonar_scanner.version import get_version
+
+
+def _parse_boolean_argument(value: str) -> bool:
+    try:
+        return parse_bool(value)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError(str(error)) from error
 
 
 class PyScannerHelpFormatter(argparse.HelpFormatter):
@@ -287,7 +295,8 @@ class CliConfigurationLoader:
         )
         scanner_behavior_group.add_argument(
             "-Dsonar.scm.exclusions.disabled",
-            type=bool,
+            dest="sonar_scm_exclusions_disabled",
+            type=_parse_boolean_argument,
             help="Equivalent to --sonar-scm-exclusions-disabled",
         )
         scanner_behavior_group.add_argument(
@@ -326,7 +335,8 @@ class CliConfigurationLoader:
         )
         scanner_behavior_group.add_argument(
             "-Dsonar.qualitygate.wait",
-            type=bool,
+            dest="sonar_qualitygate_wait",
+            type=_parse_boolean_argument,
             help="Equivalent to --sonar-qualitygate-wait",
         )
         scanner_behavior_group.add_argument(
@@ -354,7 +364,8 @@ class CliConfigurationLoader:
         )
         scanner_behavior_group.add_argument(
             "-Dsonar.scm.forceReloadAll",
-            type=bool,
+            dest="sonar_scm_force_reload_all",
+            type=_parse_boolean_argument,
             help="Equivalent to --sonar-scm-force-reload-all",
         )
         scanner_behavior_group.add_argument(
@@ -370,7 +381,8 @@ class CliConfigurationLoader:
         )
         scanner_behavior_group.add_argument(
             "-Dsonar.python.testFileHeuristic.disabled",
-            type=bool,
+            dest="sonar_python_test_file_heuristic_disabled",
+            type=_parse_boolean_argument,
             help="Equivalent to --sonar-python-test-file-heuristic-disabled",
         )
         scanner_behavior_group.add_argument(
@@ -515,7 +527,8 @@ class CliConfigurationLoader:
         )
         reports_group.add_argument(
             "-Dsonar.python.skipUnchanged",
-            type=bool,
+            dest="sonar_python_skip_unchanged",
+            type=_parse_boolean_argument,
             help="Equivalent to --sonar-python-skip-unchanged",
         )
         reports_group.add_argument(
@@ -533,7 +546,8 @@ class CliConfigurationLoader:
         )
         reports_group.add_argument(
             "-Dsonar.python.xunit.skipDetails",
-            type=bool,
+            dest="sonar_python_xunit_skip_details",
+            type=_parse_boolean_argument,
             help="Equivalent to -Dsonar.python.xunit.skipDetails",
         )
         reports_group.add_argument(

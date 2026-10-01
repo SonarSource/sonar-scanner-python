@@ -93,11 +93,21 @@ from pysonar_scanner.configuration.properties import (
     SONAR_PYTHON_COVERAGE_REPORT_PATHS,
     SONAR_COVERAGE_EXCLUSIONS,
     SONAR_PYTHON_SKIP_UNCHANGED,
+    SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED,
     SONAR_PYTHON_XUNIT_REPORT_PATH,
     SONAR_PYTHON_XUNIT_SKIP_DETAILS,
     SONAR_MODULES,
 )
 from pysonar_scanner.exceptions import UnexpectedCliArgument
+
+BOOLEAN_CLI_ARGS = (
+    (SONAR_SCM_EXCLUSIONS_DISABLED, "--sonar-scm-exclusions-disabled"),
+    (SONAR_QUALITYGATE_WAIT, "--sonar-qualitygate-wait"),
+    (SONAR_SCM_FORCE_RELOAD_ALL, "--sonar-scm-force-reload-all"),
+    (SONAR_PYTHON_SKIP_UNCHANGED, "--sonar-python-skip-unchanged"),
+    (SONAR_PYTHON_TEST_FILE_HEURISTIC_DISABLED, "--sonar-python-test-file-heuristic-disabled"),
+    (SONAR_PYTHON_XUNIT_SKIP_DETAILS, "--sonar-python-xunit-skip-details"),
+)
 
 EXPECTED_CONFIGURATION = {
     SONAR_TOKEN: "myToken",
@@ -533,38 +543,62 @@ class TestCliConfigurationLoader(unittest.TestCase):
         configuration = CliConfigurationLoader.load()
         self.assertEqual(configuration, EXPECTED_CONFIGURATION)
 
-    def test_both_boolean_args_given(self):
-        patch_template = ["myscript.py", "--token", "myToken", "--sonar-project-key", "myProjectKey"]
+    def test_jvm_style_boolean_false(self):
+        for property_name, _ in BOOLEAN_CLI_ARGS:
+            with self.subTest(property=property_name), patch("sys.argv", ["pysonar", f"-D{property_name}=false"]):
+                configuration = CliConfigurationLoader.load()
+                self.assertIs(configuration[property_name], False)
 
-        with patch("sys.argv", patch_template):
-            configuration = CliConfigurationLoader.load()
-            self.assertFalse(configuration.get(SONAR_SCM_EXCLUSIONS_DISABLED))
+    def test_jvm_style_boolean_true(self):
+        for property_name, _ in BOOLEAN_CLI_ARGS:
+            with self.subTest(property=property_name), patch("sys.argv", ["pysonar", f"-D{property_name}=true"]):
+                configuration = CliConfigurationLoader.load()
+                self.assertIs(configuration[property_name], True)
 
-        # the python args parser allows to use --no-* prefix to pass a False value to a boolean option
-        with patch("sys.argv", [*patch_template, "--no-sonar-scm-exclusions-disabled"]):
-            configuration = CliConfigurationLoader.load()
-            self.assertFalse(configuration.get(SONAR_SCM_EXCLUSIONS_DISABLED))
+    @patch("sys.argv", ["pysonar"])
+    def test_omitted_boolean_properties_are_absent(self):
+        configuration = CliConfigurationLoader.load()
+        for property_name, _ in BOOLEAN_CLI_ARGS:
+            with self.subTest(property=property_name):
+                self.assertNotIn(property_name, configuration)
 
-        # When both options are given, a logic OR is applied on the two
-        with patch(
-            "sys.argv", [*patch_template, "--no-sonar-scm-exclusions-disabled", "-Dsonar.scm.exclusions.disabled=true"]
-        ):
-            configuration = CliConfigurationLoader.load()
-            self.assertTrue(configuration.get(SONAR_SCM_EXCLUSIONS_DISABLED))
+    def test_negative_boolean_flags_preserve_false(self):
+        for property_name, flag in BOOLEAN_CLI_ARGS:
+            with self.subTest(property=property_name), patch("sys.argv", ["pysonar", f"--no-{flag[2:]}"]):
+                configuration = CliConfigurationLoader.load()
+                self.assertIs(configuration[property_name], False)
 
-        with patch(
-            "sys.argv", [*patch_template, "-Dsonar.scm.exclusions.disabled=true", "--sonar-scm-exclusions-disabled"]
-        ):
-            configuration = CliConfigurationLoader.load()
-            self.assertTrue(configuration.get(SONAR_SCM_EXCLUSIONS_DISABLED))
+    def test_boolean_aliases_use_last_value(self):
+        for property_name, flag in BOOLEAN_CLI_ARGS:
+            negative_flag = f"--no-{flag[2:]}"
+            cases = (
+                ([flag, f"-D{property_name}=false"], False),
+                ([f"-D{property_name}=false", flag], True),
+                ([negative_flag, f"-D{property_name}=true"], True),
+                ([f"-D{property_name}=true", negative_flag], False),
+            )
+            for arguments, expected in cases:
+                with self.subTest(arguments=arguments), patch("sys.argv", ["pysonar", *arguments]):
+                    configuration = CliConfigurationLoader.load()
+                    self.assertIs(configuration[property_name], expected)
 
-        with patch("sys.argv", [*patch_template, "--sonar-scm-exclusions-disabled"]):
-            configuration = CliConfigurationLoader.load()
-            self.assertTrue(configuration.get(SONAR_SCM_EXCLUSIONS_DISABLED))
+    @patch("sys.argv", ["pysonar", "-Dsonar.python.xunit.skipDetails=true", "--no-xunit-skip-details"])
+    def test_short_boolean_alias_preserves_false(self):
+        configuration = CliConfigurationLoader.load()
+        self.assertIs(configuration[SONAR_PYTHON_XUNIT_SKIP_DETAILS], False)
 
-        with patch("sys.argv", [*patch_template, "-Dsonar.scm.exclusions.disabled=true"]):
-            configuration = CliConfigurationLoader.load()
-            self.assertTrue(configuration.get(SONAR_SCM_EXCLUSIONS_DISABLED))
+    @patch("sys.argv", ["pysonar", "-Dsonar.qualitygate.wait=invalid"])
+    def test_invalid_boolean_value_reports_cli_error(self):
+        with patch("sys.stderr", new=StringIO()) as stderr:
+            with self.assertRaises(SystemExit) as error:
+                CliConfigurationLoader.load()
+        self.assertEqual(error.exception.code, 2)
+        self.assertIn("Expected 'true' or 'false'", stderr.getvalue())
+
+    @patch("sys.argv", ["pysonar", "-Dunknown.boolean=false"])
+    def test_unknown_boolean_property_remains_a_string(self):
+        configuration = CliConfigurationLoader.load()
+        self.assertEqual(configuration["unknown.boolean"], "false")
 
     @patch(
         "sys.argv",

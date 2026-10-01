@@ -43,6 +43,7 @@
 | `--sonar-python-xunit-report-path`, `--xunit-report-path`, `-Dsonar.python.xunit.reportPath` | Path to the report of test execution, relative to project's root |
 | `--sonar-python-xunit-skip-details`, `--no-sonar-python-xunit-skip-details`, `--xunit-skip-details`, `--no-xunit-skip-details` | When enabled, the test execution statistics is provided only on project level |
 | `--sonar-sarif-report-paths`, `-Dsonar.sarifReportPaths` | Comma-delimited list of paths to SARIF issue reports |
+| `-Dsonar.python.xunit.skipDetails` | Equivalent to -Dsonar.python.xunit.skipDetails |
 
 ## Other
 
@@ -103,7 +104,6 @@
 | `--version` | Print the pysonar version and exit |
 | `-Dsonar.python.skipUnchanged` | Equivalent to --sonar-python-skip-unchanged |
 | `-Dsonar.python.testFileHeuristic.disabled` | Equivalent to --sonar-python-test-file-heuristic-disabled |
-| `-Dsonar.python.xunit.skipDetails` | Equivalent to -Dsonar.python.xunit.skipDetails |
 | `-Dsonar.qualitygate.wait` | Equivalent to --sonar-qualitygate-wait |
 | `-Dsonar.scm.exclusions.disabled` | Equivalent to --sonar-scm-exclusions-disabled |
 | `-Dsonar.scm.forceReloadAll` | Equivalent to --sonar-scm-force-reload-all |
