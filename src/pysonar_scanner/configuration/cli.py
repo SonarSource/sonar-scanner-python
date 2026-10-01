@@ -70,6 +70,7 @@ class CliConfigurationLoader:
             description="Sonar scanner CLI for Python",
             epilog="Analysis properties not listed here will also be accepted, as long as they start with the -D prefix.",
             formatter_class=PyScannerHelpFormatter,
+            allow_abbrev=False,
         )
 
         parser.add_argument(

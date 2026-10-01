@@ -228,17 +228,17 @@ def test_malformed_verbosity_uses_full_parser_error():
     assert "ignored explicit argument 'true'" in process.stderr
 
 
-def test_abbreviated_verbosity_enables_configuration_debug_logs():
+def test_abbreviated_verbosity_is_rejected():
     process = subprocess.run(
-        [sys.executable, "-c", "from pysonar_scanner.__main__ import main; main()", "--verb", "-unexpected"],
+        [sys.executable, "-c", "from pysonar_scanner.__main__ import main; main()", "--verb"],
         capture_output=True,
         text=True,
         check=False,
     )
 
     assert process.returncode == 1
-    assert "DEBUG: Loading configuration properties..." in process.stdout
-    assert "Unexpected argument: -unexpected" in process.stderr
+    assert "DEBUG: Loading configuration properties..." not in process.stdout
+    assert "Unexpected argument: --verb" in process.stderr
 
 
 def test_startup_error_logs_version_before_loading_configuration():

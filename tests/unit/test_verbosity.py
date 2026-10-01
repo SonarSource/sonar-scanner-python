@@ -29,7 +29,6 @@ from pysonar_scanner.configuration.verbosity import cli_is_verbose
         (["--project-key", "example"], False),
         (["-v"], True),
         (["--verbose"], True),
-        (["--verb"], True),
         (["--sonar-verbose"], True),
         (["-Dsonar.verbose"], True),
         (["--no-verbose"], False),
