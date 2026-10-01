@@ -3,7 +3,8 @@ set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 SONARQUBE_VERSION="${SONARQUBE_VERSION:-26.9.0.129388}"
-ARCHIVE="sonarqube_cache/sonarqube-${SONARQUBE_VERSION}.zip"
+readonly SONARQUBE_CACHE=".sonarqube_cache"
+ARCHIVE="$SONARQUBE_CACHE/sonarqube-${SONARQUBE_VERSION}.zip"
 
 case "$(uname)" in
   Linux) PLATFORM="linux-x86-64" ;;
@@ -14,7 +15,7 @@ esac
 unset SONAR_TOKEN SONAR_HOST_URL
 poetry install
 
-mkdir -p sonarqube_cache
+mkdir -p "$SONARQUBE_CACHE"
 if [[ ! -f "$ARCHIVE" ]]; then
   curl --fail --location "https://repo.maven.apache.org/maven2/org/sonarsource/sonarqube/sonar-application/${SONARQUBE_VERSION}/sonar-application-${SONARQUBE_VERSION}.zip" -o "$ARCHIVE.part"
   mv "$ARCHIVE.part" "$ARCHIVE"

@@ -9,14 +9,10 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Setup Cloudflare WARP
-      if: runner.os == 'macOS'
-      uses: SonarSource/gh-action_setup-cloudflare-warp@v1
-
     - name: Cache SonarQube
       uses: SonarSource/gh-action_cache@v1
       with:
-        path: sonarqube_cache/
+        path: .sonarqube_cache/
         key: sonarqube-${{ runner.os }}-zip-${{ inputs.sonarqube-version }}
 
     - name: Install mise and tools
