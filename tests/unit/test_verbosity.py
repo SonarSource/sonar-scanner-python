@@ -31,6 +31,7 @@ from pysonar_scanner.configuration.verbosity import cli_is_verbose
         (["--verbose"], True),
         (["--sonar-verbose"], True),
         (["-Dsonar.verbose"], True),
+        (["--verb"], False),
         (["--no-verbose"], False),
         (["--no-sonar-verbose"], False),
         (["--verbose", "--no-verbose"], False),
