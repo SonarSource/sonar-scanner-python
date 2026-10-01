@@ -21,6 +21,7 @@ import argparse
 from typing import Any
 
 from pysonar_scanner.configuration import properties
+from pysonar_scanner.configuration.verbosity import add_verbosity_argument
 from pysonar_scanner.exceptions import UnexpectedCliArgument
 from pysonar_scanner.version import get_version
 
@@ -69,6 +70,7 @@ class CliConfigurationLoader:
             description="Sonar scanner CLI for Python",
             epilog="Analysis properties not listed here will also be accepted, as long as they start with the -D prefix.",
             formatter_class=PyScannerHelpFormatter,
+            allow_abbrev=False,
         )
 
         parser.add_argument(
@@ -242,15 +244,7 @@ class CliConfigurationLoader:
         )
 
         scanner_behavior_group = parser.add_argument_group("Scanner Behavior & Advanced Settings")
-        scanner_behavior_group.add_argument(
-            "-v",
-            "--verbose",
-            "--sonar-verbose",
-            "-Dsonar.verbose",
-            action=argparse.BooleanOptionalAction,
-            default=None,
-            help="Increase output verbosity",
-        )
+        add_verbosity_argument(scanner_behavior_group)
         scanner_behavior_group.add_argument(
             "--sonar-user-home", "-Dsonar.userHome", type=str, help="Base sonar directory, ~/.sonar by default"
         )

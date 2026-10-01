@@ -44,6 +44,7 @@ from pysonar_scanner.configuration.properties import (
     SONAR_PYTHON_COVERAGE_REPORT_PATHS,
     SONAR_SCANNER_APP_VERSION,
 )
+from pysonar_scanner.configuration.verbosity import cli_is_verbose
 from pysonar_scanner.exceptions import SQTooOldException
 from pysonar_scanner.jre import JREResolvedPath, JREProvisioner, JREResolver, JREResolverConfiguration
 from pysonar_scanner.scannerengine import ScannerEngine, ScannerEngineProvisioner
@@ -71,6 +72,7 @@ def do_scan():
         logging.info(
             "Enhance your workflow: Pair pysonar with SonarQube Server per your license or SonarQube Cloud for deeper analysis, and try SonarQube-IDE in your favourite IDE."
         )
+    app_logging.configure_logging_level(verbose=cli_is_verbose())
     config = ConfigurationLoader.load()
     set_logging_options(config)
 

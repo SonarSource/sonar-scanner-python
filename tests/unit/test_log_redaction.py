@@ -81,8 +81,6 @@ def test_verbose_scan_masks_credentials_but_preserves_engine_input(
         '-Dcustom.apiKey="dummy jvm api key"'
     )
     monkeypatch.setattr("sys.argv", arguments)
-    # Capture configuration-loading diagnostics before --verbose takes effect.
-    caplog.set_level("DEBUG")
     monkeypatch.setattr(main.cache, "get_cache", Mock())
     monkeypatch.setattr(main, "build_api", Mock())
     monkeypatch.setattr(main, "check_version", Mock())
@@ -101,13 +99,13 @@ def test_verbose_scan_masks_credentials_but_preserves_engine_input(
         assert repr(value)[1:-1] not in output
         assert json.dumps(value)[1:-1] not in output
     assert "Final loaded configuration:" in output
+    environment_log = next(line for line in output.splitlines() if "Loaded environment properties:" in line)
+    assert "'sonar.scanner.proxyPassword': '******'" in environment_log
+    assert "'sonar.organization': 'visible-organization'" in environment_log
     assert "visible-project" in output
     assert "-Xmx256m" in output
     assert "-Djavax.net.ssl.keyStorePassword=******" in output
     assert "-Dcustom.apiKey=******" in output
-    environment_log = next(line for line in output.splitlines() if "Loaded environment properties:" in line)
-    assert "'sonar.scanner.proxyPassword': '******'" in environment_log
-    assert "'sonar.organization': 'visible-organization'" in environment_log
     engine_log = next(line for line in caplog.messages if line.startswith("Properties:"))
     logged_payload = json.loads(engine_log.removeprefix("Properties: "))
     logged_properties = {item["key"]: item["value"] for item in logged_payload["scannerProperties"]}
