@@ -348,17 +348,16 @@ jobs:
         uses: SonarSource/ci-github-actions/config-poetry@v1
         with:
           artifactory-reader-role: private-reader
-      - name: Read Artifactory credentials
-        id: secrets
-        uses: SonarSource/vault-action-wrapper@v3
+      - name: Configure Gradle
+        uses: SonarSource/ci-github-actions/config-gradle@v1
         with:
-          secrets: |
-            development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader username | ARTIFACTORY_USERNAME;
-            development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader access_token | ARTIFACTORY_ACCESS_TOKEN;
-      - name: Run SQC integration test
+          working-directory: tests/sqc
+          artifactory-reader-role: private-reader
         env:
-          ARTIFACTORY_USERNAME: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_USERNAME }}
-          ARTIFACTORY_PASSWORD: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}
+          # This standalone test build has no publishable project version.
+          CURRENT_VERSION: "0.0.0"
+          PROJECT_VERSION: "0.0.0"
+      - name: Run SQC integration test
         run: |
           poetry install
           poetry run gradle -p tests/sqc test --no-daemon
