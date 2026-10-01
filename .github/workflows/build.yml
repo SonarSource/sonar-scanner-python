@@ -326,6 +326,7 @@ jobs:
       id-token: write
       contents: read
     env:
+      # Avoid Ryuk's privileged cleanup container; Orchestrator stops its containers and this runner is ephemeral.
       TESTCONTAINERS_RYUK_DISABLED: "true"
     steps:
       - name: Checkout repository
