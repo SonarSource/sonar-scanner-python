@@ -32,7 +32,7 @@ def add_verbosity_argument(parser):
     )
 
 
-def cli_is_verbose(args: list[str]) -> bool:
+def cli_is_verbose(args: list[str] | None = None) -> bool:
     parser = argparse.ArgumentParser(add_help=False, exit_on_error=False)
     add_verbosity_argument(parser)
     try:

@@ -72,7 +72,7 @@ def do_scan():
         logging.info(
             "Enhance your workflow: Pair pysonar with SonarQube Server per your license or SonarQube Cloud for deeper analysis, and try SonarQube-IDE in your favourite IDE."
         )
-    app_logging.configure_logging_level(verbose=cli_is_verbose(sys.argv[1:]))
+    app_logging.configure_logging_level(verbose=cli_is_verbose())
     config = ConfigurationLoader.load()
     set_logging_options(config)
 
