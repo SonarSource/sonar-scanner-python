@@ -34,6 +34,7 @@ from pysonar_scanner.exceptions import (
     UnsupportedArchiveFormat,
 )
 from pysonar_scanner.exceptions import JreProvisioningException
+from pysonar_scanner.configuration.boolean import get_boolean_property
 from pysonar_scanner.configuration.properties import (
     SONAR_SCANNER_JAVA_EXE_PATH,
     SONAR_SCANNER_SKIP_JRE_PROVISIONING,
@@ -152,7 +153,7 @@ class JREResolverConfiguration:
     def from_dict(config_dict: dict[Key, Any]) -> "JREResolverConfiguration":
         return JREResolverConfiguration(
             sonar_scanner_java_exe_path=config_dict.get(SONAR_SCANNER_JAVA_EXE_PATH, None),
-            sonar_scanner_skip_jre_provisioning=config_dict.get(SONAR_SCANNER_SKIP_JRE_PROVISIONING, False),
+            sonar_scanner_skip_jre_provisioning=get_boolean_property(config_dict, SONAR_SCANNER_SKIP_JRE_PROVISIONING),
             sonar_scanner_os=config_dict.get(SONAR_SCANNER_OS, None),
         )
 
