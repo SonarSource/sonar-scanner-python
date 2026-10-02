@@ -23,6 +23,7 @@ from unittest.mock import MagicMock, patch
 
 from pyfakefs.fake_filesystem_unittest import TestCase
 from pysonar_scanner.configuration.pyproject_toml import TomlConfigurationLoader
+from pysonar_scanner.exceptions import InconsistentConfiguration
 
 
 class TestTomlFile(TestCase):
@@ -185,6 +186,33 @@ class TestTomlFile(TestCase):
     def test_load_toml_file_from_direct_file_path_missing(self):
         properties = TomlConfigurationLoader.load(Path("nonexistent/pyproject.toml"))
         self.assertEqual(len(properties.sonar_properties), 0)
+
+    def test_required_missing_file_fails_with_path(self):
+        for toml_path in (Path("missing"), Path("missing/pyproject.toml")):
+            with self.subTest(path=toml_path), self.assertRaises(InconsistentConfiguration) as raised:
+                TomlConfigurationLoader.load(toml_path, required=True)
+
+            self.assertIn(str(Path("missing/pyproject.toml")), str(raised.exception))
+
+    def test_required_malformed_file_fails_with_path(self):
+        filepath = Path("selected/pyproject.toml")
+        self.fs.create_file(filepath, contents="[tool.sonar\n")
+
+        with self.assertRaises(InconsistentConfiguration) as raised:
+            TomlConfigurationLoader.load(filepath, required=True)
+
+        self.assertIn(str(filepath), str(raised.exception))
+
+    def test_required_unreadable_file_fails_with_path(self):
+        filepath = Path("selected/pyproject.toml")
+        self.fs.create_file(filepath, contents='[tool.sonar]\nproject-key = "selected-key"\n')
+
+        with patch("builtins.open", side_effect=PermissionError("Permission denied")):
+            with self.assertRaises(InconsistentConfiguration) as raised:
+                TomlConfigurationLoader.load(filepath, required=True)
+
+        self.assertIn(str(filepath), str(raised.exception))
+        self.assertIn("Permission denied", str(raised.exception))
 
     def test_load_toml_file_project_content(self):
         self.fs.create_file(
