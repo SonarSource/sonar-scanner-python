@@ -126,7 +126,7 @@ def update_config_with_api_urls(config, base_urls: BaseUrls):
     config[SONAR_SCANNER_API_BASE_URL] = base_urls.api_base_url
     if base_urls.is_sonar_qube_cloud:
         config[SONAR_SCANNER_SONARCLOUD_URL] = base_urls.base_url
-    config[SONAR_SCANNER_PROXY_PORT] = "443" if base_urls.base_url.startswith("https") else "80"
+    config.setdefault(SONAR_SCANNER_PROXY_PORT, "443" if base_urls.base_url.startswith("https") else "80")
 
 
 def create_scanner_engine(api, cache_manager, config):
