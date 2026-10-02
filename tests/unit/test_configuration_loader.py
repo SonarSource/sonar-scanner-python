@@ -18,6 +18,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import os
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pyfakefs.fake_filesystem_unittest as pyfakefs
@@ -306,8 +307,9 @@ class TestConfigurationLoader(pyfakefs.TestCase):
                 self.fs.create_file("selected/pyproject.toml", contents="[tool.sonar\n")
             for option in ("--toml-path", "-Dtoml-path"):
                 with self.subTest(problem=problem, option=option), patch("sys.argv", ["pysonar", f"{option}=selected"]):
-                    with self.assertRaisesRegex(InconsistentConfiguration, "selected/pyproject.toml"):
+                    with self.assertRaises(InconsistentConfiguration) as raised:
                         ConfigurationLoader.load()
+                    self.assertIn(str(Path("selected/pyproject.toml")), str(raised.exception))
 
     def test_implicit_unusable_toml_remains_optional(self, mock_get_os, mock_get_arch):
         for problem in ("missing", "malformed"):
