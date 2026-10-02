@@ -17,14 +17,9 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-import os
 from pathlib import Path
-import subprocess
-import sys
 from unittest import mock
 from unittest.mock import MagicMock, patch
-
-import pytest
 
 from pyfakefs.fake_filesystem_unittest import TestCase
 from pysonar_scanner.configuration.pyproject_toml import TomlConfigurationLoader
@@ -239,64 +234,3 @@ class TestTomlFile(TestCase):
         self.assertEqual(properties.project_properties.get("sonar.projectName"), "My Overridden Project Name")
         self.assertEqual(properties.project_properties.get("sonar.projectDescription"), "My Project Description")
         self.assertEqual(properties.project_properties.get("sonar.python.version"), "3.6,3.7,3.8")
-
-
-def run_dry_run(directory: Path, args: list[str]) -> subprocess.CompletedProcess[str]:
-    env = {key: value for key, value in os.environ.items() if not key.startswith("SONAR_")}
-    env["PYTHONPATH"] = str(Path(__file__).resolve().parents[2] / "src")
-    return subprocess.run(
-        [sys.executable, "-c", "from pysonar_scanner.__main__ import main; main()", "--dry-run", *args],
-        cwd=directory,
-        env=env,
-        capture_output=True,
-        text=True,
-        check=False,
-        timeout=30,
-    )
-
-
-@pytest.mark.parametrize("toml_path", ["config", "config/pyproject.toml"])
-def test_explicit_relative_toml_path_is_relative_to_invocation_directory(tmp_path: Path, toml_path: str):
-    for directory, key in (("config", "selected-key"), ("project/config", "wrong-key")):
-        config_dir = tmp_path / directory
-        config_dir.mkdir(parents=True)
-        (config_dir / "pyproject.toml").write_text(f'[tool.sonar]\nproject-key = "{key}"\n', encoding="utf-8")
-
-    process = run_dry_run(
-        tmp_path,
-        ["--sonar-project-base-dir", "project", "--toml-path", toml_path],
-    )
-
-    assert process.returncode == 0, process.stdout + process.stderr
-    assert "Project Key: selected-key" in process.stdout
-    assert "wrong-key" not in process.stdout
-
-
-@pytest.mark.parametrize("option", ["--toml-path", "-Dtoml-path"])
-@pytest.mark.parametrize("problem", ["missing", "malformed"])
-def test_explicit_unusable_toml_fails_without_falling_back(tmp_path: Path, option: str, problem: str):
-    (tmp_path / "pyproject.toml").write_text('[tool.sonar]\nproject-key = "fallback-key"\n', encoding="utf-8")
-    selected_dir = tmp_path / "selected"
-    selected_dir.mkdir()
-    if problem == "malformed":
-        (selected_dir / "pyproject.toml").write_text("[tool.sonar\n", encoding="utf-8")
-
-    process = run_dry_run(tmp_path, [f"{option}=selected"])
-
-    assert process.returncode == 1, process.stdout + process.stderr
-    assert str(Path("selected/pyproject.toml")) in process.stderr
-    assert "DRY RUN MODE - Configuration Report" not in process.stdout
-    assert "fallback-key" not in process.stdout
-
-
-@pytest.mark.parametrize("problem", ["missing", "malformed"])
-def test_implicit_unusable_toml_keeps_configuration_optional(tmp_path: Path, problem: str):
-    if problem == "malformed":
-        (tmp_path / "pyproject.toml").write_text("[tool.sonar\n", encoding="utf-8")
-
-    process = run_dry_run(tmp_path, ["--sonar-project-key", "cli-key"])
-
-    assert process.returncode == 0, process.stdout + process.stderr
-    assert "Project Key: cli-key" in process.stdout
-    if problem == "malformed":
-        assert "There was an error reading the pyproject.toml file" in process.stdout

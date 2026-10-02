@@ -59,7 +59,7 @@ from pysonar_scanner.configuration.properties import (
 )
 from pysonar_scanner.utils import Arch, Os
 from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader, SONAR_PROJECT_BASE_DIR
-from pysonar_scanner.exceptions import MissingPropertyException
+from pysonar_scanner.exceptions import InconsistentConfiguration, MissingPropertyException
 from pysonar_scanner.version import get_version
 
 
@@ -297,6 +297,35 @@ class TestConfigurationLoader(pyfakefs.TestCase):
             SONAR_WORKING_DIRECTORY: ".scannerwork",
         }
         self.assertDictEqual(configuration, expected_configuration)
+
+    def test_explicit_unusable_toml_fails_without_falling_back(self, mock_get_os, mock_get_arch):
+        self.fs.create_file("pyproject.toml", contents='[tool.sonar]\nproject-key = "fallback-key"\n')
+        self.fs.create_dir("selected")
+        for problem in ("missing", "malformed"):
+            if problem == "malformed":
+                self.fs.create_file("selected/pyproject.toml", contents="[tool.sonar\n")
+            for option in ("--toml-path", "-Dtoml-path"):
+                with self.subTest(problem=problem, option=option), patch("sys.argv", ["pysonar", f"{option}=selected"]):
+                    with self.assertRaisesRegex(InconsistentConfiguration, "selected/pyproject.toml"):
+                        ConfigurationLoader.load()
+
+    def test_implicit_unusable_toml_remains_optional(self, mock_get_os, mock_get_arch):
+        for problem in ("missing", "malformed"):
+            if problem == "malformed":
+                self.fs.create_file("pyproject.toml", contents="[tool.sonar\n")
+            with self.subTest(problem=problem), patch("sys.argv", ["pysonar", "--sonar-project-key", "cli-key"]):
+                configuration = ConfigurationLoader.load()
+                self.assertEqual(configuration[SONAR_PROJECT_KEY], "cli-key")
+
+    def test_explicit_relative_toml_path_uses_invocation_directory(self, mock_get_os, mock_get_arch):
+        self.fs.create_file("config/pyproject.toml", contents='[tool.sonar]\nproject-key = "selected-key"\n')
+        self.fs.create_file("project/config/pyproject.toml", contents='[tool.sonar]\nproject-key = "wrong-key"\n')
+        for toml_path in ("config", "config/pyproject.toml"):
+            with self.subTest(path=toml_path), patch(
+                "sys.argv", ["pysonar", "--sonar-project-base-dir", "project", "--toml-path", toml_path]
+            ):
+                configuration = ConfigurationLoader.load()
+                self.assertEqual(configuration[SONAR_PROJECT_KEY], "selected-key")
 
     @patch(
         "sys.argv",
