@@ -34,6 +34,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
@@ -92,6 +93,9 @@ public class CloudScanTest {
         var analyses = client.projectAnalyses().search(new SearchRequest().setProject(PROJECT_KEY)).getAnalysesList();
         assertFalse("No SQC analysis was recorded", analyses.isEmpty());
         assertEquals("1.2", analyses.get(0).getProjectVersion());
+        orchestrator.refreshSearch();
+        var issues = client.issues().search(new org.sonarqube.ws.client.issues.SearchRequest().setProjects(List.of(PROJECT_KEY))).getIssuesList();
+        assertFalse("No SQC issue was recorded", issues.isEmpty());
       });
     } finally {
       orchestrator.stopAll();
@@ -145,6 +149,7 @@ public class CloudScanTest {
   }
 
   private static void configureRootUser(Orchestrator orchestrator) {
+    // The mock user service starts empty, so the seeded server admin's IDs must come from the database.
     Map<String, String> admin = orchestrator.getDatabase().executeSql("select uuid, uuid_v4 from users where login='admin'").get(0);
     UUID adminId = UUID.fromString(admin.get("UUID_V4"));
     OffsetDateTime now = OffsetDateTime.now();
