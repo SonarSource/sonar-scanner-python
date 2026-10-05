@@ -44,7 +44,7 @@ jobs:
       - name: Install mise and tools
         uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
         with:
-          version: 2026.5.9
+          version: 2026.10.2
           tool_versions: |
             python ${{ matrix.python-version }}
           experimental: true
@@ -96,7 +96,7 @@ jobs:
       - name: Install mise and tools
         uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
         with:
-          version: 2026.5.9
+          version: 2026.10.2
           tool_versions: |
             python 3.12.1
           experimental: true
