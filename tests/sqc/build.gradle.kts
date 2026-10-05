@@ -45,6 +45,13 @@ tasks.register<JavaExec>("resolveSqcVersion") {
     classpath = sourceSets.test.get().runtimeClasspath
     mainClass = "org.sonarsource.pysonar.sqc.SqcDistribution"
     systemProperty("orchestrator.artifactory.url", "https://repox.jfrog.io/repox")
+
+    val artifactoryPassword = System.getenv("ARTIFACTORY_PASSWORD")
+        ?: providers.gradleProperty("artifactoryPassword").orNull
+    if (!artifactoryPassword.isNullOrEmpty()) {
+        systemProperty("orchestrator.artifactory.apiKey", artifactoryPassword)
+        systemProperty("orchestrator.artifactory.accessToken", artifactoryPassword)
+    }
 }
 
 tasks.test {
