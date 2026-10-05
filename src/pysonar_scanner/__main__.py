@@ -21,12 +21,14 @@
 import logging
 import os
 import pathlib
+import sys
 from typing import Any
 from pysonar_scanner import app_logging
 from pysonar_scanner import cache
 from pysonar_scanner import exceptions
 from pysonar_scanner.api import get_base_urls, SonarQubeApi, BaseUrls, MIN_SUPPORTED_SQ_VERSION
 from pysonar_scanner.configuration import configuration_loader
+from pysonar_scanner.configuration.boolean import get_boolean_property
 from pysonar_scanner.configuration.configuration_loader import ConfigurationLoader
 from pysonar_scanner.configuration.properties import (
     SONAR_VERBOSE,
@@ -41,11 +43,14 @@ from pysonar_scanner.configuration.properties import (
     SONAR_SCANNER_ENGINE_JAR_PATH,
     SONAR_PROJECT_BASE_DIR,
     SONAR_PYTHON_COVERAGE_REPORT_PATHS,
+    SONAR_SCANNER_APP_VERSION,
 )
+from pysonar_scanner.configuration.verbosity import cli_is_verbose
 from pysonar_scanner.exceptions import SQTooOldException
 from pysonar_scanner.jre import JREResolvedPath, JREProvisioner, JREResolver, JREResolverConfiguration
 from pysonar_scanner.scannerengine import ScannerEngine, ScannerEngineProvisioner
 from pysonar_scanner.dry_run_reporter import DryRunReporter, CoverageReportValidator, ValidationResult
+from pysonar_scanner.version import UNKNOWN_VERSION, get_version
 
 
 def main():
@@ -61,14 +66,18 @@ def scan():
 
 def do_scan():
     app_logging.setup()
-    logging.info(
-        "Enhance your workflow: Pair pysonar with SonarQube Server per your license or SonarQube Cloud for deeper analysis, and try SonarQube-IDE in your favourite IDE."
-    )
-    logging.info("Starting Pysonar, the Sonar scanner CLI for Python")
+    informational_request = any(arg in ("--version", "--help", "-h") for arg in sys.argv[1:])
+    if not informational_request:
+        app_logging.configure_logging_level(verbose=False)
+        logging.info("Starting Pysonar %s, the Sonar scanner CLI for Python", get_version())
+        logging.info(
+            "Enhance your workflow: Pair pysonar with SonarQube Server per your license or SonarQube Cloud for deeper analysis, and try SonarQube-IDE in your favourite IDE."
+        )
+    app_logging.configure_logging_level(verbose=cli_is_verbose())
     config = ConfigurationLoader.load()
     set_logging_options(config)
 
-    if config.get(SONAR_SCANNER_DRY_RUN, False):
+    if get_boolean_property(config, SONAR_SCANNER_DRY_RUN):
         return run_dry_run(config)
 
     ConfigurationLoader.check_configuration(config)
@@ -76,7 +85,7 @@ def do_scan():
     api = build_api(config)
     check_version(api)
     update_config_with_api_urls(config, api.base_urls)
-    logging.debug(f"Final loaded configuration: {config}")
+    logging.debug("Final loaded configuration: %s", app_logging.redact_properties(config))
 
     cache_manager = cache.get_cache(config)
     scanner = create_scanner_engine(api, cache_manager, config)
@@ -86,7 +95,9 @@ def do_scan():
 
 
 def set_logging_options(config):
-    app_logging.configure_logging_level(verbose=config.get(SONAR_VERBOSE, False))
+    app_logging.configure_logging_level(verbose=get_boolean_property(config, SONAR_VERBOSE))
+    if config.get(SONAR_SCANNER_APP_VERSION) == UNKNOWN_VERSION:
+        logging.debug("Pysonar package version metadata is unavailable; using %s", UNKNOWN_VERSION)
 
 
 def build_api(config: dict[str, Any]) -> SonarQubeApi:
@@ -115,7 +126,7 @@ def update_config_with_api_urls(config, base_urls: BaseUrls):
     config[SONAR_SCANNER_API_BASE_URL] = base_urls.api_base_url
     if base_urls.is_sonar_qube_cloud:
         config[SONAR_SCANNER_SONARCLOUD_URL] = base_urls.base_url
-    config[SONAR_SCANNER_PROXY_PORT] = "443" if base_urls.base_url.startswith("https") else "80"
+    config.setdefault(SONAR_SCANNER_PROXY_PORT, "443" if base_urls.base_url.startswith("https") else "80")
 
 
 def create_scanner_engine(api, cache_manager, config):

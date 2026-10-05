@@ -21,11 +21,21 @@ import argparse
 from typing import Any
 
 from pysonar_scanner.configuration import properties
+from pysonar_scanner.configuration.boolean import parse_bool
+from pysonar_scanner.configuration.verbosity import add_verbosity_argument
 from pysonar_scanner.exceptions import UnexpectedCliArgument
+from pysonar_scanner.version import get_version
+
+
+def _parse_boolean_argument(value: str) -> bool:
+    try:
+        return parse_bool(value)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError(str(error)) from error
 
 
 class PyScannerHelpFormatter(argparse.HelpFormatter):
-    recommended_args = {"help", "token", "sonar_project_key"}
+    recommended_args = {"help", "version", "token", "sonar_project_key"}
 
     def _format_actions_usage(self, actions, groups):
         filtered_actions = [action for action in actions if action.dest in PyScannerHelpFormatter.recommended_args]
@@ -68,6 +78,11 @@ class CliConfigurationLoader:
             description="Sonar scanner CLI for Python",
             epilog="Analysis properties not listed here will also be accepted, as long as they start with the -D prefix.",
             formatter_class=PyScannerHelpFormatter,
+            allow_abbrev=False,
+        )
+
+        parser.add_argument(
+            "--version", action="version", version=f"pysonar {get_version()}", help="Print the pysonar version and exit"
         )
 
         parser.add_argument(
@@ -142,7 +157,12 @@ class CliConfigurationLoader:
         parser.add_argument(
             "--toml-path",
             type=str,
-            help="Path to the pyproject.toml file or to the folder containing it. If not provided, it will look in the SONAR_PROJECT_BASE_DIR",
+            help=(
+                "Path to the pyproject.toml file or its folder. Relative paths use the current working directory. "
+                "An explicitly selected file must exist and be readable and valid TOML. "
+                "If omitted, pyproject.toml is optional and is loaded from the CLI project base directory "
+                "or the current working directory"
+            ),
         )
 
         parser.add_argument(
@@ -237,15 +257,7 @@ class CliConfigurationLoader:
         )
 
         scanner_behavior_group = parser.add_argument_group("Scanner Behavior & Advanced Settings")
-        scanner_behavior_group.add_argument(
-            "-v",
-            "--verbose",
-            "--sonar-verbose",
-            "-Dsonar.verbose",
-            action=argparse.BooleanOptionalAction,
-            default=None,
-            help="Increase output verbosity",
-        )
+        add_verbosity_argument(scanner_behavior_group)
         scanner_behavior_group.add_argument(
             "--sonar-user-home", "-Dsonar.userHome", type=str, help="Base sonar directory, ~/.sonar by default"
         )
@@ -288,7 +300,8 @@ class CliConfigurationLoader:
         )
         scanner_behavior_group.add_argument(
             "-Dsonar.scm.exclusions.disabled",
-            type=bool,
+            dest="sonar_scm_exclusions_disabled",
+            type=_parse_boolean_argument,
             help="Equivalent to --sonar-scm-exclusions-disabled",
         )
         scanner_behavior_group.add_argument(
@@ -327,7 +340,8 @@ class CliConfigurationLoader:
         )
         scanner_behavior_group.add_argument(
             "-Dsonar.qualitygate.wait",
-            type=bool,
+            dest="sonar_qualitygate_wait",
+            type=_parse_boolean_argument,
             help="Equivalent to --sonar-qualitygate-wait",
         )
         scanner_behavior_group.add_argument(
@@ -355,7 +369,8 @@ class CliConfigurationLoader:
         )
         scanner_behavior_group.add_argument(
             "-Dsonar.scm.forceReloadAll",
-            type=bool,
+            dest="sonar_scm_force_reload_all",
+            type=_parse_boolean_argument,
             help="Equivalent to --sonar-scm-force-reload-all",
         )
         scanner_behavior_group.add_argument(
@@ -371,7 +386,8 @@ class CliConfigurationLoader:
         )
         scanner_behavior_group.add_argument(
             "-Dsonar.python.testFileHeuristic.disabled",
-            type=bool,
+            dest="sonar_python_test_file_heuristic_disabled",
+            type=_parse_boolean_argument,
             help="Equivalent to --sonar-python-test-file-heuristic-disabled",
         )
         scanner_behavior_group.add_argument(
@@ -516,7 +532,8 @@ class CliConfigurationLoader:
         )
         reports_group.add_argument(
             "-Dsonar.python.skipUnchanged",
-            type=bool,
+            dest="sonar_python_skip_unchanged",
+            type=_parse_boolean_argument,
             help="Equivalent to --sonar-python-skip-unchanged",
         )
         reports_group.add_argument(
@@ -534,7 +551,8 @@ class CliConfigurationLoader:
         )
         reports_group.add_argument(
             "-Dsonar.python.xunit.skipDetails",
-            type=bool,
+            dest="sonar_python_xunit_skip_details",
+            type=_parse_boolean_argument,
             help="Equivalent to -Dsonar.python.xunit.skipDetails",
         )
         reports_group.add_argument(

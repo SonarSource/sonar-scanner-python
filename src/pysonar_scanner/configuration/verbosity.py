@@ -1,0 +1,42 @@
+#
+# Sonar Scanner Python
+# Copyright (C) 2011-2026 SonarSource Sàrl
+# mailto:info AT sonarsource DOT com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+# This program is distributed in the hope that it will be useful,
+#
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+import argparse
+
+
+def add_verbosity_argument(parser):
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        "--sonar-verbose",
+        "-Dsonar.verbose",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="Increase output verbosity",
+    )
+
+
+def cli_is_verbose(args: list[str] | None = None) -> bool:
+    parser = argparse.ArgumentParser(add_help=False, allow_abbrev=False, exit_on_error=False)
+    add_verbosity_argument(parser)
+    try:
+        parsed_args, _ = parser.parse_known_args(args)
+    except argparse.ArgumentError:
+        return False
+    return bool(parsed_args.verbose)

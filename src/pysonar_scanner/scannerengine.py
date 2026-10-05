@@ -26,6 +26,8 @@ from subprocess import PIPE, Popen
 from threading import Thread
 from typing import IO, Any, Callable, Optional
 
+from pysonar_scanner import app_logging
+
 from pysonar_scanner.api import EngineInfo, SonarQubeApi
 from pysonar_scanner.cache import Cache, CacheFile
 from pysonar_scanner.configuration.properties import (
@@ -154,9 +156,9 @@ class ScannerEngine:
         java_opts = config.get(SONAR_SCANNER_OPTS) if not java_opts else java_opts
 
         cmd = self.__build_command(self.jre_path, self.scanner_engine_path, java_opts)
-        logging.debug(f"Command: {cmd}")
+        logging.debug("Command: %s", app_logging.redact_command(cmd))
         properties_str = self.__config_to_json(config)
-        logging.debug(f"Properties: {properties_str}")
+        logging.debug("Properties: %s", self.__config_to_json(app_logging.redact_properties(config)))
         return CmdExecutor(cmd, properties_str).execute()
 
     def __build_command(

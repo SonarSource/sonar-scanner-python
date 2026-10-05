@@ -28,6 +28,8 @@ import pyfakefs.fake_filesystem_unittest as pyfakefs
 
 from pysonar_scanner import cache, scannerengine
 from pysonar_scanner.configuration.properties import (
+    SONAR_QUALITYGATE_WAIT,
+    SONAR_SCANNER_APP_VERSION,
     SONAR_SCANNER_JAVA_OPTS,
     SONAR_SCANNER_OPTS,
 )
@@ -149,6 +151,7 @@ class TestScannerEngineWithFake(pyfakefs.TestCase):
             "sonar.scanner.os": "linux",
             "sonar.scanner.arch": "x64",
             "sonar.scanner.javaExePath": "jre/bin/java",
+            SONAR_QUALITYGATE_WAIT: False,
         }
 
         expected_std_in = json.dumps(
@@ -159,6 +162,7 @@ class TestScannerEngineWithFake(pyfakefs.TestCase):
                     {"key": "sonar.scanner.os", "value": "linux"},
                     {"key": "sonar.scanner.arch", "value": "x64"},
                     {"key": "sonar.scanner.javaExePath", "value": "jre/bin/java"},
+                    {"key": SONAR_QUALITYGATE_WAIT, "value": False},
                 ]
             }
         )
@@ -234,6 +238,7 @@ class TestScannerEngineWithFake(pyfakefs.TestCase):
             "sonar.projectKey": "myProjectKey",
             SONAR_SCANNER_JAVA_OPTS: "-Xmx1024m",
             "sonar.host.url": "https://sonar.example.com",
+            SONAR_SCANNER_APP_VERSION: "1.9.0",
         }
 
         java_path = pathlib.Path("jre/bin/java")
@@ -249,6 +254,7 @@ class TestScannerEngineWithFake(pyfakefs.TestCase):
 
         property_keys = [prop["key"] for prop in actual_properties["scannerProperties"]]
         self.assertNotIn(SONAR_SCANNER_JAVA_OPTS, property_keys)
+        self.assertIn({"key": SONAR_SCANNER_APP_VERSION, "value": "1.9.0"}, actual_properties["scannerProperties"])
 
     @patch("pysonar_scanner.scannerengine.CmdExecutor")
     def test_java_opts_edge_cases(self, execute_mock):
