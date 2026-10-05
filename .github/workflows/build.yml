@@ -332,7 +332,7 @@ jobs:
       - name: Resolve SQC distribution version
         id: sqc-distribution
         run: |
-          version=$(gradle -p tests/sqc -q resolveSqcVersion --no-daemon | sed -n 's/^SQC_DISTRIBUTION_VERSION=//p')
+          version=$(gradle --project-dir tests/sqc --quiet resolveSqcVersion --no-daemon | sed -n 's/^SQC_DISTRIBUTION_VERSION=//p')
           test -n "$version"
           echo "version=$version" >> "$GITHUB_OUTPUT"
       - name: Cache SQC Orchestrator artifacts
