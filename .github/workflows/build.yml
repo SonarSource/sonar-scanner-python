@@ -329,12 +329,17 @@ jobs:
           # This standalone test build has no publishable project version.
           CURRENT_VERSION: "0.0.0"
           PROJECT_VERSION: "0.0.0"
+      - name: Resolve SQC distribution version
+        id: sqc-distribution
+        run: |
+          version=$(gradle -p tests/sqc -q resolveSqcVersion --no-daemon | sed -n 's/^SQC_DISTRIBUTION_VERSION=//p')
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
       - name: Cache SQC Orchestrator artifacts
         uses: SonarSource/gh-action_cache@v1
         with:
           path: ~/.sonar/orchestrator/cache
-          key: sqc-orchestrator-${{ runner.os }}-${{ github.run_id }}-${{ github.run_attempt }}
-          restore-keys: sqc-orchestrator-${{ runner.os }}-
+          key: sqc-orchestrator-${{ runner.os }}-${{ steps.sqc-distribution.outputs.version }}
       - name: Run SQC integration test
         run: |
           poetry install

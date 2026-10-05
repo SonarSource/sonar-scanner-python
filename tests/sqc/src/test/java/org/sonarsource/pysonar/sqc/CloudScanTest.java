@@ -22,7 +22,6 @@ package org.sonarsource.pysonar.sqc;
 import com.sonar.orchestrator.MockUserService;
 import com.sonar.orchestrator.Orchestrator;
 import com.sonar.orchestrator.locator.FileLocation;
-import com.sonar.orchestrator.locator.MavenLocation;
 import com.sonarsource.users.client.model.RestUser;
 import java.io.File;
 import java.io.InputStream;
@@ -105,14 +104,8 @@ public class CloudScanTest {
   private Orchestrator newOrchestrator() throws Exception {
     String eventPort = String.valueOf(PortFactory.findFreePort());
     File counterFile = temporaryFolder.newFile("async-indexing-counter.txt");
-    MavenLocation distribution = MavenLocation.builder()
-      .setGroupId("com.sonarsource.sonarcloud")
-      .setArtifactId("edition-sonarcloud")
-      .setVersion("LATEST_RELEASE")
-      .withPackaging("zip")
-      .build();
     return Orchestrator.builderEnv()
-      .setZipLocation(distribution)
+      .setZipLocation(SqcDistribution.location())
       .addPlugin(FileLocation.of(new File(System.getProperty("sqc.python.plugin"))))
       .setOrchestratorProperty("orchestrator.workspaceDir", System.getProperty("sqc.workspace.dir"))
       .setServerProperty("sonar.es.bootstrap.checks.disable", "true")

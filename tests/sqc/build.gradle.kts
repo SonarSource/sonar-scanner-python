@@ -39,6 +39,14 @@ java {
     }
 }
 
+tasks.register<JavaExec>("resolveSqcVersion") {
+    group = "verification"
+    description = "Resolve the SQC distribution version with Orchestrator"
+    classpath = sourceSets.test.get().runtimeClasspath
+    mainClass = "org.sonarsource.pysonar.sqc.SqcDistribution"
+    systemProperty("orchestrator.artifactory.url", "https://repox.jfrog.io/repox")
+}
+
 tasks.test {
     useJUnit()
     maxHeapSize = "2g"
