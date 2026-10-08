@@ -43,6 +43,7 @@ htmlcov/
 .coverage
 .coverage.*
 .cache
+.gradle/
 nosetests.xml
 coverage.xml
 *.cover

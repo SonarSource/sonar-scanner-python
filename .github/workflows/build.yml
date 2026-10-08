@@ -50,7 +50,7 @@ jobs:
       - name: Install mise and tools
         uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
         with:
-          version: 2026.5.9
+          version: 2026.10.2
           tool_versions: |
             python 3.12.1
           experimental: true
@@ -74,7 +74,7 @@ jobs:
       - name: Install mise and tools
         uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
         with:
-          version: 2026.5.9
+          version: 2026.10.2
           tool_versions: |
             python 3.12.1
           experimental: true
@@ -103,7 +103,7 @@ jobs:
       - name: Install mise and tools
         uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
         with:
-          version: 2026.5.9
+          version: 2026.10.2
           tool_versions: |
             python 3.12.1
           experimental: true
@@ -131,7 +131,7 @@ jobs:
       - name: Install mise and tools
         uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
         with:
-          version: 2026.5.9
+          version: 2026.10.2
           tool_versions: |
             python 3.12.1
           experimental: true
@@ -233,7 +233,7 @@ jobs:
       - name: Install mise and tools
         uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
         with:
-          version: 2026.5.9
+          version: 2026.10.2
           tool_versions: |
             python ${{ matrix.python-version }}
           experimental: true
@@ -260,7 +260,7 @@ jobs:
       - name: Install mise and tools
         uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
         with:
-          version: 2026.5.9
+          version: 2026.10.2
           tool_versions: |
             python 3.12.1
           experimental: true
@@ -291,6 +291,68 @@ jobs:
       - name: Run integration tests
         uses: ./.github/actions/integration-tests
 
+  sqc_its:
+    name: "SQC Integration Test"
+    runs-on: warp-custom-ubuntu-24-04
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      # Avoid Ryuk's privileged cleanup container; Orchestrator stops its containers and this runner is ephemeral.
+      TESTCONTAINERS_RYUK_DISABLED: "true"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Set up Java
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Install mise and tools
+        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
+        with:
+          version: 2026.10.2
+          tool_versions: |
+            python 3.12.1
+            gradle 9.4.1
+          experimental: true
+      - name: Configure poetry
+        uses: SonarSource/ci-github-actions/config-poetry@v1
+        with:
+          artifactory-reader-role: private-reader
+      - name: Configure Gradle
+        uses: SonarSource/ci-github-actions/config-gradle@v1
+        with:
+          working-directory: tests/sqc
+          artifactory-reader-role: private-reader
+        env:
+          # This standalone test build has no publishable project version.
+          CURRENT_VERSION: "0.0.0"
+          PROJECT_VERSION: "0.0.0"
+      - name: Resolve SQC distribution version
+        id: sqc-distribution
+        run: |
+          version=$(gradle --project-dir tests/sqc --quiet resolveSqcVersion --no-daemon | sed -n 's/^SQC_DISTRIBUTION_VERSION=//p')
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Cache SQC Orchestrator artifacts
+        uses: SonarSource/gh-action_cache@v1
+        with:
+          path: ~/.sonar/orchestrator/cache
+          key: sqc-orchestrator-${{ runner.os }}-${{ steps.sqc-distribution.outputs.version }}
+      - name: Run SQC integration test
+        run: |
+          poetry install
+          poetry run gradle -p tests/sqc test --no-daemon
+      - name: Upload SQC test diagnostics
+        if: failure()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: sqc-integration-test-diagnostics
+          path: |
+            tests/sqc/build/test-results/test/*.xml
+            tests/sqc/build/it/**/logs/**
+
   promote:
     name: "Promote"
     if: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/branch-') || startsWith(github.ref, 'refs/heads/dogfood-') }}
@@ -304,6 +366,7 @@ jobs:
         qa,
         qa-windows,
         its,
+        sqc_its,
       ]
     runs-on: github-ubuntu-latest-s
     permissions:
