@@ -341,9 +341,11 @@ jobs:
           path: ~/.sonar/orchestrator/cache
           key: sqc-orchestrator-${{ runner.os }}-${{ steps.sqc-distribution.outputs.version }}
       - name: Run SQC integration test
+        env:
+          SQC_DISTRIBUTION_VERSION: ${{ steps.sqc-distribution.outputs.version }}
         run: |
           poetry install
-          poetry run gradle -p tests/sqc test --no-daemon
+          poetry run gradle -p tests/sqc test --no-daemon -PsonarcloudCoreVersion="$SQC_DISTRIBUTION_VERSION"
       - name: Upload SQC test diagnostics
         if: failure()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
