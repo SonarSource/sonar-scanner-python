@@ -1,2 +1,3 @@
 # https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
-.github/CODEOWNERS @SonarSource/code-orchestration-ci-experience-squad
+# Request the team on all pull requests; approval requirements are configured in repository rules.
+* @SonarSource/code-orchestration-ci-experience-squad
