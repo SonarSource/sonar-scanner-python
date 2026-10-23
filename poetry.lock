@@ -149,14 +149,14 @@ reference = "repox"
 
 [[package]]
 name = "certifi"
-version = "2026.2.25"
+version = "2026.10.19"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.7"
 groups = ["main", "dev"]
 files = [
-    {file = "certifi-2026.2.25-py3-none-any.whl", hash = "sha256:027692e4402ad994f1c42e52a4997a9763c646b73e4096e4d5d6db8af1d6f0fa"},
-    {file = "certifi-2026.2.25.tar.gz", hash = "sha256:e887ab5cee78ea814d3472169153c2d12cd43b14bd03329a39a9c6e2e80bfba7"},
+    {file = "certifi-2026.10.19-py3-none-any.whl", hash = "sha256:42d35340cc5b9ba78e818ddbff0c5b1c2b779de448a340fd1b989f5fa8670e1b"},
+    {file = "certifi-2026.10.19.tar.gz", hash = "sha256:035c1e85572b141bf1c3a3eff0e33a8eb74917522f2559075ff8d2fea780a1ae"},
 ]
 
 [package.source]
@@ -1594,4 +1594,4 @@ reference = "repox"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10"
-content-hash = "f96aa8e8865c419bb645a522665d99a5a4bf349296ee20db48a3fab92c5f2ade"
+content-hash = "f58477a7d246d2b8445315759904ce32b7161ddc57455f63112d6fbab34fc203"
