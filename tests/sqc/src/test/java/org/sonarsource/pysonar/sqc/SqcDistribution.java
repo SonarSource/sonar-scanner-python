@@ -26,17 +26,17 @@ public final class SqcDistribution {
   private SqcDistribution() {
   }
 
-  public static MavenLocation location() {
+  public static MavenLocation location(String version) {
     return MavenLocation.builder()
       .setGroupId("com.sonarsource.sonarcloud")
       .setArtifactId("edition-sonarcloud")
-      .setVersion("LATEST_RELEASE")
+      .setVersion(version)
       .withPackaging("zip")
       .build();
   }
 
   public static void main(String[] args) {
-    String version = Configuration.createEnv().locators().maven().resolveVersion(location())
+    String version = Configuration.createEnv().locators().maven().resolveVersion(location("LATEST_RELEASE"))
       .orElseThrow(() -> new IllegalStateException("Could not resolve the latest SQC distribution version"));
     System.out.println("SQC_DISTRIBUTION_VERSION=" + version);
   }

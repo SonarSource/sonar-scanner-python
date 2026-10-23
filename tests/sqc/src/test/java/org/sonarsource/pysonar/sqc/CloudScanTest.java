@@ -105,7 +105,7 @@ public class CloudScanTest {
     String eventPort = String.valueOf(PortFactory.findFreePort());
     File counterFile = temporaryFolder.newFile("async-indexing-counter.txt");
     return Orchestrator.builderEnv()
-      .setZipLocation(SqcDistribution.location())
+      .setZipLocation(SqcDistribution.location(System.getProperty("sqc.core.jar.version")))
       .addPlugin(FileLocation.of(new File(System.getProperty("sqc.python.plugin"))))
       .setOrchestratorProperty("orchestrator.workspaceDir", System.getProperty("sqc.workspace.dir"))
       .setServerProperty("sonar.es.bootstrap.checks.disable", "true")
