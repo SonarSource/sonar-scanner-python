@@ -88,7 +88,7 @@ The binaries will be located in the `dist` directory at the root level of the pr
 
 # Publish the script
 
-Create a GitHub release.
+See [RELEASE.md](RELEASE.md).
 
 # Update the package version
 
