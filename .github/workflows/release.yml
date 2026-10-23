@@ -1,26 +1,35 @@
 name: sonar-release
-# This workflow is triggered when publishing a new GitHub release
 on:
-  release:
-    types:
-      - published
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Full version including build number, e.g. 1.9.0.5762
+        required: true
+        type: string
+      prerelease:
+        description: Publish to TestPyPI instead of PyPI
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   prerelease:
-    if: "github.event.release.prerelease"
+    if: ${{ inputs.prerelease }}
     permissions:
       id-token: write
       contents: write
-    uses: SonarSource/gh-action_release/.github/workflows/main.yaml@v6
+    uses: SonarSource/gh-action_release/.github/workflows/main.yaml@v7
     with:
+      version: ${{ inputs.version }}
       publishToTestPyPI: true
       skipPythonReleasabilityChecks: true
   release:
-    if: "!github.event.release.prerelease"
+    if: ${{ !inputs.prerelease }}
     permissions:
       id-token: write
       contents: write
-    uses: SonarSource/gh-action_release/.github/workflows/main.yaml@v6
+    uses: SonarSource/gh-action_release/.github/workflows/main.yaml@v7
     with:
+      version: ${{ inputs.version }}
       publishToPyPI: true
       skipPythonReleasabilityChecks: true
