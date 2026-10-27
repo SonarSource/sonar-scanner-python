@@ -41,7 +41,7 @@ certifi = ">=2026.10.19"
 responses = "0.26.3"
 pyfakefs = "6.2.0"
 black = "26.10.1"
-coverage = "7.16.2"
+coverage = "7.17.0"
 licenseheaders = "0.8.8"
 mypy = "2.4.0"
 pytest = '9.1.1'
