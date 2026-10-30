@@ -58,7 +58,7 @@ jobs:
       - name: Deploy distributions and build metadata
         if: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/branch-') || startsWith(github.ref, 'refs/heads/dogfood-on-') || startsWith(github.ref, 'refs/heads/feature/long/') }}
         env:
-          ARTIFACTORY_DEPLOY_ACCESS_TOKEN: ${{ fromJSON(steps.artifactory.outputs.vault).ARTIFACTORY_DEPLOY_ACCESS_TOKEN }}
+          ARTIFACTORY_DEPLOY_ACCESS_TOKEN: ${{ steps.artifactory.outputs.vault && fromJSON(steps.artifactory.outputs.vault).ARTIFACTORY_DEPLOY_ACCESS_TOKEN || '' }}
           PROJECT: sonar-scanner-python
           PULL_REQUEST: ${{ github.event.pull_request.number || '' }}
         run: |
