@@ -383,8 +383,16 @@ jobs:
           experimental: true
       - name: Configure uv for Windows
         uses: SonarSource/ci-github-actions/config-uv@v1
+        # The action's final rm -f fails on Windows directory copies; validate setup below.
+        continue-on-error: true
         with:
           artifactory-reader-role: private-reader
+      - name: Verify uv configuration
+        shell: bash
+        run: |
+          test -n "${CONFIG_UV_COMPLETED:-}"
+          test -n "${UV_INDEX_REPOX_USERNAME:-}"
+          test -n "${UV_INDEX_REPOX_PASSWORD:-}"
       - name: Select mise Python
         shell: bash
         run: echo "UV_PYTHON=$(mise which python)" >> "$GITHUB_ENV"
