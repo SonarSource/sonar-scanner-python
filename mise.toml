@@ -1,5 +1,5 @@
 [tools]
-"pipx:poetry" = "2.2.1"
+uv = "0.13.6"
 
 [tool_alias]
 jfrog-cli = "asdf:mise-plugins/mise-jfrog-cli"

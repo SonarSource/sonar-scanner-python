@@ -13,7 +13,7 @@ case "$(uname)" in
 esac
 
 unset SONAR_TOKEN SONAR_HOST_URL
-poetry install
+uv sync --locked --no-build
 
 mkdir -p "$SONARQUBE_CACHE"
 if [[ ! -f "$ARCHIVE" ]]; then
@@ -31,4 +31,4 @@ trap '"$SONAR_SCRIPT" stop || true; rm -rf "$RUN_DIR"' EXIT
 
 "$SONAR_SCRIPT" start
 
-poetry run pytest --its tests/its "$@"
+uv run --locked --no-build pytest --its tests/its "$@"

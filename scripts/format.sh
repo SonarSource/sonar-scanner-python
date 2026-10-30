@@ -2,6 +2,6 @@
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 pushd "$SCRIPT_DIR/.."
 
-poetry run black src/ tests/
+uv run --locked --no-build black src/ tests/
 
 popd

@@ -2,45 +2,49 @@
 
 ## Prerequisites
 
- - Python 3.12
- - [pipx](https://github.com/pypa/pipx)
+ - Python 3.10–3.14 (CI uses Python 3.12 for packaging and tooling)
+ - [mise](https://mise.jdx.dev/)
 
-## Install poetry
+## Install uv and dependencies
 
-Install poetry with `pipx install poetry`
+Run `mise install` to install the pinned uv and JFrog CLI versions, and activate mise in your shell.
+The project uses uv 0.13.6 and commits `uv.lock` for reproducible dependency resolution.
 
-# Run the main script
+Dependencies resolve exclusively through the default `repox` index. Generate an identity token in your
+JFrog user profile and set credentials in your shell (do not commit them):
 
-Run `python src/pysonar_scanner`
+```shell
+export UV_INDEX_REPOX_USERNAME="<username>"
+export UV_INDEX_REPOX_PASSWORD="<identity-token>"
+uv sync --locked
+```
+
+To select an existing interpreter explicitly, set `UV_PYTHON` to its path (for example,
+`export UV_PYTHON="$(mise which python)"`). Set `UV_PYTHON_DOWNLOADS=never` to disable uv's automatic
+Python downloads, as CI does.
+
+For local installation from public PyPI, remove the entire `[[tool.uv.index]]` entry from
+`pyproject.toml`, then run `uv lock --default-index https://pypi.org/simple` and `uv sync --locked`.
+The re-lock is necessary because `uv.lock` records registry URLs. Keep these changes local and restore
+both `pyproject.toml` and `uv.lock` before committing; CI requires Repox.
+
+# Run the scanner
+
+Run `uv run --locked pysonar`.
 
 # Run the tests
 
-Run `poetry install` to install the dependencies. By default, the dependencies are installed from the Jfrog private repository.
-
-To configure your credentials for Jfrog, go to your Jfrog user profile, and generate an identity token. Then set the following two environment variables:
-```shell
-poetry config http-basic.repox <username> <password>
-```
-Where `<username>` is your Jfrog username and `<password>` is the identity token you generated.
-
-If you wish to install the dependencies from the public PyPI repository, remove the following source from `pyproject.toml`:
-```toml
-[[tool.poetry.source]]
-name = 'repox'
-url = 'https://repox.jfrog.io/artifactory/api/pypi/sonarsource-pypi/simple'
-```
-
 ## Run the tests only
 
-Run `poetry run pytest tests/`
+Run `uv run --locked pytest tests/`
 
 ## Run the tests with coverage and results displayed in the terminal
 
-Run `poetry run pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=src --cov-branch tests`
+Run `uv run --locked pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=src --cov-branch tests`
 
 ## Run the tests with coverage and store the result in an xml file
 
-Run `poetry run pytest --cov-report=xml:coverage.xml --cov-config=pyproject.toml --cov=src --cov-branch tests`
+Run `uv run --locked pytest --cov-report=xml:coverage.xml --cov-config=pyproject.toml --cov=src --cov-branch tests`
 
 ## Run the ITs
 
@@ -51,10 +55,10 @@ Port 9000 must be available.
 Additional arguments are passed to pytest, for example `./scripts/run_its.sh -k test_minimal_project`.
 
 To run pytest directly or use the VSCode test explorer, first start a disposable SonarQube instance on
-`http://localhost:9000` with the default administrator credentials. Then run `poetry run pytest tests/its --its`
+`http://localhost:9000` with the default administrator credentials. Then run `uv run --locked pytest tests/its --its`
 or add the `--its` argument to the `python.testing.pytestArgs` setting in `.vscode/settings.json`.
 
-The the following keys should be present:
+The following keys should be present:
 ```json
   "python.testing.unittestArgs": ["-v", "-s", "tests", "-p", "test_*.py"],
   "python.testing.pytestEnabled": true,
@@ -83,7 +87,7 @@ For VSCode, add the following launch configuration in the `configurations` array
 
 # Build the package
 
-Run `poetry build` to create the package. 
+Run `uv build --no-sources` to create the package.
 The binaries will be located in the `dist` directory at the root level of the project.
 
 # Publish the script
@@ -92,32 +96,32 @@ See [RELEASE.md](RELEASE.md).
 
 # Update the package version
 
-To update the version use the Poetry command:
+To update the version and lockfile together:
 
-```
-poetry version "X.Y.Z"
-```
-or
 ```shell
-poetry version patch
+uv version --no-sync "X.Y.Z"
 ```
-For more options on the version update see [the Poetry documentation](https://python-poetry.org/docs/cli/#version)
 
-# Tooling 
-## Formatting 
+For a patch increment, run `uv version --no-sync --bump patch`.
+Commit both `pyproject.toml` and `uv.lock`. CI validates the committed lockfile before appending its
+build number in the disposable checkout and checks that stamping leaves dependency versions unchanged.
+See [uv version](https://docs.astral.sh/uv/reference/cli/#uv-version) for other increments.
 
-Run `poetry run black src/ tests/ --check` to run the check the formatting on all files.
-To automatically apply formatting, run `poetry run black src/ tests/`.
+# Tooling
+## Formatting
+
+Run `uv run --locked black src/ tests/ --check` to check the formatting on all files.
+To automatically apply formatting, run `uv run --locked black src/ tests/`.
 
 ## Type checking
 
-Run `poetry run mypy src/ tests/ --ignore-missing-imports` to execute the type checking on all files.
+Run `uv run --locked mypy src/ --ignore-missing-imports` to type check the scanner source.
 
 ## License header
 
 Before pushing, please check if all files have a license header.
-If not all files have a license header please execute: 
+If not all files have a license header please execute:
 ```
-poetry run licenseheaders -t license_header.tmpl -o "SonarSource Sàrl" -y 2011-2026 -n "Sonar Scanner Python" -E .py -d src/
-poetry run licenseheaders -t license_header.tmpl -o "SonarSource Sàrl" -y 2011-2026 -n "Sonar Scanner Python" -E .py -d tests/
+uv run --locked licenseheaders -t license_header.tmpl -o "SonarSource Sàrl" -y 2011-2026 -n "Sonar Scanner Python" -E .py -d src/
+uv run --locked licenseheaders -t license_header.tmpl -o "SonarSource Sàrl" -y 2011-2026 -n "Sonar Scanner Python" -E .py -d tests/
 ```

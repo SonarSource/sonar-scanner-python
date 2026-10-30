@@ -20,7 +20,7 @@ To learn more about Sonar products, visit the [Sonar website](https://www.sonars
 # Requirements
 
  - SonarQube v10.6 or above
- - Python 3.9 or above
+ - Python 3.10 or above
 
 # Installation
 

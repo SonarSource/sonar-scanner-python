@@ -16,8 +16,7 @@ on:
 env:
   MISE_EXPERIMENTAL: "1"
   MISE_PYTHON_GITHUB_ATTESTATIONS: "false"
-  POETRY_CACHE_DIR: ${{ github.workspace }}/.cache/pypoetry
-  POETRY_VIRTUALENVS_PATH: ${{ github.workspace }}/.cache/pypoetry/virtualenvs
+  UV_PYTHON_DOWNLOADS: "never"
 
 concurrency:
   group: ${{ github.workflow }}
@@ -33,7 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9.18", "3.10.13", "3.11.7", "3.12.1", "3.13.2"]
+        python-version: ["3.10.13", "3.11.7", "3.12.1", "3.13.2", "3.14.0"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -49,16 +48,19 @@ jobs:
             python ${{ matrix.python-version }}
           experimental: true
 
-      - name: Configure poetry
-        uses: SonarSource/ci-github-actions/config-poetry@v1
+      - name: Configure uv
+        uses: SonarSource/ci-github-actions/config-uv@v1
         with:
           artifactory-reader-role: private-reader
+      - name: Select mise Python
+        shell: bash
+        run: echo "UV_PYTHON=$(mise which python)" >> "$GITHUB_ENV"
 
       - name: Install dependencies
-        run: poetry install
+        run: uv sync --locked
 
       - name: Execute the test suite
-        run: poetry run pytest tests/
+        run: uv run --locked pytest tests/
 
   its-macos:
     name: "macOS Integration Tests"

@@ -3,15 +3,15 @@
   "extends": [
     "github>SonarSource/renovate-config:languages-team"
   ],
-  "enabledManagers": ["poetry","github-actions", "dockerfile"],
+  "enabledManagers": ["pep621", "github-actions", "dockerfile", "mise"],
   "ignorePaths": [
     "its/**",
     "**/test/**"
   ],
   "packageRules": [
     {
-      "description": "Enable only major, minor and patch version updates for github-actions and poetry",
-      "matchManagers": ["github-actions", "poetry"],
+      "description": "Enable only major, minor and patch version updates for github-actions and pep621",
+      "matchManagers": ["github-actions", "pep621"],
       "matchUpdateTypes": [
         "pin",
         "pinDigest",

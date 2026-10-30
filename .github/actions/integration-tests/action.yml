@@ -24,13 +24,17 @@ runs:
           java temurin-21
         experimental: true
 
-    - name: Configure poetry
-      uses: SonarSource/ci-github-actions/config-poetry@v1
+    - name: Configure uv
+      uses: SonarSource/ci-github-actions/config-uv@v1
       with:
         artifactory-reader-role: private-reader
+    - name: Select mise Python
+      shell: bash
+      run: echo "UV_PYTHON=$(mise which python)" >> "$GITHUB_ENV"
 
     - name: Execute the integration tests
       shell: bash
       env:
+        UV_PYTHON_DOWNLOADS: "never"
         SONARQUBE_VERSION: ${{ inputs.sonarqube-version }}
       run: ./scripts/run_its.sh
