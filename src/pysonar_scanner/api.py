@@ -39,7 +39,22 @@ from pysonar_scanner.exceptions import (
 )
 
 GLOBAL_SONARCLOUD_URL = "https://sonarcloud.io"
+GLOBAL_SONARCLOUD_API_URL = "https://api.sonarcloud.io"
 US_SONARCLOUD_URL = "https://sonarqube.us"
+AU_SONARCLOUD_URL = "https://sonarqube.au"
+
+
+@dataclass(frozen=True)
+class SonarQubeCloudRegion:
+    base_url: str
+    api_base_url: str
+
+
+DEFAULT_SONARQUBE_CLOUD_REGION = SonarQubeCloudRegion(GLOBAL_SONARCLOUD_URL, GLOBAL_SONARCLOUD_API_URL)
+SONARQUBE_CLOUD_REGIONS: dict[str, SonarQubeCloudRegion] = {
+    "us": SonarQubeCloudRegion(US_SONARCLOUD_URL, "https://api.sonarqube.us"),
+    "au": SonarQubeCloudRegion(AU_SONARCLOUD_URL, "https://api.sonarqube.au"),
+}
 
 UNAUTHORIZED_STATUS_CODES = (401, 403)
 
@@ -138,7 +153,8 @@ def to_api_configuration(config_dict: dict[Key, Any]) -> ApiConfiguration:
 def get_base_urls(config_dict: dict[Key, Any]) -> BaseUrls:
     def is_sq_cloud_url(api_config: ApiConfiguration, sonar_host_url: str) -> bool:
         sq_cloud_url = api_config.sonar_scanner_sonarcloud_url or GLOBAL_SONARCLOUD_URL
-        return remove_trailing_slash(sonar_host_url) in [remove_trailing_slash(sq_cloud_url), US_SONARCLOUD_URL]
+        regional_urls = [cloud_region.base_url for cloud_region in SONARQUBE_CLOUD_REGIONS.values()]
+        return remove_trailing_slash(sonar_host_url) in [remove_trailing_slash(sq_cloud_url), *regional_urls]
 
     def is_blank(str) -> bool:
         return str.strip() == ""
@@ -147,9 +163,10 @@ def get_base_urls(config_dict: dict[Key, Any]) -> BaseUrls:
 
     sonar_host_url = remove_trailing_slash(api_config.sonar_host_url)
     region = api_config.sonar_region
-    if region and region != "us":
+    if region and region not in SONARQUBE_CLOUD_REGIONS:
+        valid_regions = ", ".join(f"'{name}'" for name in SONARQUBE_CLOUD_REGIONS)
         raise InconsistentConfiguration(
-            f"Invalid region '{region}'. Valid regions are: 'us'. "
+            f"Invalid region '{region}'. Valid regions are: {valid_regions}. "
             "Please check the 'sonar.region' property or the 'SONAR_REGION' environment variable."
         )
     if is_inconsistent_configuration(region, sonar_host_url):
@@ -158,22 +175,28 @@ def get_base_urls(config_dict: dict[Key, Any]) -> BaseUrls:
             + "Please only specify one of the two properties."
         )
     if is_blank(sonar_host_url) or is_sq_cloud_url(api_config, sonar_host_url):
-        default_url = US_SONARCLOUD_URL if region == "us" else GLOBAL_SONARCLOUD_URL
-        default_api_base_url = "https://api.sonarqube.us" if region == "us" else "https://api.sonarcloud.io"
-        sonar_host_url = api_config.sonar_scanner_sonarcloud_url or default_url
-        api_base_url = api_config.sonar_scanner_api_base_url or default_api_base_url
+        cloud_region = resolve_cloud_region(region, sonar_host_url)
+        sonar_host_url = api_config.sonar_scanner_sonarcloud_url or cloud_region.base_url
+        api_base_url = api_config.sonar_scanner_api_base_url or cloud_region.api_base_url
         return BaseUrls(base_url=sonar_host_url, api_base_url=api_base_url, is_sonar_qube_cloud=True)
     else:
         api_base_url = api_config.sonar_scanner_api_base_url or f"{sonar_host_url}/api/v2"
         return BaseUrls(base_url=sonar_host_url, api_base_url=api_base_url, is_sonar_qube_cloud=False)
 
 
+def resolve_cloud_region(region: str, sonar_host_url: str) -> SonarQubeCloudRegion:
+    if region:
+        return SONARQUBE_CLOUD_REGIONS[region]
+    matching_regions = (
+        cloud_region for cloud_region in SONARQUBE_CLOUD_REGIONS.values() if cloud_region.base_url == sonar_host_url
+    )
+    return next(matching_regions, DEFAULT_SONARQUBE_CLOUD_REGION)
+
+
 def is_inconsistent_configuration(region, sonar_host_url):
     if not region or not sonar_host_url:
         return False
-    if region == "us" and sonar_host_url.startswith(US_SONARCLOUD_URL):
-        return False
-    return True
+    return not sonar_host_url.startswith(SONARQUBE_CLOUD_REGIONS[region].base_url)
 
 
 class BearerAuth(requests.auth.AuthBase):

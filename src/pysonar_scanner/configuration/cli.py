@@ -216,8 +216,8 @@ class CliConfigurationLoader:
             "--sonar-region",
             "-Dsonar.region",
             type=str,
-            choices=["us"],
-            help="The region to contact, only for SonarQube Cloud",
+            choices=["us", "au"],
+            help="The region to contact, only for SonarQube Cloud. Accepted values: 'us', 'au'",
         )
         server_connection_group.add_argument(
             "--sonar-organization",

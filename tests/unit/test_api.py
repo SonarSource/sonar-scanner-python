@@ -165,6 +165,54 @@ class TestApi(unittest.TestCase):
                     base_url="https://sonarqube.us", api_base_url="https://api.sonarqube.us", is_sonar_qube_cloud=True
                 ),
             },
+            {
+                "name": "US base url without region uses US base urls",
+                "config": {
+                    SONAR_HOST_URL: "https://sonarqube.us/",
+                    SONAR_SCANNER_SONARCLOUD_URL: "",
+                    SONAR_SCANNER_API_BASE_URL: "",
+                    SONAR_REGION: "",
+                },
+                "expected": BaseUrls(
+                    base_url="https://sonarqube.us", api_base_url="https://api.sonarqube.us", is_sonar_qube_cloud=True
+                ),
+            },
+            {
+                "name": "AU base url without region uses AU base urls",
+                "config": {
+                    SONAR_HOST_URL: "https://sonarqube.au",
+                    SONAR_SCANNER_SONARCLOUD_URL: "",
+                    SONAR_SCANNER_API_BASE_URL: "",
+                    SONAR_REGION: "",
+                },
+                "expected": BaseUrls(
+                    base_url="https://sonarqube.au", api_base_url="https://api.sonarqube.au", is_sonar_qube_cloud=True
+                ),
+            },
+            {
+                "name": "When region is set to AU, use AU base urls",
+                "config": {
+                    SONAR_HOST_URL: "",
+                    SONAR_SCANNER_SONARCLOUD_URL: "",
+                    SONAR_SCANNER_API_BASE_URL: "",
+                    SONAR_REGION: "au",
+                },
+                "expected": BaseUrls(
+                    base_url="https://sonarqube.au", api_base_url="https://api.sonarqube.au", is_sonar_qube_cloud=True
+                ),
+            },
+            {
+                "name": "AU region and AU base url is fine",
+                "config": {
+                    SONAR_HOST_URL: "https://sonarqube.au",
+                    SONAR_SCANNER_SONARCLOUD_URL: "",
+                    SONAR_SCANNER_API_BASE_URL: "",
+                    SONAR_REGION: "au",
+                },
+                "expected": BaseUrls(
+                    base_url="https://sonarqube.au", api_base_url="https://api.sonarqube.au", is_sonar_qube_cloud=True
+                ),
+            },
             # SQ:Server tests
             {
                 "name": "When host_url is set to SQ:server, use SQ:server base urls",
@@ -231,6 +279,28 @@ class TestApi(unittest.TestCase):
                 "Please only specify one of the two properties.",
             },
             {
+                "name": "AU region and global SQCloud URL",
+                "config": {
+                    SONAR_HOST_URL: "https://sonarcloud.io",
+                    SONAR_SCANNER_SONARCLOUD_URL: "",
+                    SONAR_SCANNER_API_BASE_URL: "",
+                    SONAR_REGION: "au",
+                },
+                "expected": "Inconsistent values for properties 'sonar.region' and 'sonar.host.url'. "
+                "Please only specify one of the two properties.",
+            },
+            {
+                "name": "AU region and US SQCloud URL",
+                "config": {
+                    SONAR_HOST_URL: "https://sonarqube.us",
+                    SONAR_SCANNER_SONARCLOUD_URL: "",
+                    SONAR_SCANNER_API_BASE_URL: "",
+                    SONAR_REGION: "au",
+                },
+                "expected": "Inconsistent values for properties 'sonar.region' and 'sonar.host.url'. "
+                "Please only specify one of the two properties.",
+            },
+            {
                 "name": "Unsupported region parameter",
                 "config": {
                     SONAR_HOST_URL: "",
@@ -238,7 +308,7 @@ class TestApi(unittest.TestCase):
                     SONAR_SCANNER_API_BASE_URL: "",
                     SONAR_REGION: "fr",
                 },
-                "expected": "Invalid region 'fr'. Valid regions are: 'us'. "
+                "expected": "Invalid region 'fr'. Valid regions are: 'us', 'au'. "
                 "Please check the 'sonar.region' property "
                 "or the 'SONAR_REGION' environment variable.",
             },
