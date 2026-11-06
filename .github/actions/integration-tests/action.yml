@@ -16,7 +16,7 @@ runs:
         key: sonarqube-${{ runner.os }}-zip-${{ inputs.sonarqube-version }}
 
     - name: Install mise and tools
-      uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
+      uses: jdx/mise-action@6612f0ef07ed2a736cd1e00a94a065522dd41195 # v5.2.5
       with:
         version: 2026.10.2
         tool_versions: |
@@ -25,7 +25,7 @@ runs:
         experimental: true
 
     - name: Configure poetry
-      uses: SonarSource/ci-github-actions/config-poetry@v1
+      uses: SonarSource/ci-github-actions/config-poetry@v2
       with:
         artifactory-reader-role: private-reader
 
